@@ -1,92 +1,131 @@
-# LlamaSearch
+# Enterprise Search
 
-Enterprise Search powered by LlamaIndex 
+## Overview
 
-## Getting started
+The Enterprise Search project is intended to index and query documents efficiently using a combination of LLM and vector search technology. It leverages the LLaMA index framework to process, embed, and index documents for semantic search. This project integrates Qdrant as a vector search engine and Redis for caching and document storage.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Prerequisites
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Before setting up the project, ensure you have the following installed:
+- Python 3.8 or higher
+- Docker and Docker Compose (for Qdrant and Redis)
+- pip for Python package management
 
-## Add your files
+## Setup Instructions
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### 1. Clone the Repository
 
+Start by cloning the repository to your local machine.
+
+```bash
+git clone <repository-url>
+cd <repository-directory>
 ```
-cd existing_repo
-git remote add origin https://gitlab.aiml.team/products/aiml/enterprise-search/LlamaSearch.git
-git branch -M main
-git push -uf origin main
+
+### 2. Install Dependencies
+
+Install the required Python dependencies using pip.
+
+```bash
+pip install -r requirements.txt
 ```
 
-## Integrate with your tools
+### 3. Setup Qdrant
 
-- [ ] [Set up project integrations](https://gitlab.aiml.team/products/aiml/enterprise-search/LlamaSearch/-/settings/integrations)
+Qdrant is used as the vector search engine. Follow these steps to set it up using Docker.
 
-## Collaborate with your team
+- **Pull Qdrant Docker Image**
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```bash
+docker pull qdrant/qdrant
+```
 
-## Test and Deploy
+- **Run Qdrant Container**
 
-Use the built-in continuous integration in GitLab.
+```bash
+docker run -p 6333:6333 qdrant/qdrant
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+This command runs Qdrant and exposes it on `http://localhost:6333`.
 
-***
+- **Create a collection Qdrant database**
 
-# Editing this README
+```bash
+curl -X POST 'http://localhost:6333/collections' \
+-H 'Content-Type: application/json' \
+-d '{
+  "name": "test123",
+  "vector_size": 768, 
+  "distance": "Cosine"
+}'
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+This command sends a POST request to the Qdrant server to create a new collection named test123. The vector_size should match the dimensionality of the vectors produced by your embedding model [local:BAAI/bge-small-en-v1.5](https://huggingface.co/BAAI/bge-small-en-v1.5). 
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+In this example, we're assuming a vector size of 768, which is common for many BERT-like models, but you should adjust this value based on the actual size of the embeddings your model generates. The distance metric is set to Cosine, which is often used for semantic search applications, but you can choose another distance metric supported by Qdrant if it better suits your use case.
 
-## Name
-Choose a self-explaining name for your project.
+### 4. Setup Redis
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+Redis is used for caching and document storage. Setup Redis using Docker as follows.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- **Pull Redis Docker Image**
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```bash
+docker pull redis
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- **Run Redis Container**
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```bash
+docker run --name redis-search -p 6379:6379 -d redis
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+This command runs Redis and exposes it on `localhost` on port `6379`.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### 5. Update Configuration
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Update `config.yml` with the correct paths and configurations for your setup. Here's an example configuration:
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+```yaml
+data_path: "./data/test_data/"
+qdrant_client_config:
+  url: "http://localhost:6333"
+  prefer_grpc: False
+vector_store_config:
+  collection_name: "test123"
+redis_config:
+  host: "localhost"
+  port: 6379
+embed_model: "local:BAAI/bge-small-en-v1.5"
+llm_model: "mistral"
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- **data_path**: Directory containing documents to index.
+- **qdrant_client_config**: Configuration for connecting to Qdrant.
+- **vector_store_config**: Configuration for the vector store in Qdrant.
+- **redis_config**: Configuration for connecting to Redis.
+- **embed_model**: The embedding model for document processing.
+- **llm_model**: The large language model used for processing.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### 6. Running the Application
 
-## License
-For open source projects, say how it is licensed.
+Ensure you have uploaded documents into the `data_path` specified in your configuration and that both Qdrant and Redis dockers are running before attempting to run the application
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+To run the application, navigate to the project directory and use the following command:
+
+```bash
+streamlit run app.py
+```
+
+For profiling or querying without the Streamlit interface, you can use:
+
+```bash
+python pipeline.py --query "your search query here" [--profile]
+```
+To test the application and check its output, you can use the Streamlit interface or directly interact with the command line interface as mentioned above.
+
+## Troubleshooting
+
+- **Qdrant/Redis Connection Issues**: Ensure that Qdrant and Redis are running and accessible at the URLs and ports specified in `config.yml`.
+- **Dependency Errors**: Make sure all Python dependencies are installed correctly as per `requirements.txt`.
+- **Configuration Errors**: Verify that all paths and configurations in `config.yml` are correct and point to the right resources.
