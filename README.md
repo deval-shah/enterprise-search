@@ -13,16 +13,7 @@ Before setting up the project, ensure you have the following installed:
 
 ## Setup Instructions
 
-### 1. Clone the Repository
-
-Start by cloning the repository to your local machine.
-
-```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
-### 2. Install Dependencies
+### 1. Install Dependencies
 
 Install the required Python dependencies using pip.
 
@@ -32,7 +23,7 @@ pip install -r requirements.txt
 
 ### 3. Setup Qdrant
 
-Qdrant is used as the vector search engine. Follow these steps to set it up using Docker.
+Qdrant is used as the vector search database. Follow these steps to set it up using Docker.
 
 - **Pull Qdrant Docker Image**
 
@@ -43,7 +34,7 @@ docker pull qdrant/qdrant
 - **Run Qdrant Container**
 
 ```bash
-docker run -p 6333:6333 qdrant/qdrant
+docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
 ```
 
 This command runs Qdrant and exposes it on `http://localhost:6333`.
@@ -55,14 +46,16 @@ curl -X POST 'http://localhost:6333/collections' \
 -H 'Content-Type: application/json' \
 -d '{
   "name": "test123",
-  "vector_size": 768, 
+  "vector_size": 384,
   "distance": "Cosine"
 }'
 ```
 
-This command sends a POST request to the Qdrant server to create a new collection named test123. The vector_size should match the dimensionality of the vectors produced by your embedding model [local:BAAI/bge-small-en-v1.5](https://huggingface.co/BAAI/bge-small-en-v1.5). 
+This command sends a POST request to the Qdrant server to create a new collection named test123.
 
-In this example, we're assuming a vector size of 768, which is common for many BERT-like models, but you should adjust this value based on the actual size of the embeddings your model generates. The distance metric is set to Cosine, which is often used for semantic search applications, but you can choose another distance metric supported by Qdrant if it better suits your use case.
+The vector_size should match the dimensionality of the vectors produced by your embedding model [local:BAAI/bge-small-en-v1.5](https://huggingface.co/BAAI/bge-small-en-v1.5) which is 384. 
+
+The distance metric is set to Cosine, which is often used for semantic search applications, but you can choose another distance metric supported by Qdrant if it better suits your use case.
 
 ### 4. Setup Redis
 
@@ -99,7 +92,6 @@ redis_config:
 embed_model: "local:BAAI/bge-small-en-v1.5"
 llm_model: "mistral"
 ```
-
 - **data_path**: Directory containing documents to index.
 - **qdrant_client_config**: Configuration for connecting to Qdrant.
 - **vector_store_config**: Configuration for the vector store in Qdrant.
@@ -111,16 +103,16 @@ llm_model: "mistral"
 
 Ensure you have uploaded documents into the `data_path` specified in your configuration and that both Qdrant and Redis dockers are running before attempting to run the application
 
-To run the application, navigate to the project directory and use the following command:
+To run the streamlit application, navigate to the project directory and use the following command:
 
 ```bash
 streamlit run app.py
 ```
 
-For profiling or querying without the Streamlit interface, you can use:
+For querying without the Streamlit interface, you can use:
 
 ```bash
-python pipeline.py --query "your search query here" [--profile]
+python pipeline.py --query "your search query here"
 ```
 To test the application and check its output, you can use the Streamlit interface or directly interact with the command line interface as mentioned above.
 
