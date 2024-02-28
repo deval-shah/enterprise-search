@@ -1,11 +1,10 @@
-from llama_index.core import Document,  VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core import Document, VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter, SemanticSplitterNodeParser
 from llama_index.core.extractors import TitleExtractor
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import Settings
-from llama_index.core import VectorStoreIndex
 from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
 from llama_index.storage.docstore.redis import RedisDocumentStore
@@ -91,7 +90,6 @@ class LlamaIndexApp:
     def load_documents(self):
         """Loads documents from the specified directory for indexing."""
         self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True).load_data()
-        print(self.documents)
 
     def run_pipeline(self):
         """
@@ -100,7 +98,7 @@ class LlamaIndexApp:
         Returns:
             List: A list of processed document nodes.
         """
-        nodes = self.pipeline.run(documents=self.documents, show_progress=True)
+        nodes = self.pipeline.run(documents=self.documents)
         print(f"Ingested {len(nodes)} Nodes")
         return nodes
 
@@ -118,7 +116,9 @@ class LlamaIndexApp:
         Returns:
             dict: The query response.
         """
-        query_engine = self.index.as_query_engine(similarity_top_k=10)
+        if not hasattr(self, 'index') or self.index is None:
+            raise Exception("Index is not ready. Please load and index documents before querying.")
+        query_engine = self.index.as_query_engine()
         response = query_engine.query(query)
         return response
 
