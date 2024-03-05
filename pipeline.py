@@ -1,5 +1,5 @@
-from llama_index.core import Document, VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core.node_parser import SentenceSplitter, SemanticSplitterNodeParser
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.core.extractors import TitleExtractor
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
@@ -8,6 +8,7 @@ from llama_index.core import Settings
 from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
 from llama_index.storage.docstore.redis import RedisDocumentStore
+from llama_index.core.base.response.schema import Response
 
 import yaml
 import logging
@@ -99,7 +100,7 @@ class LlamaIndexApp:
             List: A list of processed document nodes.
         """
         nodes = self.pipeline.run(documents=self.documents)
-        print(f"Ingested {len(nodes)} Nodes")
+        logging.info(f"Ingested {len(nodes)} Nodes")
         return nodes
 
     def index_documents(self, nodes):
@@ -122,18 +123,17 @@ class LlamaIndexApp:
         response = query_engine.query(query)
         return response
 
-def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> Dict:
+def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> Response:
     """
-    Queries the application with a specified query string after loading documents,
-    running the pipeline, and indexing documents.
+    Loads documents, runs the ingestion pipeline, indexes documents, and queries the index.
 
     Args:
-        config_path (str): Path to the YAML configuration file.
-        query (str): The query string to search the index with.
-        data_path (Optional[str]): Optional. Custom path to override the data path specified in the config.
+        config_path: The path to the configuration file.
+        query: The query string to search the index.
+        data_path: Optional; The path to the data directory. If provided, overrides the default path.
 
     Returns:
-        String: The response from querying the index using LLM.
+        A llamaindex response object.
     """
     app = LlamaIndexApp(config_path)
     if data_path:

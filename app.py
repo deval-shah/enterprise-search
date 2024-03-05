@@ -3,29 +3,8 @@ import pstats
 import tempfile
 import shutil
 import os, streamlit as st
-from typing import List, Optional, Dict
-from pipeline import LlamaIndexApp
-
-def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> Dict:
-    """
-    Loads documents, runs the ingestion pipeline, indexes documents, and queries the index.
-
-    Args:
-        config_path: The path to the configuration file.
-        query: The query string to search the index.
-        data_path: Optional; The path to the data directory. If provided, overrides the default path.
-
-    Returns:
-        A dictionary containing the response from querying the index.
-    """
-    app = LlamaIndexApp(config_path)
-    if data_path:
-        app.data_path = data_path
-    app.load_documents()
-    nodes = app.run_pipeline()
-    app.index_documents(nodes)
-    response = app.query_index(query)
-    return response
+from typing import List
+from pipeline import query_app
 
 def profile_app(config_path: str, query: str) -> None:
     """
