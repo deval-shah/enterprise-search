@@ -1,0 +1,34 @@
+metrics:
+  answer_relevancy:
+    threshold: 0.7
+    model_type: custom
+    model: custom
+    include_reason: true
+  faithfulness:
+    threshold: 0.7
+    model_type: custom
+    model: custom
+    include_reason: true
+  contextual_precision:
+    threshold: 0.7
+    model_type: custom
+    model: custom
+    include_reason: true
+  contextual_recall:
+    threshold: 0.7
+    model_type: custom
+    model: custom
+    include_reason: true
+  contextual_relevancy:
+    threshold: 0.7
+    model_type: custom
+    model: custom
+    include_reason: true
+  coherence:
+    name: Coherence
+    model_type: custom
+    model: custom
+    criteria: "Coherence - determine if the actual output is coherent with the input."
+    evaluation_params:
+      - input
+      - actual_output

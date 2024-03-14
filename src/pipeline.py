@@ -9,6 +9,7 @@ from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
 from llama_index.storage.docstore.redis import RedisDocumentStore
 from llama_index.core.base.response.schema import Response
+from logger import CustomLogger
 
 import yaml
 import logging
@@ -17,10 +18,9 @@ import qdrant_client
 import cProfile
 import pstats
 import argparse
-from typing import Optional, Dict
+from typing import Optional
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
+logger = CustomLogger.setup_logger(__name__, save_to_disk=False, log_dir='./logs')
 
 class LlamaIndexApp:
     """
@@ -33,6 +33,7 @@ class LlamaIndexApp:
         Args:
             config_path (str): The path to the YAML configuration file.
         """
+        logger.info("Initializing RAG pipeline with provided configuration {}.".format(config_path))
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
         self.data_path = config['data_path']
@@ -90,6 +91,7 @@ class LlamaIndexApp:
 
     def load_documents(self):
         """Loads documents from the specified directory for indexing."""
+        logger.info("Loading documents from the specified directory for indexing.")
         self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True).load_data()
 
     def run_pipeline(self):
@@ -99,15 +101,23 @@ class LlamaIndexApp:
         Returns:
             List: A list of processed document nodes.
         """
+        logger.info("Generating nodes from ingested documents")
         nodes = self.pipeline.run(documents=self.documents)
         logging.info(f"Ingested {len(nodes)} Nodes")
         return nodes
 
     def index_documents(self, nodes):
         """Indexes the processed documents."""
+        logger.info("Indexing processed documents.")
         self.index = VectorStoreIndex.from_vector_store(self.vector_store, Settings.embed_model)
-
-    def query_index(self, query):
+        self.set_query_engine()
+        
+    def set_query_engine(self):
+        if not hasattr(self, 'index') or self.index is None:
+            raise Exception("Index is not ready. Please load and index documents before querying.")
+        self.query_engine = self.index.as_query_engine()
+        
+    def query_engine_response(self, query):
         """
         Queries the index with the given query string.
 
@@ -117,11 +127,15 @@ class LlamaIndexApp:
         Returns:
             dict: The query response.
         """
-        if not hasattr(self, 'index') or self.index is None:
-            raise Exception("Index is not ready. Please load and index documents before querying.")
-        query_engine = self.index.as_query_engine()
-        response = query_engine.query(query)
+        response = self.query_engine.query(query)
         return response
+
+    def get_context_from_response(self, response_object):
+        # Process the response object to get the output string and retrieved nodes
+        if response_object is not None:
+            actual_output = response_object.response
+            retrieval_context = [node.get_content() for node in response.source_nodes]
+        return {"output": actual_output, "retrieval_context": retrieval_context}
 
 def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> Response:
     """
@@ -141,7 +155,7 @@ def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> 
     app.load_documents()
     nodes = app.run_pipeline()
     app.index_documents(nodes)
-    response = app.query_index(query)
+    response = app.query_engine_response(query)
     return response
 
 def profile_app(config_path: str, query: str) -> None:
@@ -165,6 +179,7 @@ if __name__ == "__main__":
     parser.add_argument("--profile", action='store_true', help="Enable profiling of the app")
     args = parser.parse_args()
     config_path='config.yml'
+    logger.info("Starting the RAG pipeline...")
     try:
         if args.profile:
             profile_app(config_path, args.query)
