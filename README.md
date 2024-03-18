@@ -114,18 +114,83 @@ A sample test pdf is added in `./data/test/` for testing. Feel free to add other
 To run the streamlit application, navigate to the project directory and use the following command:
 
 ```bash
-streamlit run app.py
+streamlit run src/streamlit-app.py
 ```
 
 For querying without the Streamlit interface, you can use:
 
 ```bash
-python pipeline.py --query "your search query here"
+python src/pipeline.py --query "your search query here"
 ```
 To test the application and check its output, you can use the Streamlit interface or directly interact with the command line interface as mentioned above.
+
+## Evaluation
+
+The Evaluation module is designed to assess the performance of the RAG Pipeline, specifically focusing on the quality of answers. It leverages a set of metrics including faithfulness, answer relevancy, contextual relevancy, and coherence to provide a comprehensive evaluation of the system's output compared to ground truth data.
+
+### Interpreting the Results
+
+The results will include metrics scores for each query in a json, providing insights into the quality of the answers. These metrics measure the component wise and end to end accuracy of the rag pipeline.
+
+- **Metrics Explained**:
+  - `faithfulness`: A generator based metric that measures how factually accurate is the generated answer. 
+  - `answer_relevancy`: A generator based metric that measures how relevant is the generated answer to the question.
+  - `context_precision`: A retrievar based metric that measures the signal to noise ratio of retrieved context. Requires ground truth.
+  - `context_recall`:  A retrievar based that measures whether it can retrieve all the relevant information required to answer the question.
+
+### Prerequisites for Evaluation
+
+Ensure the system is set up as per the setup instructions above, with all dependencies installed and both Qdrant and Redis services running.
+
+### Preparing the Dataset
+
+1. Prepare a CSV file containing the questions and their corresponding ground truth answers. The CSV file should have at least two columns: `question` and `ground_truth`.
+
+2. Place your dataset in an accessible directory and note the path to this CSV file for the evaluation process.
+
+### Evaluation Metrics Configuration
+
+The evaluation process utilizes a metrics configuration file. The configuration specifies the thresholds and models used for each metric, as outlined below:
+
+- **Metrics**:
+  - `answer_relevancy`, `faithfulness`, `contextual_precision`, `contextual_recall`, `contextual_relevancy`, `coherence`: Each metric is configured with a `threshold` indicating the minimum acceptable score.
+  
+- **Model Types**:
+  - `api`: Utilizes OpenAI's API for metric evaluation, suitable for production environments where high accuracy is essential.
+  - `custom`: Uses locally hosted LLM models for evaluation, offering flexibility and reduced costs at the expense of potential stability issues. Note: Custom model evaluation is currently experimental and may exhibit bugs, which will be addressed in future releases.
+
+- **Model Selection**:
+  - The `model` field specifies the model used for evaluation. For API model types, this typically refers to an OpenAI model identifier, such as `gpt-4-0125-preview` which is most suitable for the evaluation.
+
+- **Thresholds**:
+  - The `threshold` value for each metric defines the cut-off score for considering a response satisfactory. Scores above this threshold indicate acceptable performance on the metric.
+
+### Running the Evaluation
+
+The evaluation process involves executing the main script with appropriate arguments to specify the configuration file, data path, path to the QA CSV file, and an option to save the results.
+
+1. **Navigate to the Project Directory**: Ensure you are in the root directory of the Enterprise Search project.
+
+2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
+
+```bash
+python src/eval_script.py --config_path src/eval_metrics_config.yaml --data_path path/to/data/directory --qa_csv_path path/to/qa_dataset.csv --save
+```
+
+- `--config_path`: Specifies the path to the YAML configuration file for the RAG Pipeline.
+- `--data_path`: Indicates the directory where your documents for indexing are stored.
+- `--qa_csv_path`: The path to the QA CSV file containing your evaluation dataset.
+- `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
+
+The script will process each question in the CSV file, perform a query against the indexed documents, and evaluate the responses using the specified metrics. Results will be logged and, if the `--save` flag is used, saved to a JSON file in the `./results` directory with a timestamped filename.
 
 ## Troubleshooting
 
 - **Qdrant/Redis Connection Issues**: Ensure that Qdrant and Redis are running and accessible at the URLs and ports specified in `config.yml`.
 - **Dependency Errors**: Make sure all Python dependencies are installed correctly as per `requirements.txt`.
 - **Configuration Errors**: Verify that all paths and configurations in `config.yml` are correct and point to the right resources.
+
+## Release Notes
+
+- Added RAG Evaluation support over a knowledge Q/A dataset.
+- Restructured code for easy maintainance.

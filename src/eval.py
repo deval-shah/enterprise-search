@@ -103,6 +103,7 @@ class Eval:
         try:
             metric.measure(test_case)
             logger.info(f"Metric: {self.mobj.get_metric_name(metric)}")
+            logger.info(f"Actual Output: {output}")
             # Check and log the score if it exists
             score = getattr(metric, 'score', -1)
             if score is not None:

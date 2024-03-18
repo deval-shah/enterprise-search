@@ -81,7 +81,7 @@ class LlamaIndexApp:
             transformations=[
                 SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
                 #SentenceSplitter(chunk_size=1024, chunk_overlap=20),
-                TitleExtractor(num_workers=8),
+                #TitleExtractor(num_workers=8),
                 Settings.embed_model,
             ],
             vector_store=self.vector_store,
@@ -103,7 +103,7 @@ class LlamaIndexApp:
         """
         logger.info("Generating nodes from ingested documents")
         nodes = self.pipeline.run(documents=self.documents)
-        logging.info(f"Ingested {len(nodes)} Nodes")
+        logger.info(f"Ingested {len(nodes)} Nodes")
         return nodes
 
     def index_documents(self, nodes):
@@ -185,6 +185,6 @@ if __name__ == "__main__":
             profile_app(config_path, args.query)
         else:
             response = query_app(config_path, args.query)
-            logging.info(f"Response: {response}")
+            logger.info(f"Response: {response}")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
