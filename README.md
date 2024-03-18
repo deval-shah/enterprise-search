@@ -164,8 +164,6 @@ The evaluation process utilizes a metrics configuration file. The configuration 
 - **Thresholds**:
   - The `threshold` value for each metric defines the cut-off score for considering a response satisfactory. Scores above this threshold indicate acceptable performance on the metric.
 
-To incorporate the explanation of the metrics configuration file, details about the `model_type` options, and the requirement for setting the `OPENAI_API_KEY` environment variable into your README in a concise manner, you could add the following content under the "## Evaluation" section:
-
 #### Environment Setup for Evaluation
 
 To perform evaluations using the `api` model type, you must set the `OPENAI_API_KEY` environment variable with your API key from OpenAI account [settings](https://platform.openai.com/api-keys). This key enables the application to authenticate with OpenAI's API for generating evaluation scores. Set the environment variable as follows before running evaluations:
@@ -173,7 +171,6 @@ To perform evaluations using the `api` model type, you must set the `OPENAI_API_
 ```bash
 export OPENAI_API_KEY='your_openai_api_key_here'
 ```
-
 Ensure this variable is set in your environment to avoid authentication issues during the evaluation process.
 
 ### Running the Evaluation
