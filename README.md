@@ -132,11 +132,13 @@ The Evaluation module is designed to assess the performance of the RAG Pipeline,
 
 The results will include metrics scores for each query in a json, providing insights into the quality of the answers. These metrics measure the component wise and end to end accuracy of the rag pipeline.
 
-- **Metrics Explained**:
-  - `faithfulness`: A generator based metric that measures how factually accurate is the generated answer. 
-  - `answer_relevancy`: A generator based metric that measures how relevant is the generated answer to the question.
-  - `context_precision`: A retrievar based metric that measures the signal to noise ratio of retrieved context. Requires ground truth.
-  - `context_recall`:  A retrievar based that measures whether it can retrieve all the relevant information required to answer the question.
+#### Metrics Explained:
+- `faithfulness`: A generator based metric that measures how factually accurate is the generated answer. 
+- `answer_relevancy`: A generator based metric that measures how relevant is the generated answer to the question.
+- `contextual_precision`: A retrievar based metric that measures the signal to noise ratio of retrieved context. Requires ground truth.
+- `contextual_recall`:  A retrievar based metric that measures whether it can retrieve all the relevant information required to answer the question. Requires ground truth.
+- `contextual_relevancy`: A retrievar based metric that measures the relevancy of the retrieved context, calculated based on both the question and contexts.
+- `coherence`: Checks alignment of answer with the question. It is custom LLM metric evaluated using model.
 
 ### Prerequisites for Evaluation
 
