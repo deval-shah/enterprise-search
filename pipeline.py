@@ -1,6 +1,5 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.node_parser import SemanticSplitterNodeParser
-from llama_index.core.extractors import TitleExtractor
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.vector_stores.qdrant import QdrantVectorStore
@@ -17,15 +16,16 @@ import qdrant_client
 import cProfile
 import pstats
 import argparse
-from typing import Optional, Dict
+from typing import Optional
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
+
 
 class LlamaIndexApp:
     """
     A class to encapsulate the application logic for indexing and querying documents using LLaMA index.
     """
+
     def __init__(self, config_path: str):
         """
         Initializes the application with the provided configuration.
@@ -79,8 +79,6 @@ class LlamaIndexApp:
         self.pipeline = IngestionPipeline(
             transformations=[
                 SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                #SentenceSplitter(chunk_size=1024, chunk_overlap=20),
-                TitleExtractor(num_workers=8),
                 Settings.embed_model,
             ],
             vector_store=self.vector_store,
@@ -90,7 +88,7 @@ class LlamaIndexApp:
 
     def load_documents(self):
         """Loads documents from the specified directory for indexing."""
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True).load_data()
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True).load_data(num_workers=8)
 
     def run_pipeline(self):
         """
@@ -120,8 +118,7 @@ class LlamaIndexApp:
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
         query_engine = self.index.as_query_engine()
-        response = query_engine.query(query)
-        return response
+        return query_engine.query(query)
 
 def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> Response:
     """
@@ -141,8 +138,7 @@ def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> 
     app.load_documents()
     nodes = app.run_pipeline()
     app.index_documents(nodes)
-    response = app.query_index(query)
-    return response
+    return app.query_index(query)
 
 def profile_app(config_path: str, query: str) -> None:
     """
