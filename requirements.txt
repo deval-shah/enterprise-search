@@ -4,7 +4,7 @@ qdrant-client
 redis
 streamlit
 pathlib
-llama-index==0.10.13
+llama-index==0.10.19
 llama-index-llms-ollama
 llama-index-embeddings-huggingface
 llama-index-vector-stores-qdrant
