@@ -20,6 +20,8 @@ import argparse
 import os
 from typing import Optional
 
+from docxreader import DocxReader
+
 logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/', log_name='pipeline.log')
 
 class LlamaIndexApp:
@@ -108,7 +110,7 @@ class LlamaIndexApp:
         """Loads documents from the specified directory for indexing."""
         try:
             logger.info("Loading documents from the specified directory for indexing.")
-            self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True).load_data()
+            self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, file_extractor={".docx":DocxReader()}).load_data()
         except Exception as e:
             logging.error(f"Failed to load documents: {e}")
             raise PipelineSetupError("Failed to load documents") from e
