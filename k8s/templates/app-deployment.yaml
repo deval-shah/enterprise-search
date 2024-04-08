@@ -34,7 +34,7 @@ spec:
               sleep 2
             done
             echo "Checking Ollama readiness"
-            until curl -v -sf -o /dev/null -w "%{http_code}" http://{{ .Values.ollama.name }}-service.{{ .Values.ollama.namespace }}.svc.cluster.local:{{ .Values.ollama.service.port }}/; do
+            until curl -sf -o /dev/null http://{{ .Values.ollama.name }}-service.{{ .Values.ollama.namespace }}.svc.cluster.local:{{ .Values.ollama.service.port }}/; do
               echo "Waiting for ollama to be ready"
               sleep 2
             done
@@ -47,7 +47,6 @@ spec:
         - containerPort: {{.Values.app.service.port}}
         resources:
           limits:
-            nvidia.com/gpu: {{ index .Values.app.resources.limits "nvidia.com/gpu" }}
             cpu: {{ .Values.app.resources.limits.cpu }}
             memory: {{ .Values.app.resources.limits.memory }}
         env:

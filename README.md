@@ -204,8 +204,8 @@ Results will be logged and, if the `--save` flag is used, saved to a JSON file i
 
 ## Release Notes
 
-Version 1.0.1 - 19/03/2024
-- Added RAG Evaluation support over a knowledge Q/A dataset.
-- Restructured code for easy maintainance.
-- Versioning and Release Notes Standardization
+Version 1.0.2 - 08/04/2024
+- Added deployment support to any k8s cluster using terraform.
+- Fixed the ollama localhost issue in the llamaindex framework.
+- Added support to pull and test multiple ollama models configurable during deployment.
 - Bug Fixes and Improvements

@@ -65,7 +65,6 @@ spec:
           successThreshold: {{ .Values.ollama.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.ollama.readinessProbe.failureThreshold }}
         {{- end }}
-        # Pulling the models after spinning up the ollama service.
         lifecycle:
           postStart:
             exec:

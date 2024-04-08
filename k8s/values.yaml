@@ -1,4 +1,3 @@
-# values.yaml
 app:
   name: "enterprise-search"
   image:
@@ -21,7 +20,7 @@ app:
       configMapName: "es-cmap"
     data:
       pvcName: "es-pvc"
-  nodeName: "l40-1"
+  nodeName: "a6000-1"
 
 ollama:
   name: ollama-es
