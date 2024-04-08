@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  es:
+    image: docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest
+    volumes:
+      - type: bind
+        source: ./config
+        target: /app/config
+        read_only: True
+      - type: bind
+        source: /home/deval/Documents/Work/Deval/ES/LlamaSearch/data/testing
+        target: /data
+    environment:
+      - CONFIG_PATH=/app/config/config.yml
+    network_mode: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: es-cmap
+  namespace: aiml-engineering
+data:
+  config.yml: |
+    data_path: "/data"
+    qdrant_client_config:
+      url: "http://qdrant-service.aiml-engineering.svc.cluster.local:6333"
+      prefer_grpc: False
+    vector_store_config:
+      collection_name: "test"
+    redis_config:
+      host: "redis-service.aiml-engineering.svc.cluster.local"
+      port: 6379
+    embed_model: "local:BAAI/bge-small-en-v1.5"
+    llm_model: "mixtral"
