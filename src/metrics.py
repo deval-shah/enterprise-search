@@ -18,7 +18,6 @@ class MetricsEvaluator:
         """
         self.config_loader = ConfigLoader(config_path)
         self.config_loader.update_model_in_config()
-        print(self.config_loader.config)
         self.metrics = self.initialize_metrics()
 
     def initialize_metrics(self) -> Dict[str, Any]:

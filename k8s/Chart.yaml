@@ -1,0 +1,4 @@
+apiVersion: v2
+name: llama-search
+description: A Helm chart for deploying Llama Search with Qdrant and Redis on Kubernetes
+version: 0.1.0

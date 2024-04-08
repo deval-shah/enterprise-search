@@ -13,14 +13,14 @@ from logger import CustomLogger
 
 import yaml
 import logging
-import sys
 import qdrant_client
 import cProfile
 import pstats
 import argparse
+import os
 from typing import Optional
 
-logger = CustomLogger.setup_logger(__name__, save_to_disk=False, log_dir='./logs')
+logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/', log_name='pipeline.log')
 
 class LlamaIndexApp:
     """
@@ -66,28 +66,43 @@ class LlamaIndexApp:
         """Initializes the vector store client and vector store based on the configuration."""
         # To work with local vector store, update url in config
         # self.qdrant_client_config['location'] = ':memory:'
-        self.client = qdrant_client.QdrantClient(**self.qdrant_client_config)
-        self.vector_store = QdrantVectorStore(client=self.client, **self.vector_store_config)
+        try:
+            logger.info("Setting up the Vector store ....")
+            self.client = qdrant_client.QdrantClient(**self.qdrant_client_config)
+            self.vector_store = QdrantVectorStore(client=self.client, **self.vector_store_config)
+        except Exception as e:
+            logging.error(f"Failed to initialize the vector store: {e}")
+            raise PipelineSetupError("Failed to initialize the vector store") from e
 
     def setup_cache(self):
         """Initializes the ingestion cache using Redis for storing intermediate results."""
-        self.cache = IngestionCache(cache=RedisCache.from_host_and_port(**self.redis_config), collection="redis_cache")
+        try:
+            logger.info("Setting up the Ingestion Cache ....")
+            self.cache = IngestionCache(cache=RedisCache.from_host_and_port(**self.redis_config), collection="redis_cache")
+        except Exception as e:
+            logging.error(f"Failed to initialize Ingestion Redis cache: {e}")
+            raise PipelineSetupError("Failed to setup initialize Ingestion Redis cache.") from e
 
     def setup_pipeline(self):
         """
         Initializes the ingestion pipeline with specified transformations and stores.
         """
-        self.pipeline = IngestionPipeline(
-            transformations=[
-                SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                #SentenceSplitter(chunk_size=1024, chunk_overlap=20),
-                #TitleExtractor(num_workers=8),
-                Settings.embed_model,
-            ],
-            vector_store=self.vector_store,
-            cache=self.cache,
-            docstore=RedisDocumentStore.from_host_and_port(**self.redis_config, namespace="document_store"),
-        )
+        try:
+            logger.info("Setting up the Ingestion pipeline....")
+            self.pipeline = IngestionPipeline(
+                transformations=[
+                    SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
+                    #SentenceSplitter(chunk_size=1024, chunk_overlap=20),
+                    #TitleExtractor(num_workers=8),
+                    Settings.embed_model,
+                ],
+                vector_store=self.vector_store,
+                cache=self.cache,
+                docstore=RedisDocumentStore.from_host_and_port(**self.redis_config, namespace="document_store"),
+            )
+        except Exception as e:
+            logger.error(f"Failed to setup ingestion pipeline: {e}")
+            raise PipelineSetupError("Failed to setup pipeline.") from e
 
     def load_documents(self):
         """Loads documents from the specified directory for indexing."""
@@ -110,6 +125,7 @@ class LlamaIndexApp:
         """Indexes the processed documents."""
         logger.info("Indexing processed documents.")
         self.index = VectorStoreIndex.from_vector_store(self.vector_store, Settings.embed_model)
+        logger.info("Initialising the query engine...")
         self.set_query_engine()
         
     def set_query_engine(self):
@@ -127,7 +143,13 @@ class LlamaIndexApp:
         Returns:
             dict: The query response.
         """
-        response = self.query_engine.query(query)
+        response = None
+        try:
+            logger.info("Calling query engine...")
+            response = self.query_engine.query(query)
+        except Exception as e:
+            logger.error(f"An error occurred in the query engine call: {str(e)}")
+            os._exit(1)
         return response
 
     def get_context_from_response(self, response_object):
@@ -137,7 +159,7 @@ class LlamaIndexApp:
             retrieval_context = [node.get_content() for node in response.source_nodes]
         return {"output": actual_output, "retrieval_context": retrieval_context}
 
-def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> Response:
+def query_app(config_path: str, query: str, data_path: Optional[str] = None):
     """
     Loads documents, runs the ingestion pipeline, indexes documents, and queries the index.
 
@@ -145,18 +167,20 @@ def query_app(config_path: str, query: str, data_path: Optional[str] = None) -> 
         config_path: The path to the configuration file.
         query: The query string to search the index.
         data_path: Optional; The path to the data directory. If provided, overrides the default path.
-
-    Returns:
-        A llamaindex response object.
     """
-    app = LlamaIndexApp(config_path)
-    if data_path:
-        app.data_path = data_path
-    app.load_documents()
-    nodes = app.run_pipeline()
-    app.index_documents(nodes)
-    response = app.query_engine_response(query)
-    return response
+    try:
+        app = LlamaIndexApp(config_path)
+        if data_path:
+            app.data_path = data_path
+        app.load_documents()
+        nodes = app.run_pipeline()
+        app.index_documents(nodes)
+        logger.info("Documents are indexed !")
+        response = app.query_engine_response(query)
+        logger.info("Response : {}".format(response))
+        return response
+    except Exception as e:
+        logger.error(f"An error occurred in query app fn: {str(e)}")
 
 def profile_app(config_path: str, query: str) -> None:
     """
@@ -172,6 +196,11 @@ def profile_app(config_path: str, query: str) -> None:
     profiler.disable()
     stats = pstats.Stats(profiler).sort_stats('cumulative')
     stats.print_stats(10)
+
+# Custom exception for pipeline setup errors
+class PipelineSetupError(Exception):
+    """Exception raised for errors during the setup of the ingestion pipeline."""
+    pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Profile or Query the LlamaIndexApp")

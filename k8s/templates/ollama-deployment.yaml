@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.ollama.name }}
+  namespace: {{ .Values.ollama.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.ollama.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.ollama.name }}
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.ollama.nodeName }}
+      containers:
+      - name: {{ .Values.ollama.name }}
+        image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+        imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+        ports:
+        - name: {{ .Values.ollama.portName }}
+          containerPort: {{ .Values.ollama.service.targetPort }}
+          protocol: TCP
+        env:
+        - name: OLLAMA_HOST
+          value: {{ .Values.ollama.env.OLLAMA_HOST }}
+        {{- if and .Values.ollama.gpu.enabled (or (eq .Values.ollama.gpu.type "nvidia") (not .Values.ollama.gpu.type))}}
+        - name: PATH
+          value: /usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        - name: LD_LIBRARY_PATH
+          value: /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: compute,utility
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        {{- end}}
+        resources:
+          limits:
+            nvidia.com/gpu: {{ index .Values.ollama.resources.limits "nvidia.com/gpu" }}
+            cpu: {{ .Values.ollama.resources.limits.cpu }}
+            memory: {{ .Values.ollama.resources.limits.memory }}
+        volumeMounts:
+          - name: ollama-data
+            mountPath: /root/.ollama
+        {{- if .Values.ollama.livenessProbe.enabled }}
+        livenessProbe:
+            httpGet:
+              path: {{ .Values.ollama.livenessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.ollama.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ollama.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.ollama.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.ollama.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.ollama.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.ollama.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.ollama.readinessProbe.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.ollama.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.ollama.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.ollama.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.ollama.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.ollama.readinessProbe.failureThreshold }}
+        {{- end }}
+        # Pulling the models after spinning up the ollama service.
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "{{- $models := .Values.ollama.models -}}
+{{- if gt (len $models) 0 -}}{{ range $index, $model := $models }}ollama pull {{ $model }}{{ if lt $index (sub (len $models) 1) }} && {{ end }}{{ end }}{{- end -}}"]
+      volumes:
+        - name: ollama-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.ollama.volumes.data.pvcName }}

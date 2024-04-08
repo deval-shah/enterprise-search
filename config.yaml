@@ -1,4 +1,4 @@
-data_path: "./data/test/"
+data_path: "./data/test_data/"
 qdrant_client_config:
   url: "http://localhost:6333"
   prefer_grpc: False

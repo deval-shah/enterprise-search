@@ -8,24 +8,10 @@ class CustomLogger:
     A custom logger class that configures log formatting, filtering based on the log level,
     and supports log file saving with rotation.
     """
-    def __init__(self, save_to_disk: bool = False, log_file_path: str = 'app.log'):
-        """
-        Initializes the CustomLogger instance with optional disk saving.
-
-        Args:
-            save_to_disk (bool, optional): Flag to save logs to disk. Defaults to False.
-            log_file_path (str, optional): The file path for saving logs. Defaults to 'app.log'.
-        """
-        self.save_to_disk = save_to_disk
-        self.log_file_path = log_file_path
-
     @staticmethod
     def get_formatter() -> ColoredFormatter:
         """
         Defines and returns a ColoredFormatter with custom format and colors.
-
-        Returns:
-            ColoredFormatter: The configured log formatter.
         """
         log_format = (
             "%(asctime)s - "
@@ -53,7 +39,10 @@ class CustomLogger:
         return ColoredFormatter(log_format, log_colors=log_colors, secondary_log_colors={'message': message_log_colors}, reset=True)
 
     @classmethod
-    def setup_logger(cls, name: str = None, level: int = logging.DEBUG, save_to_disk: bool = False, log_dir: str = 'logs') -> logging.Logger:
+    def setup_logger(cls, name: str = None, level: int = logging.DEBUG, save_to_disk: bool = False, log_dir: str = './logs', log_name: str = 'app.log') -> logging.Logger:
+        """
+        Setups and returns a configured logger instance.
+        """
         logger = logging.getLogger(name)
         logger.setLevel(level)
         logger.propagate = False
@@ -63,15 +52,14 @@ class CustomLogger:
         logger.addHandler(stream_handler)
 
         if save_to_disk:
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
+            os.makedirs(log_dir, exist_ok=True)
             file_handler = TimedRotatingFileHandler(
-                filename=os.path.join(log_dir, 'app.log'),
-                when='D',  # Rotate daily
+                filename=os.path.join(log_dir, log_name),
+                when='midnight',
                 interval=1,
-                backupCount=7  # Keep logs for 7 days
+                backupCount=30  # Keep logs for 30 days
             )
-            file_format = logging.Formatter('%(asctime)s - [%(levelname)s] - %(dynamic_part)s%(message)s')
+            file_format = logging.Formatter('%(asctime)s - [%(levelname)s] - %(message)s')
             file_handler.setFormatter(file_format)
             logger.addHandler(file_handler)
 
@@ -83,16 +71,16 @@ class CustomLogger:
         """
         def filter(self, record: logging.LogRecord) -> bool:
             if record.levelno in [logging.DEBUG, logging.ERROR]:
-                record.dynamic_part = f"file:{record.filename}:line:{record.lineno} - "
+                record.dynamic_part = f"{record.filename}:line:{record.lineno} - "
             else:
                 record.dynamic_part = ""
             return True
 
 # Example usage
 if __name__ == "__main__":
-    logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='./')
+    logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='./logs', log_name='custom_app.log')
     logger.debug("This debug message includes the file and line number.")
     logger.info("This info message does not include the file and line number.")
     logger.warning("This is a warning message.")
-    logger.error("This is an error message.")
-    logger.critical("This is a critical message.")
+    logger.error("This error message includes the file and line number.")
+    logger.critical("This critical message includes the file and line number.")

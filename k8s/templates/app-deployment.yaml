@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.app.name}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{.Values.app.name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.app.name}}
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.app.nodeName }}
+      imagePullSecrets:
+      - name: es-docker-secret
+      initContainers:
+      - name: check-ollama-readiness
+        image: alpine/curl
+        command: 
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              nslookup {{ .Values.ollama.name }}-service.{{ .Values.ollama.namespace }}.svc.cluster.local
+              if [ $? -eq 0 ]; then
+                echo "DNS resolution successful"
+                break
+              fi
+              echo "Waiting for DNS resolution for ollama"
+              sleep 2
+            done
+            echo "Checking Ollama readiness"
+            until curl -v -sf -o /dev/null -w "%{http_code}" http://{{ .Values.ollama.name }}-service.{{ .Values.ollama.namespace }}.svc.cluster.local:{{ .Values.ollama.service.port }}/; do
+              echo "Waiting for ollama to be ready"
+              sleep 2
+            done
+            echo "Ollama is ready"
+      containers:
+      - name: {{.Values.app.name}}
+        image: "{{.Values.app.image.repository}}:{{.Values.app.image.tag}}"
+        imagePullPolicy: {{.Values.app.image.pullPolicy}}
+        ports:
+        - containerPort: {{.Values.app.service.port}}
+        resources:
+          limits:
+            nvidia.com/gpu: {{ index .Values.app.resources.limits "nvidia.com/gpu" }}
+            cpu: {{ .Values.app.resources.limits.cpu }}
+            memory: {{ .Values.app.resources.limits.memory }}
+        env:
+        - name: CONFIG_PATH
+          value: {{ .Values.app.env.CONFIG_PATH }}
+        - name: OLLAMA_SERVER_URL
+          value: {{ .Values.app.env.OLLAMA_SERVER_URL }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: "/data"
+        - name: config-volume
+          mountPath: "/app/config"
+          readOnly: true
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.app.volumes.data.pvcName }}
+        - name: config-volume
+          configMap:
+            name: {{ .Values.app.volumes.config.configMapName }}

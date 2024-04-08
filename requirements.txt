@@ -13,3 +13,7 @@ llama-index-storage-docstore-redis
 deepeval
 pytest
 datasets
+colorlog
+fastapi
+uvicorn
+python-multipart
