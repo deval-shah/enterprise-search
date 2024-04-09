@@ -196,6 +196,10 @@ You can replace the dataset with your documents and relevant Q/A pairs.
 
 Results will be logged and, if the `--save` flag is used, saved to a JSON file in the `./results` directory with a timestamped filename.
 
+## Kubernetes/Helm Deployment to the DPC cluster
+
+- The [README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using kubernetes and helm.
+
 ## Troubleshooting
 
 - **Qdrant/Redis Connection Issues**: Ensure that Qdrant and Redis are running and accessible at the URLs and ports specified in `config.yml`.
