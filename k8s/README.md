@@ -53,7 +53,15 @@ Deploy the ConfigMap to provide configuration for enterprise search RAG pipeline
 kubectl apply -f k8s/config-map.yaml
 ```
 
-### 6. Helm Values File
+### 6. Create Collection Config Map
+
+Deploy the ConfigMap to create collection in the vector database using the parameters from the configuration:
+
+```bash
+kubectl apply -f k8s/create-collection-script.yaml
+```
+
+### 7. Helm Values File
 
 Below is a table explaining the variables for each service (`app`, `ollama`, `qdrant`, and `redis`) based on the configuration snippet you've provided. Each row in the table corresponds to a variable in the configuration, detailing its key, type, default value (if applicable), and a brief description.
 
@@ -91,7 +99,7 @@ Below is a table explaining the variables for each service (`app`, `ollama`, `qd
 
 Note: The table focuses on variables explicitly mentioned in your snippet. Some services (like Redis) don't have specific variables detailed beyond the common keys shared across all services.
 
-### 6. Helm Chart Installation
+### 8. Helm Chart Installation
 
 Navigate to your Helm chart directory:
 
@@ -123,7 +131,7 @@ To uninstall, use:
 helm uninstall enterprise-search
 ```
 
-### 7. Review Deployment Status
+### 9. Review Deployment Status
 
 Key things to consider when monitoring and testing the deployment
 
@@ -142,11 +150,11 @@ Monitor your pods until all are in the `Running` state. You might also want to c
 kubectl logs <pod-name>
 ```
 
-### 8. Test the Deployment
+### 10. Test the Deployment
 
 After deploying the Enterprise Search with Ollama, Qdrant, and Redis on Kubernetes, ensure the system functions as expected by testing the deployment.
 
-### Steps to Test:
+#### Steps to Test:
 
 1. **Set Up Port Forwarding**: Forward local port 8000 to the service port of enterprise-search pod on Kubernetes to communicate with the deployed API.
 
@@ -160,8 +168,57 @@ After deploying the Enterprise Search with Ollama, Qdrant, and Redis on Kubernet
    chmod +x k8s/es_api_test.sh
    ./k8s/es_api_test.sh "Your query here" "/path/to/document.pdf"
    ```
+Certainly! Presenting the API endpoint information in a table format can make it easier to read and quickly reference. Here’s a concise and structured representation of your API endpoint in a Markdown table format:
 
-The test script uploads the document, performs indexing, and queries the Enterprise Search system, providing a quick validation of the deployment's functionality.
+#### API Endpoint Definition using Curl
+
+---
+
+#### **POST** `/query/`
+
+Submits a query along with an optional document for processing, and retrieves search results.
+
+| Attribute      | Description                                                      |
+| -------------- | ---------------------------------------------------------------- |
+| **URL**        | `http://127.0.0.1:8000/query/`                                   |
+| **Method**     | `POST`                                                           |
+| **URL Params** | None                                                             |
+| **Data Params**| `query` (String, required), `file` (File, optional, .pdf)        |
+| **Headers**    | `Accept: application/json`, `Content-Type: multipart/form-data`  |
+
+##### Request Example
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/query/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'query=What is the vision of BCG for year 2023?' \
+  -F 'file=@data/test_data/bcg-2022-annual-sustainability-report-apr-2023.pdf'
+```
+
+#### Description of Data Parameters
+
+| Parameter | Required | Type   | Description                                         |
+| --------- | -------- | ------ | --------------------------------------------------- |
+| `query`   | Yes      | String | The search query to be processed.                   |
+| `file`    | No       | File   | A document file (.pdf) to be processed along query. |
+
+#### Responses
+
+| Status Code | Content Type | Description                                                      |
+| ----------- | ------------ | ---------------------------------------------------------------- |
+| 200 OK      | `application/json` | Returns results based on the query and document contents.       |
+| 400 BAD REQUEST | `application/json` | Indicates a request format error or missing required fields.    |
+| 500 INTERNAL SERVER ERROR | `application/json` | Indicates an error during processing of the query.              |
+
+This structured format provides a quick overview and detailed descriptions of the API endpoint’s specifications, making it easy for developers to understand and integrate with the API.
+
+### Limitations
+
+- The deployment supports single file upload per API call.
+- It does not have user state so whatever you upload stays in server with other user's files.
+- It does not support a front-end (GUI)
 
 ### Troubleshooting:
 
