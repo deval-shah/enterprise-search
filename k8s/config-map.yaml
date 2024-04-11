@@ -5,14 +5,16 @@ metadata:
   namespace: aiml-engineering
 data:
   config.yml: |
-    data_path: "/data"
+    data_path: "/data/files"
     qdrant_client_config:
       url: "http://qdrant-service.aiml-engineering.svc.cluster.local:6333"
       prefer_grpc: False
     vector_store_config:
-      collection_name: "test"
+      collection_name: test
+      vector_size: 384
+      distance: Cosine
     redis_config:
       host: "redis-service.aiml-engineering.svc.cluster.local"
       port: 6379
     embed_model: "local:BAAI/bge-small-en-v1.5"
-    llm_model: "mixtral"
+    llm_model: "mistral:7b-instruct"

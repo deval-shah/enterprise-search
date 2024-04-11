@@ -12,8 +12,8 @@ spec:
       labels:
         app: qdrant
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: {{ .Values.qdrant.nodeName }}
+      # nodeSelector:
+      #   #kubernetes.io/hostname: {{ .Values.qdrant.nodeName }}
       containers:
       - name: qdrant
         image: "{{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}"
@@ -21,6 +21,15 @@ spec:
         - containerPort: {{ .Values.qdrant.service.port }}
         resources:
           limits:
-            nvidia.com/gpu: {{ index .Values.qdrant.resources.limits "nvidia.com/gpu" }}
+            # nvidia.com/gpu: {{ index .Values.qdrant.resources.limits "nvidia.com/gpu" }}
             cpu: {{ .Values.qdrant.resources.limits.cpu }}
             memory: {{ .Values.qdrant.resources.limits.memory }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.qdrant.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 6
+          successThreshold: 1

@@ -12,8 +12,8 @@ spec:
       labels:
         app: redis
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: {{ .Values.redis.nodeName }}
+      # nodeSelector:
+      #   kubernetes.io/hostname: {{ .Values.redis.nodeName }}
       containers:
       - name: redis
         image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"

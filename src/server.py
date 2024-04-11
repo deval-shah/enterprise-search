@@ -13,8 +13,9 @@ app = FastAPI()
 
 class Settings(BaseModel):
     config_path: str = "/app/config/config.yml"
-    data_path: str = "/data"
+    data_path: str = "/data/files"
     log_dir: str = "/data/app/logs"
+    upload_subdir: str = "uploads"
 
 settings = Settings()
 logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=settings.log_dir, log_name='server.log')
@@ -25,7 +26,9 @@ class QueryPayload(BaseModel):
 @app.post("/uploadfile/")
 async def create_upload_file(file: UploadFile = File(...)):
     logger.info("create upload file ")
-    file_location = f"{settings.data_path}/{file.filename}"
+    upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
+    os.makedirs(upload_dir, exist_ok=True)
+    file_location = os.path.join(upload_dir, file.filename)
     try:
         with open(file_location, "wb+") as file_object:
             file_object.write(await file.read())
@@ -39,21 +42,22 @@ async def create_upload_file(file: UploadFile = File(...)):
 @profile_endpoint
 async def query_index(query: str = Form(...), file: Optional[UploadFile] = File(None)) -> JSONResponse:
     try:
+        upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
+        os.makedirs(upload_dir, exist_ok=True)
         if file:
             safe_filename = os.path.basename(file.filename)
-            file_path = os.path.join(settings.data_path, safe_filename)
+            file_path = os.path.join(upload_dir, safe_filename)
             try:
                 logger.info(f"Attempting to save file to {file_path}")
-                logger.info(f"Data directory permissions: {os.listdir(settings.data_path)}")
                 with open(file_path, "wb") as buffer:
-                    shutil.copyfileobj(file.file, buffer)
+                    shutil.copyfileobj(file.file, buffer)  # Save the uploaded file to the disk
+                logger.info(f"File {file.filename} saved to {file_path}")
             except Exception as e:
                 logger.error(f"Error saving file {safe_filename}: {str(e)}")
                 raise
-            logger.info(f"File {file.filename} saved to {file_path}")
         else:
             logger.info("No file uploaded with the query.")
-        response = query_app(config_path=settings.config_path, query=query, data_path=settings.data_path)
+        response = query_app(config_path=settings.config_path, query=query, data_path=upload_dir)
     except HTTPException as e:
         logger.error(f"HTTPException: {e.detail}")
         raise HTTPException(status_code=500, detail="An error occurred during processing the query {}.".format(query))

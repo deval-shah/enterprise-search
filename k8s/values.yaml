@@ -10,8 +10,9 @@ app:
     targetPort: 8000
   resources:
     limits:
-      cpu: "5000m"
-      memory: "20Gi"
+      nvidia.com/gpu: "1"
+      cpu: "10000m"
+      memory: "10Gi"
   env:
     CONFIG_PATH: "/app/config/config.yml"
     OLLAMA_SERVER_URL: "ollama-es-service.aiml-engineering.svc.cluster.local:80"
@@ -20,7 +21,7 @@ app:
       configMapName: "es-cmap"
     data:
       pvcName: "es-pvc"
-  nodeName: "a6000-1"
+  gpuProduct: "NVIDIA-L40S"
 
 ollama:
   name: ollama-es
@@ -37,9 +38,9 @@ ollama:
   resources:
     limits:
       nvidia.com/gpu: "1"
-      cpu: "5000m"
-      memory: "30Gi"
-  nodeName: "l40-1"
+      cpu: "10000m"
+      memory: "40Gi"
+  gpuProduct: "NVIDIA-L40S"
   env:
     OLLAMA_HOST: "0.0.0.0"
   volumes:
@@ -58,9 +59,8 @@ ollama:
   # -- List of models to pull at container startup
   # The more you add, the longer the container will take to start if models are not present
   models:
-   - gemma
    - mistral:7b-instruct
-   - mixtral
+  #  - mixtral
   insecure: true
   livenessProbe:
     enabled: true
@@ -84,9 +84,9 @@ ollama:
 qdrant:
   resources:
     limits:
-      nvidia.com/gpu: "1"
+      # nvidia.com/gpu: "1"
       cpu: "5000m"
-      memory: "8Gi"
+      memory: "15Gi"
   image:
     repository: qdrant/qdrant
     tag: latest
@@ -95,16 +95,20 @@ qdrant:
   collectionName: test
   vectorSize: 384
   distance: Cosine
-  nodeName: "a6000-1"
+  # gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
+  volumes:
+    config:
+      configMapName: "es-cmap"
+    script:
+      configMapName: "create-collection-script"
 
 redis:
   resources:
     limits:
       cpu: "5000m"
-      memory: "8Gi"
+      memory: "15Gi"
   image:
     repository: redis
     tag: latest
   service:
     port: 6379
-  nodeName: "a6000-1"
