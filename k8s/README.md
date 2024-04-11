@@ -168,10 +168,8 @@ After deploying the Enterprise Search with Ollama, Qdrant, and Redis on Kubernet
    chmod +x k8s/es_api_test.sh
    ./k8s/es_api_test.sh "Your query here" "/path/to/document.pdf"
    ```
-Certainly! Presenting the API endpoint information in a table format can make it easier to read and quickly reference. Here’s a concise and structured representation of your API endpoint in a Markdown table format:
 
 #### API Endpoint Definition using Curl
-
 ---
 
 #### **POST** `/query/`
