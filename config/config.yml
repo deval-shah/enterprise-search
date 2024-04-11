@@ -1,0 +1,13 @@
+data_path: "./data/test_data/"
+qdrant_client_config:
+  url: "http://localhost:6333"
+  prefer_grpc: False
+vector_store_config:
+  collection_name: "test"
+  vector_size: 384
+  distance: Cosine
+redis_config:
+  host: "localhost"
+  port: 6379
+embed_model: "local:BAAI/bge-small-en-v1.5"
+llm_model: "mistral:7b-instruct"
