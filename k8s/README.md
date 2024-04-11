@@ -210,8 +210,6 @@ curl -X 'POST' \
 | 400 BAD REQUEST | `application/json` | Indicates a request format error or missing required fields.    |
 | 500 INTERNAL SERVER ERROR | `application/json` | Indicates an error during processing of the query.              |
 
-This structured format provides a quick overview and detailed descriptions of the API endpoint’s specifications, making it easy for developers to understand and integrate with the API.
-
 ### Limitations
 
 - The deployment supports single file upload per API call.
