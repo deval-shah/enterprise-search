@@ -130,10 +130,6 @@ Key things to consider when monitoring and testing the deployment
 1. The app deployment initially waits for the ollama server to be up and ready. For the first time, it may take
 longer as it may pull the models based on the model list in the values.yaml
 2. All the pods should be in running state before we can hit the endpoint.
-3. To test deployment locally, do the port forwarding.
-```bash
-kubectl port-forward POD_NAME 8000:8000
-```
 Check the status of your deployment using `kubectl`:
 
 ```bash
@@ -146,6 +142,31 @@ Monitor your pods until all are in the `Running` state. You might also want to c
 kubectl logs <pod-name>
 ```
 
-## Troubleshooting
+### 8. Test the Deployment
+
+After deploying the Enterprise Search with Ollama, Qdrant, and Redis on Kubernetes, ensure the system functions as expected by testing the deployment.
+
+### Steps to Test:
+
+1. **Set Up Port Forwarding**: Forward local port 8000 to the service port of enterprise-search pod on Kubernetes to communicate with the deployed API.
+
+   ```bash
+   kubectl port-forward <pod-name> 8000:8000 -n aiml-engineering
+   ```
+
+2. **Run the Test Script**: Use `es_api_test.sh` to test a query operation. Make the script executable and run it with a query and a document path as arguments.
+
+   ```bash
+   chmod +x k8s/es_api_test.sh
+   ./k8s/es_api_test.sh "Your query here" "/path/to/document.pdf"
+   ```
+
+The test script uploads the document, performs indexing, and queries the Enterprise Search system, providing a quick validation of the deployment's functionality.
+
+### Troubleshooting:
+
+- **Port Forwarding Issues**: Ensure all the pods(enterprise-search, ollama, qdrant and redis) are in the `Running` state and then forward the port of the enterprise-search pod to interact with the API.
+- **Script Execution**: Verify the script's path and ensure it has execution permissions.
+- **Performance**: Initial requests may take longer due to model loading times; subsequent requests should be faster.
 
 If you encounter issues, check the logs for specific pods using `kubectl logs`, and ensure your Kubernetes cluster has enough resources to support your deployment.
