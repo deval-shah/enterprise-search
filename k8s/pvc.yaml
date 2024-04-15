@@ -1,10 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: config-data-pvc
+  name: es-pvc
 spec:
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
   resources:
     requests:
-      storage: 100Gi
+      storage: 500Gi # For aiml-engineering, total storage quota right now is 30T
+  storageClassName: longhorn

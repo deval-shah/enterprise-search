@@ -1,0 +1,62 @@
+apiVersion: v1
+data:
+  create_collection.sh: |-
+    #!/bin/sh
+
+    apk add --no-cache yq
+
+    # Ensure the log directory exists
+    mkdir -p /data/logs/qdrant/
+
+    # Redirect all output to a log file
+    exec > /data/logs/qdrant/create_collection.log 2>&1
+
+    # Configuration path
+    CONFIG_PATH="/app/config/config.yml"
+
+    # Extract values using yq
+    QDRANT_SERVICE_URL=$(yq e '.qdrant_client_config.url' "$CONFIG_PATH")/
+    COLLECTION_NAME=$(yq e '.vector_store_config.collection_name' "$CONFIG_PATH")
+    VECTOR_SIZE=$(yq e '.vector_store_config.vector_size' "$CONFIG_PATH")
+    DISTANCE=$(yq e '.vector_store_config.distance' "$CONFIG_PATH")
+
+    # Check for missing configuration values
+    if [ -z "$QDRANT_SERVICE_URL" ] || [ -z "$COLLECTION_NAME" ] || [ -z "$VECTOR_SIZE" ] || [ -z "$DISTANCE" ]; then
+        echo "Error: Missing required configuration."
+        exit 1
+    fi
+
+    # Log configuration values
+    echo "Qdrant URL: $QDRANT_SERVICE_URL"
+    echo "Collection Name: $COLLECTION_NAME"
+    echo "Vector Size: $VECTOR_SIZE"
+    echo "Distance: $DISTANCE"
+
+    until curl "$QDRANT_SERVICE_URL"; do
+        echo "Waiting for Qdrant service to become available..."
+        sleep 5
+    done
+
+    echo "Qdrant service is up. Attempting to create the collection '${COLLECTION_NAME}'..."
+
+    RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X PUT "${QDRANT_SERVICE_URL}collections/${COLLECTION_NAME}" \
+    -H 'Content-Type: application/json' \
+    --data-raw "{\"vectors\": {\"size\": ${VECTOR_SIZE}, \"distance\": \"${DISTANCE}\" }}")
+
+    echo "Response Code: ${RESPONSE}"
+    cat response.txt  # Display the body of the response for debugging
+
+    if [ "$RESPONSE" = "200" ]; then
+        echo "Collection '${COLLECTION_NAME}' created successfully."
+    else
+        echo "Failed to create the collection '${COLLECTION_NAME}'."
+        echo "Response Code: ${RESPONSE}"
+        cat response.txt
+    fi
+
+    rm response.txt  # Clean up the temporary file
+
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: create-collection-script

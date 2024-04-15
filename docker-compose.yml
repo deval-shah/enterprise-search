@@ -9,7 +9,7 @@ services:
         target: /app/config
         read_only: True
       - type: bind
-        source: /home/deval/Documents/Work/Deval/ES/LlamaSearch/data/testing
+        source: ./data/test_data
         target: /data
     environment:
       - CONFIG_PATH=/app/config/config.yml

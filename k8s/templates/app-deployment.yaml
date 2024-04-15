@@ -14,7 +14,8 @@ spec:
         app: {{.Values.app.name}}
     spec:
       nodeSelector:
-        kubernetes.io/hostname: {{ .Values.app.nodeName }}
+        #kubernetes.io/hostname: {{ .Values.app.nodeName }}
+        nvidia.com/gpu.product: {{ .Values.app.gpuProduct }}
       imagePullSecrets:
       - name: es-docker-secret
       initContainers:
@@ -47,6 +48,7 @@ spec:
         - containerPort: {{.Values.app.service.port}}
         resources:
           limits:
+            nvidia.com/gpu: {{ index .Values.ollama.resources.limits "nvidia.com/gpu" }}
             cpu: {{ .Values.app.resources.limits.cpu }}
             memory: {{ .Values.app.resources.limits.memory }}
         env:
@@ -56,7 +58,7 @@ spec:
           value: {{ .Values.app.env.OLLAMA_SERVER_URL }}
         volumeMounts:
         - name: data-volume
-          mountPath: "/data"
+          mountPath: "/data/files"
         - name: config-volume
           mountPath: "/app/config"
           readOnly: true

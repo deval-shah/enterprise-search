@@ -60,7 +60,7 @@ class LlamaIndexApp:
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
-        Settings.llm = Ollama(model=self.llm_model, request_timeout=30.0)
+        Settings.llm = Ollama(model=self.llm_model, request_timeout=60.0)
 
     def setup_vector_store(self):
         """Initializes the vector store client and vector store based on the configuration."""
@@ -106,8 +106,12 @@ class LlamaIndexApp:
 
     def load_documents(self):
         """Loads documents from the specified directory for indexing."""
-        logger.info("Loading documents from the specified directory for indexing.")
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True).load_data()
+        try:
+            logger.info("Loading documents from the specified directory for indexing.")
+            self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True).load_data()
+        except Exception as e:
+            logging.error(f"Failed to load documents: {e}")
+            raise PipelineSetupError("Failed to load documents") from e
 
     def run_pipeline(self):
         """
@@ -173,6 +177,7 @@ def query_app(config_path: str, query: str, data_path: Optional[str] = None):
         if data_path:
             app.data_path = data_path
         app.load_documents()
+        logger.info("Running pipeline...")
         nodes = app.run_pipeline()
         app.index_documents(nodes)
         logger.info("Documents are indexed !")

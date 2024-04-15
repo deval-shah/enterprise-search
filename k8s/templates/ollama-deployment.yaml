@@ -13,7 +13,8 @@ spec:
         app: {{ .Values.ollama.name }}
     spec:
       nodeSelector:
-        kubernetes.io/hostname: {{ .Values.ollama.nodeName }}
+        #kubernetes.io/hostname: {{ .Values.ollama.nodeName }}
+        nvidia.com/gpu.product: {{ .Values.ollama.gpuProduct }}
       containers:
       - name: {{ .Values.ollama.name }}
         image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
@@ -42,7 +43,7 @@ spec:
             memory: {{ .Values.ollama.resources.limits.memory }}
         volumeMounts:
           - name: ollama-data
-            mountPath: /root/.ollama
+            mountPath: /root/.ollama/
         {{- if .Values.ollama.livenessProbe.enabled }}
         livenessProbe:
             httpGet:
