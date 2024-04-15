@@ -4,6 +4,8 @@ qdrant-client
 redis
 streamlit
 pathlib
+docx2txt
+dvc[gs]
 llama-index==0.10.13
 llama-index-llms-ollama
 llama-index-embeddings-huggingface

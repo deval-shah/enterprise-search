@@ -1,0 +1,6 @@
+outs:
+- md5: 3f69165c8708e38897f9fb8bad3de0c4.dir
+  size: 1290640238
+  nfiles: 876
+  hash: md5
+  path: sharepoint
