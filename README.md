@@ -208,8 +208,10 @@ Results will be logged and, if the `--save` flag is used, saved to a JSON file i
 
 ## Release Notes
 
-Version 1.0.2 - 08/04/2024
-- Added deployment support to any k8s cluster using terraform.
-- Fixed the ollama localhost issue in the llamaindex framework.
-- Added support to pull and test multiple ollama models configurable during deployment.
+Version 1.0.2 - 19/04/2024
+- Added benchmarking support to profile sub components of the RAG pipeline
+- Updated pipeline code to async mode
+- Added support for multi file upload
+- Added integration tests for testing API endpoints
 - Bug Fixes and Improvements
+- Added prometheus support in k8s deployment to scrape metrics from server backend

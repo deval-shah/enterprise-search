@@ -21,7 +21,8 @@ app:
       configMapName: "es-cmap"
     data:
       pvcName: "es-pvc"
-  gpuProduct: "NVIDIA-L40S"
+  gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
+  # gpuProduct: "NVIDIA-L40S"
 
 ollama:
   name: ollama-es
@@ -40,7 +41,9 @@ ollama:
       nvidia.com/gpu: "1"
       cpu: "10000m"
       memory: "40Gi"
-  gpuProduct: "NVIDIA-L40S"
+  #gpuProduct: "NVIDIA-L40S"
+  #gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
+  gpuProduct: "NVIDIA-A100-SXM4-40GB"
   env:
     OLLAMA_HOST: "0.0.0.0"
   volumes:
@@ -95,12 +98,12 @@ qdrant:
   collectionName: test
   vectorSize: 384
   distance: Cosine
-  # gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
   volumes:
     config:
       configMapName: "es-cmap"
     script:
       configMapName: "create-collection-script"
+  gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
 
 redis:
   resources:
@@ -112,3 +115,29 @@ redis:
     tag: latest
   service:
     port: 6379
+  gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
+
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: v2.26.0
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    port: 9090
+    nodePort: 30090
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  storage:
+    useEmptyDir: true
+  volumes:
+    config:
+      configMapName: "es-cmap"
+    data:
+      pvcName: "es-pvc"
+  gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"

@@ -15,7 +15,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 ENV PATH=/usr/local/cuda/bin:$PATH
 ENV CUDAToolkit_ROOT=/usr/local/cuda
-# Set the environment variable required by llama-cpp-python for CUDA support and Install llama-cpp-python with CUDA support
+# Set the environment variable required by llama-cpp-python for CUDA support
 ENV CMAKE_ARGS="-DLLAMA_CUBLAS=on"
 RUN python -m pip install llama-cpp-python --prefer-binary --no-cache-dir --extra-index-url=https://jllllll.github.io/llama-cpp-python-cuBLAS-wheels/AVX2/cu122
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"

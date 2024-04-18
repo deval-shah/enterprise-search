@@ -14,13 +14,10 @@ from logger import CustomLogger
 import yaml
 import logging
 import qdrant_client
-import cProfile
-import pstats
+from utils import profile_
 import argparse
 import os
 from typing import Optional
-
-from docxreader import DocxReader
 
 logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/', log_name='pipeline.log')
 
@@ -62,7 +59,7 @@ class LlamaIndexApp:
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
-        Settings.llm = Ollama(model=self.llm_model, request_timeout=60.0)
+        Settings.llm = Ollama(model=self.llm_model, request_timeout=30.0)
 
     def setup_vector_store(self):
         """Initializes the vector store client and vector store based on the configuration."""
@@ -106,16 +103,14 @@ class LlamaIndexApp:
             logger.error(f"Failed to setup ingestion pipeline: {e}")
             raise PipelineSetupError("Failed to setup pipeline.") from e
 
-    def load_documents(self):
+    @profile_
+    async def load_documents(self):
         """Loads documents from the specified directory for indexing."""
-        try:
-            logger.info("Loading documents from the specified directory for indexing.")
-            self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, file_extractor={".docx":DocxReader()}).load_data()
-        except Exception as e:
-            logging.error(f"Failed to load documents: {e}")
-            raise PipelineSetupError("Failed to load documents") from e
+        logger.info("Loading documents from the specified directory for indexing.")
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True).load_data()
 
-    def run_pipeline(self):
+    @profile_
+    async def run_pipeline(self):
         """
         Processes the loaded documents through the ingestion pipeline.
 
@@ -127,7 +122,8 @@ class LlamaIndexApp:
         logger.info(f"Ingested {len(nodes)} Nodes")
         return nodes
 
-    def index_documents(self, nodes):
+    @profile_
+    async def index_documents(self, nodes):
         """Indexes the processed documents."""
         logger.info("Indexing processed documents.")
         self.index = VectorStoreIndex.from_vector_store(self.vector_store, Settings.embed_model)
@@ -138,8 +134,9 @@ class LlamaIndexApp:
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
         self.query_engine = self.index.as_query_engine()
-        
-    def query_engine_response(self, query):
+ 
+    @profile_
+    async def query_engine_response(self, query):
         """
         Queries the index with the given query string.
 
@@ -165,7 +162,8 @@ class LlamaIndexApp:
             retrieval_context = [node.get_content() for node in response.source_nodes]
         return {"output": actual_output, "retrieval_context": retrieval_context}
 
-def query_app(config_path: str, query: str, data_path: Optional[str] = None):
+@profile_
+async def query_app(config_path: str, query: str, data_path: Optional[str] = None):
     """
     Loads documents, runs the ingestion pipeline, indexes documents, and queries the index.
 
@@ -178,49 +176,31 @@ def query_app(config_path: str, query: str, data_path: Optional[str] = None):
         app = LlamaIndexApp(config_path)
         if data_path:
             app.data_path = data_path
-        app.load_documents()
-        logger.info("Running pipeline...")
-        nodes = app.run_pipeline()
-        app.index_documents(nodes)
-        logger.info("Documents are indexed !")
-        response = app.query_engine_response(query)
+        await app.load_documents()
+        nodes = await app.run_pipeline()
+        await app.index_documents(nodes)
+        response = await app.query_engine_response(query)
         logger.info("Response : {}".format(response))
         return response
     except Exception as e:
         logger.error(f"An error occurred in query app fn: {str(e)}")
-
-def profile_app(config_path: str, query: str) -> None:
-    """
-    Profiles the application's performance during the execution of a query.
-
-    Args:
-        config_path (str): Path to the YAML configuration file.
-        query (str): The query string to search the index with.
-    """
-    profiler = cProfile.Profile()
-    profiler.enable()
-    query_app(config_path, query)
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumulative')
-    stats.print_stats(10)
 
 # Custom exception for pipeline setup errors
 class PipelineSetupError(Exception):
     """Exception raised for errors during the setup of the ingestion pipeline."""
     pass
 
+import asyncio
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Profile or Query the LlamaIndexApp")
+    parser = argparse.ArgumentParser(description="Query the LlamaIndexApp")
     parser.add_argument("--query", type=str, help="Query string to search the index with", required=True)
-    parser.add_argument("--profile", action='store_true', help="Enable profiling of the app")
     args = parser.parse_args()
-    config_path='config.yml'
+    config_path = 'config.yml'
+ 
     logger.info("Starting the RAG pipeline...")
     try:
-        if args.profile:
-            profile_app(config_path, args.query)
-        else:
-            response = query_app(config_path, args.query)
-            logger.info(f"Response: {response}")
+        response = asyncio.run(query_app(config_path, args.query))
+        logger.info(f"Response: {response}")
     except Exception as e:
         logging.error(f"An error occurred: {e}")

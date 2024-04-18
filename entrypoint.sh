@@ -3,4 +3,4 @@
 /app/update_ollama_server_url_k8s.sh
 
 # Then start the server
-exec uvicorn src.server:app --host 0.0.0.0 --port 8000
+exec uvicorn src.main:app --host 0.0.0.0 --port 8000

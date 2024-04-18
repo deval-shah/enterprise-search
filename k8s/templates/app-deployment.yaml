@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: {{.Values.app.name}}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8000"
     spec:
       nodeSelector:
         #kubernetes.io/hostname: {{ .Values.app.nodeName }}
