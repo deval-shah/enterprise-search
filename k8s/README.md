@@ -61,9 +61,18 @@ Deploy the ConfigMap to create collection in the vector database using the param
 kubectl apply -f k8s/create-collection-script.yaml
 ```
 
-### 7. Helm Values File
+###  7. Deploy Prometheus for Monitoring (Optional)
+a. Apply Prometheus Config Map: This configuration sets up Prometheus to correctly scrape metrics from your Kubernetes pods:
 
-Below is a table explaining the variables for each service (`app`, `ollama`, `qdrant`, and `redis`) based on the configuration snippet you've provided. Each row in the table corresponds to a variable in the configuration, detailing its key, type, default value (if applicable), and a brief description.
+```bash
+kubectl apply -f k8s/prometheus-config.yaml
+```
+
+### 8. Helm Values File
+
+Below is a table explaining the variables for each service (`app`,`ollama`, `qdrant`, `redis`, and `prometheus`). 
+
+Each row in the table corresponds to a variable in the configuration.
 
 | Key | Type | Default | Description |
 | --- | ---- | ------- | ----------- |
@@ -96,10 +105,16 @@ Below is a table explaining the variables for each service (`app`, `ollama`, `qd
 | qdrant.distance | String | `Cosine` | The distance metric used by the vector search. |
 | **Redis Specific** | | | |
 | (No additional specific variables) | | | |
+| **Prometheus Specific** | | | |
+| prometheus.service.nodePort | Integer | 30090 | The node port on which Prometheus is accessible outside the cluster. |
+| prometheus.resources.requests.memory | String | "512Mi" | The requested memory for Prometheus to ensure smooth operation. |
+| prometheus.resources.requests.cpu | String | "500m" | The requested CPU for Prometheus to handle its workload efficiently. |
+| prometheus.resources.limits.memory | String | "2Gi" | The maximum memory that Prometheus can use to prevent resource overuse. |
+| prometheus.resources.limits.cpu | String | "1" | The maximum CPU that Prometheus can use to ensure resource caps. |
+| prometheus.volumes.config.configMapName | String | "es-cmap" | The name of the ConfigMap containing Prometheus configuration, specifying how metrics should be scraped. |
+| prometheus.volumes.data.pvcName | String | "es-pvc" | The name of the Persistent Volume Claim used for storing Prometheus data persistently. |
 
-Note: The table focuses on variables explicitly mentioned in your snippet. Some services (like Redis) don't have specific variables detailed beyond the common keys shared across all services.
-
-### 8. Helm Chart Installation
+### 9. Helm Chart Installation
 
 Navigate to your Helm chart directory:
 
@@ -131,7 +146,7 @@ To uninstall, use:
 helm uninstall enterprise-search
 ```
 
-### 9. Review Deployment Status
+### 10. Review Deployment Status
 
 Key things to consider when monitoring and testing the deployment
 
@@ -150,7 +165,7 @@ Monitor your pods until all are in the `Running` state. You might also want to c
 kubectl logs <pod-name>
 ```
 
-### 10. Test the Deployment
+### 11. Test the Deployment
 
 After deploying the Enterprise Search with Ollama, Qdrant, and Redis on Kubernetes, ensure the system functions as expected by testing the deployment.
 
@@ -162,26 +177,43 @@ After deploying the Enterprise Search with Ollama, Qdrant, and Redis on Kubernet
    kubectl port-forward <pod-name> 8000:8000 -n aiml-engineering
    ```
 
-2. **Run the Test Script**: Use `es_api_test.sh` to test a query operation. Make the script executable and run it with a query and a document path as arguments.
+2. **Testing the Deployment with Pytest**
 
-   ```bash
-   chmod +x k8s/es_api_test.sh
-   ./k8s/es_api_test.sh "Your query here" "/path/to/document.pdf"
-   ```
+#### Overview
+The testing script validates API endpoints, checking response correctness for various operations including querying and file uploads. It ensures:
+
+- Correct HTTP status codes for different request scenarios.
+- Proper handling of data in responses.
+
+Run `pytest` to automatically detect and test all functions annotated with `@pytest.mark.parametrize` in your test files. This will help you ensure the API behaves as expected under different conditions.
+
+For detailed error analysis, review the test output in the console.
+
+#### Setup
+Ensure `pytest` and `requests` are installed:
+```bash
+pip install pytest requests
+```
+
+#### Running Tests
+Execute tests from the project directory using:
+```bash
+cd testing ; pytest test.py
+```
 
 #### API Endpoint Definition using Curl
 ---
 
 #### **POST** `/query/`
 
-Submits a query along with an optional document for processing, and retrieves search results.
+Submits a query along with optional documents for processing and retrieves search results.
 
 | Attribute      | Description                                                      |
 | -------------- | ---------------------------------------------------------------- |
 | **URL**        | `http://127.0.0.1:8000/query/`                                   |
 | **Method**     | `POST`                                                           |
 | **URL Params** | None                                                             |
-| **Data Params**| `query` (String, required), `file` (File, optional, .pdf)        |
+| **Data Params**| `query` (String, required), `files` (Files, optional, multiple files allowed) |
 | **Headers**    | `Accept: application/json`, `Content-Type: multipart/form-data`  |
 
 ##### Request Example
@@ -191,28 +223,51 @@ curl -X 'POST' \
   'http://127.0.0.1:8000/query/' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'query=What is the vision of BCG for year 2023?' \
-  -F 'file=@data/test_data/bcg-2022-annual-sustainability-report-apr-2023.pdf'
+  -F 'query=What is XXXX?' \
+  -F 'files=@data/test1.pdf' \
+  -F 'files=@data/test2.pdf'
 ```
 
 #### Description of Data Parameters
 
-| Parameter | Required | Type   | Description                                         |
-| --------- | -------- | ------ | --------------------------------------------------- |
-| `query`   | Yes      | String | The search query to be processed.                   |
-| `file`    | No       | File   | A document file (.pdf) to be processed along query. |
+| Parameter | Required | Type    | Description                                                |
+| --------- | -------- | ------- | ---------------------------------------------------------- |
+| `query`   | Yes      | String  | The search query to be processed.                          |
+| `files`   | Optional       | Files   | Document files (.pdf) to be processed along with the query. Multiple files can be uploaded. |
 
 #### Responses
 
-| Status Code | Content Type | Description                                                      |
-| ----------- | ------------ | ---------------------------------------------------------------- |
-| 200 OK      | `application/json` | Returns results based on the query and document contents.       |
-| 400 BAD REQUEST | `application/json` | Indicates a request format error or missing required fields.    |
+| Status Code | Content Type           | Description                                                 |
+| ----------- | ---------------------- | ----------------------------------------------------------- |
+| 200 OK      | `application/json`     | Returns results based on the query and document contents.   |
+| 400 BAD REQUEST | `application/json` | Indicates a request format error or missing required fields.|
 | 500 INTERNAL SERVER ERROR | `application/json` | Indicates an error during processing of the query.              |
+
+### 12. Profile the Deployment
+
+Run a locust test to do a throughput test. Update the `users` and `spawn_rate` to simulate different scenarios
+
+```bash
+cd testing ; locust -f locustfile.py --headless --users 1 --spawn-rate 1 --run-time 10m --html profile.html
+```
+After initiating the locust test for throughput, it's essential to continuously monitor the system's behavior. 
+
+#### Evaluate Log Files
+
+Logs provide insights into how the application behaves under load. Access the enterprise-search `<pod-name>` logs, after running the locust tests:
+
+```bash
+kubectl logs <pod-name> -n aiml-engineering
+```
+
+Focus on `profile.log` for timings of the different ES stages:
+
+```bash
+kubectl exec <pod-name> -n aiml-engineering -- cat /data/app/logs/profile.log
+```
 
 ### Limitations
 
-- The deployment supports single file upload per API call.
 - It does not have user state so whatever you upload stays in server with other user's files.
 - It does not support a front-end (GUI)
 
@@ -223,3 +278,4 @@ curl -X 'POST' \
 - **Performance**: Initial requests may take longer due to model loading times; subsequent requests should be faster.
 
 If you encounter issues, check the logs for specific pods using `kubectl logs`, and ensure your Kubernetes cluster has enough resources to support your deployment.
+

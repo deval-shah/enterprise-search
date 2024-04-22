@@ -13,7 +13,8 @@ spec:
         app: qdrant
     spec:
       # nodeSelector:
-      #   #kubernetes.io/hostname: {{ .Values.qdrant.nodeName }}
+      #     #kubernetes.io/hostname: {{ .Values.qdrant.nodeName }}
+      #     nvidia.com/gpu.product: {{ .Values.qdrant.gpuProduct }}
       containers:
       - name: qdrant
         image: "{{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}"

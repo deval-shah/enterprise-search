@@ -1,15 +1,12 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi import HTTPException, File, UploadFile, Form
+from typing import List, Optional
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import uvicorn
-import os
-from typing import Optional
-import shutil
 from pipeline import query_app
 from logger import CustomLogger
-from utils import profile_endpoint
-
-app = FastAPI()
+from utils import profile_
+from fastapi import APIRouter
+import os
 
 class Settings(BaseModel):
     config_path: str = "/app/config/config.yml"
@@ -17,54 +14,47 @@ class Settings(BaseModel):
     log_dir: str = "/data/app/logs"
     upload_subdir: str = "uploads"
 
-settings = Settings()
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=settings.log_dir, log_name='server.log')
-
 class QueryPayload(BaseModel):
     query: str
 
-@app.post("/uploadfile/")
-async def create_upload_file(file: UploadFile = File(...)):
-    logger.info("create upload file ")
+settings = Settings()
+logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=settings.log_dir, log_name='server.log')
+router = APIRouter()
+
+@profile_
+@router.post("/uploadfile/")
+async def upload_files(files: List[UploadFile] = File(...)):
+    responses = []
     upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
     os.makedirs(upload_dir, exist_ok=True)
-    file_location = os.path.join(upload_dir, file.filename)
-    try:
-        with open(file_location, "wb+") as file_object:
-            file_object.write(await file.read())
-        logger.info(f"file '{file.filename}' saved at '{file_location}'")
-        return {"info": f"file '{file.filename}' saved at '{file_location}'"}
-    except Exception as e:
-        logger.error(f"Failed to save file '{file.filename}': {e}")
-        raise HTTPException(status_code=500, detail="Failed to save file")
+    for file in files:
+        file_location = os.path.join(upload_dir, file.filename)
+        with open(file_location, "wb") as buffer:
+            buffer.write(await file.read())
+        responses.append(f"File {file.filename} saved at {file_location}")
+    return {"files_uploaded": responses}
 
-@app.post("/query/", response_model=dict)
-@profile_endpoint
-async def query_index(query: str = Form(...), file: Optional[UploadFile] = File(None)) -> JSONResponse:
+@profile_
+@router.post("/query/", response_model=dict)
+async def query_index(query: str = Form(...), files: Optional[List[UploadFile]] = File(None)) -> JSONResponse:
+    """
+    Processes a query and optionally handles file uploads, then performs a document query.
+
+    Args:
+        query (str): The query string to process.
+        files (Union[UploadFile, List[UploadFile]], optional): Optional file or files to upload.
+
+    Returns:
+        JSONResponse: The query results and file upload status.
+    """
+    upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
     try:
-        upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
-        os.makedirs(upload_dir, exist_ok=True)
-        if file:
-            safe_filename = os.path.basename(file.filename)
-            file_path = os.path.join(upload_dir, safe_filename)
-            try:
-                logger.info(f"Attempting to save file to {file_path}")
-                with open(file_path, "wb") as buffer:
-                    shutil.copyfileobj(file.file, buffer)  # Save the uploaded file to the disk
-                logger.info(f"File {file.filename} saved to {file_path}")
-            except Exception as e:
-                logger.error(f"Error saving file {safe_filename}: {str(e)}")
-                raise
-        else:
-            logger.info("No file uploaded with the query.")
-        response = query_app(config_path=settings.config_path, query=query, data_path=upload_dir)
+        file_responses = await upload_files(files) if files else []
+        response = await query_app(config_path=settings.config_path, query=query, data_path=upload_dir)
     except HTTPException as e:
-        logger.error(f"HTTPException: {e.detail}")
-        raise HTTPException(status_code=500, detail="An error occurred during processing the query {}.".format(query))
+        logger.error(f"HTTPException with detail: {e.detail}")
+        raise HTTPException(status_code=500, detail=f"An error occurred during processing the query: {query}")
     except Exception as e:
         logger.error(f"Unhandled exception: {str(e)}")
-        return JSONResponse(status_code=500, detail="An error {} occurred during processing the query {}.".format(e.detail, query))
-    return JSONResponse(content={"response": response.response}, status_code=200)
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+        return JSONResponse(status_code=500, detail=f"An error occurred during processing the query: {query}")
+    return JSONResponse(content={"response": response.response, "file_upload": file_responses}, status_code=200)
