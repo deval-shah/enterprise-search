@@ -109,7 +109,7 @@ class LlamaIndexApp:
     async def load_documents(self):
         """Loads documents from the specified directory for indexing."""
         logger.info("Loading documents from the specified directory for indexing.")
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True).load_data()
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, file_extractor={".docx":DocxReader()}).load_data()
 
     @profile_
     async def run_pipeline(self):
