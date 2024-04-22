@@ -14,9 +14,9 @@ spec:
       labels:
         app: {{ .Release.Name }}-prometheus
     spec:
-      nodeSelector:
-          #kubernetes.io/hostname: {{ .Values.ollama.nodeName }}
-          nvidia.com/gpu.product: {{ .Values.prometheus.gpuProduct }}
+      # nodeSelector:
+      #     #kubernetes.io/hostname: {{ .Values.prometheus.nodeName }}
+      #     nvidia.com/gpu.product: {{ .Values.prometheus.gpuProduct }}
       containers:
         - name: prometheus
           image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"

@@ -17,7 +17,9 @@ import qdrant_client
 from utils import profile_
 import argparse
 import os
+import asyncio
 from typing import Optional
+from docxreader import DocxReader
 
 logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/', log_name='pipeline.log')
 
@@ -189,8 +191,6 @@ async def query_app(config_path: str, query: str, data_path: Optional[str] = Non
 class PipelineSetupError(Exception):
     """Exception raised for errors during the setup of the ingestion pipeline."""
     pass
-
-import asyncio
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Query the LlamaIndexApp")

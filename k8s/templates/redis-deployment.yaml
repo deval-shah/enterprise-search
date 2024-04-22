@@ -13,7 +13,8 @@ spec:
         app: redis
     spec:
       # nodeSelector:
-      #   kubernetes.io/hostname: {{ .Values.redis.nodeName }}
+      #     #kubernetes.io/hostname: {{ .Values.redis.nodeName }}
+      #     nvidia.com/gpu.product: {{ .Values.redis.gpuProduct }}
       containers:
       - name: redis
         image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
