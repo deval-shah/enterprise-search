@@ -16,6 +16,7 @@ app:
   env:
     CONFIG_PATH: "/app/config/config.yml"
     OLLAMA_SERVER_URL: "ollama-es-service.aiml-engineering.svc.cluster.local:80"
+    CLUSTER_DEPLOYMENT: "1"
   volumes:
     config:
       configMapName: "es-cmap"

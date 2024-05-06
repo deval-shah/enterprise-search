@@ -1,6 +1,6 @@
 streamlit
 pyyaml
-qdrant-client
+qdrant_client==1.8.0
 redis
 streamlit
 pathlib

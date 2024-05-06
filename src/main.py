@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from server import router
 from prometheus_fastapi_instrumentator import Instrumentator
-from logger import CustomLogger
 import uvicorn
+from src.logger import CustomLogger
+from src.settings import config
+from src.server import router
 
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/main.log')
+logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=config.application.log_dir, log_name='server.log')
 
 app = FastAPI()
 app.include_router(router)

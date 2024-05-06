@@ -4,15 +4,10 @@ services:
   es:
     image: docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest
     volumes:
-      - type: bind
-        source: ./config
-        target: /app/config
-        read_only: True
-      - type: bind
-        source: ./data/test_data
-        target: /data
-    environment:
-      - CONFIG_PATH=/app/config/config.yml
+      - ./model_files:/app/model_files
+      - ./config.yaml:/app/config.yaml  # Override the default config
+      - ./eval_metrics_config.yaml:/app/eval_metrics_config.yaml
+      - ./data/test_data:/data
     network_mode: host
     deploy:
       resources:

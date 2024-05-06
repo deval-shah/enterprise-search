@@ -8,41 +8,27 @@ from llama_index.core import Settings
 from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
 from llama_index.storage.docstore.redis import RedisDocumentStore
-from llama_index.core.base.response.schema import Response
-from logger import CustomLogger
-
-import yaml
-import logging
-import qdrant_client
-from utils import profile_
 import argparse
 import os
 import asyncio
+import qdrant_client
+from src.logger import CustomLogger
+from src.utils import profile_
 from typing import Optional
-from docxreader import DocxReader
+from src.docxreader import DocxReader
+from src.settings import config
 
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/', log_name='pipeline.log')
+logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=config.application.log_dir, log_name='pipeline.log')
 
 class LlamaIndexApp:
     """
     A class to encapsulate the application logic for indexing and querying documents using LLaMA index.
     """
-    def __init__(self, config_path: str):
+    def __init__(self):
         """
         Initializes the application with the provided configuration.
-
-        Args:
-            config_path (str): The path to the YAML configuration file.
         """
-        logger.info("Initializing RAG pipeline with provided configuration {}.".format(config_path))
-        with open(config_path, 'r') as file:
-            config = yaml.safe_load(file)
-        self.data_path = config['data_path']
-        self.qdrant_client_config = config['qdrant_client_config']
-        self.vector_store_config = config['vector_store_config']
-        self.redis_config = config['redis_config']
-        self.embed_model = config['embed_model']
-        self.llm_model = config['llm_model']
+        self.config = config
         self.setup()
 
     def setup(self):
@@ -57,31 +43,37 @@ class LlamaIndexApp:
 
     def setup_embed_model(self):
         """Initializes the embedding model based on the configuration."""
-        Settings.embed_model = resolve_embed_model(self.embed_model)
+        Settings.embed_model = resolve_embed_model(self.config.embedding.embed_model)
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
-        Settings.llm = Ollama(model=self.llm_model, request_timeout=30.0)
+        Settings.llm = Ollama(model=self.config.llm.llm_model, request_timeout=30.0)
 
     def setup_vector_store(self):
         """Initializes the vector store client and vector store based on the configuration."""
-        # To work with local vector store, update url in config
-        # self.qdrant_client_config['location'] = ':memory:'
         try:
-            logger.info("Setting up the Vector store ....")
-            self.client = qdrant_client.QdrantClient(**self.qdrant_client_config)
-            self.vector_store = QdrantVectorStore(client=self.client, **self.vector_store_config)
+            logger.debug(f"Initializing Qdrant Client with config: URL={self.config.qdrant_client_config}")
+            self.client = qdrant_client.QdrantClient(
+                url=self.config.qdrant_client_config.url,
+                prefer_grpc=self.config.qdrant_client_config.prefer_grpc
+            )
+            logger.debug(f"Initializing vector store with config: URL={self.config.vector_store_config}")
+            self.vector_store = QdrantVectorStore(client=self.client,
+                                                  collection_name=self.config.vector_store_config.collection_name,
+                                                  vector_size=self.config.vector_store_config.vector_size,
+                                                  distance=self.config.vector_store_config.distance,
+                                                  max_optimization_threads=1)
         except Exception as e:
-            logging.error(f"Failed to initialize the vector store: {e}")
+            logger.error(f"Failed to initialize the vector store: {e}")
             raise PipelineSetupError("Failed to initialize the vector store") from e
 
     def setup_cache(self):
         """Initializes the ingestion cache using Redis for storing intermediate results."""
         try:
             logger.info("Setting up the Ingestion Cache ....")
-            self.cache = IngestionCache(cache=RedisCache.from_host_and_port(**self.redis_config), collection="redis_cache")
+            self.cache = IngestionCache(cache=RedisCache.from_host_and_port(host=self.config.redis_config.host, port=self.config.redis_config.port), collection="redis_cache")
         except Exception as e:
-            logging.error(f"Failed to initialize Ingestion Redis cache: {e}")
+            logger.error(f"Failed to initialize Ingestion Redis cache: {e}")
             raise PipelineSetupError("Failed to setup initialize Ingestion Redis cache.") from e
 
     def setup_pipeline(self):
@@ -99,19 +91,20 @@ class LlamaIndexApp:
                 ],
                 vector_store=self.vector_store,
                 cache=self.cache,
-                docstore=RedisDocumentStore.from_host_and_port(**self.redis_config, namespace="document_store"),
+                docstore=RedisDocumentStore.from_host_and_port(host=self.config.redis_config.host, port=self.config.redis_config.port, namespace="document_store"),
             )
         except Exception as e:
             logger.error(f"Failed to setup ingestion pipeline: {e}")
             raise PipelineSetupError("Failed to setup pipeline.") from e
 
-    @profile_
+    #@profile_
     async def load_documents(self):
         """Loads documents from the specified directory for indexing."""
         logger.info("Loading documents from the specified directory for indexing.")
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, file_extractor={".docx":DocxReader()}).load_data()
+        allowed_exts = [".pdf", ".docx", ".txt"]
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
 
-    @profile_
+    #@profile_
     async def run_pipeline(self):
         """
         Processes the loaded documents through the ingestion pipeline.
@@ -124,12 +117,11 @@ class LlamaIndexApp:
         logger.info(f"Ingested {len(nodes)} Nodes")
         return nodes
 
-    @profile_
+    #@profile_
     async def index_documents(self, nodes):
         """Indexes the processed documents."""
-        logger.info("Indexing processed documents.")
+        logger.debug("Indexing processed documents.")
         self.index = VectorStoreIndex.from_vector_store(self.vector_store, Settings.embed_model)
-        logger.info("Initialising the query engine...")
         self.set_query_engine()
         
     def set_query_engine(self):
@@ -137,7 +129,7 @@ class LlamaIndexApp:
             raise Exception("Index is not ready. Please load and index documents before querying.")
         self.query_engine = self.index.as_query_engine()
  
-    @profile_
+    #@profile_
     async def query_engine_response(self, query):
         """
         Queries the index with the given query string.
@@ -150,39 +142,65 @@ class LlamaIndexApp:
         """
         response = None
         try:
-            logger.info("Calling query engine...")
+            logger.debug("Calling query engine...")
             response = self.query_engine.query(query)
         except Exception as e:
             logger.error(f"An error occurred in the query engine call: {str(e)}")
             os._exit(1)
         return response
 
-    def get_context_from_response(self, response_object):
-        # Process the response object to get the output string and retrieved nodes
-        if response_object is not None:
-            actual_output = response_object.response
-            retrieval_context = [node.get_content() for node in response.source_nodes]
-        return {"output": actual_output, "retrieval_context": retrieval_context}
+def get_context_from_response(response_object):
+    """
+    Extracts and logs document metadata from a response object, avoiding duplicate entries for the same document.
+
+    Args:
+        response_object: An object containing metadata about documents processed in a pipeline.
+        Expected to have 'metadata' and 'source_nodes' attributes if present.
+    Returns:
+        tuple: A tuple containing:
+            - A dictionary of (file path, details).
+            - List of contents extracted from the 'source_nodes' that contribute to the response
+
+    Iterating over each document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
+    summary of these details and maps it to the response. Useful for citing the source.
+    """
+    document_info = {}
+    retrieval_context = None
+    if response_object:
+        try:
+            if hasattr(response_object, 'source_nodes'):
+                retrieval_context = [node.get_content() for node in response_object.source_nodes]
+            if hasattr(response_object, 'metadata'):
+                for doc_id, info in response_object.metadata.items():
+                    file_path = info.get('file_path')
+                    if file_path and file_path not in document_info:
+                        document_info[file_path] = {
+                            'file_name': info.get('file_name'),
+                            'last_modified_date': info.get('last_modified_date'),
+                            'doc_id': doc_id
+                        }
+        except Exception as e:
+            logger.error("An error occurred while processing the response object: {}".format(e))
+    return document_info, retrieval_context
 
 @profile_
-async def query_app(config_path: str, query: str, data_path: Optional[str] = None):
+async def query_app(query: str, data_path: Optional[str] = None):
     """
     Loads documents, runs the ingestion pipeline, indexes documents, and queries the index.
 
     Args:
-        config_path: The path to the configuration file.
         query: The query string to search the index.
         data_path: Optional; The path to the data directory. If provided, overrides the default path.
     """
     try:
-        app = LlamaIndexApp(config_path)
+        logger.info(f"Initializing the pipeline...")
+        app = LlamaIndexApp()
         if data_path:
             app.data_path = data_path
         await app.load_documents()
         nodes = await app.run_pipeline()
         await app.index_documents(nodes)
         response = await app.query_engine_response(query)
-        logger.info("Response : {}".format(response))
         return response
     except Exception as e:
         logger.error(f"An error occurred in query app fn: {str(e)}")
@@ -195,12 +213,16 @@ class PipelineSetupError(Exception):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Query the LlamaIndexApp")
     parser.add_argument("--query", type=str, help="Query string to search the index with", required=True)
+    parser.add_argument("--data_path", type=str, help="Query string to search the index with", default='./data/test', required=False)
     args = parser.parse_args()
-    config_path = 'config.yml'
- 
-    logger.info("Starting the RAG pipeline...")
+
+    logger.info("Starting the pipeline...")
     try:
-        response = asyncio.run(query_app(config_path, args.query))
+        response = asyncio.run(query_app(args.query, args.data_path))
         logger.info(f"Response: {response}")
+        document_info, retrieval_context = get_context_from_response(response)
+        context_details = '\n'.join(["File Path: {}, File Name: {}, Last Modified: {}, Document ID: {}".format(
+            path, details['file_name'], details['last_modified_date'], details['doc_id']) for path, details in document_info.items()])
+        logger.debug('\n' + '=' * 60 + '\nDocument Context Information\n' + context_details + '\n' + '=' * 60)
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
