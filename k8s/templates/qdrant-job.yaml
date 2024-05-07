@@ -15,8 +15,12 @@ spec:
           - name: script
             mountPath: "/scripts"
           - name: config
-            mountPath: "/app/config"
+            mountPath: "/app/config.yaml"
+            subPath: config.yaml
             readOnly: true
+        env:
+        - name: CONFIG_PATH
+          value: {{ .Values.qdrant.env.CONFIG_PATH }}
       restartPolicy: OnFailure
       volumes:
         - name: script

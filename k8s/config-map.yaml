@@ -24,4 +24,4 @@ data:
     embedding:
       embed_model: "local:BAAI/bge-small-en-v1.5"
     llm:
-      llm_model: "llama3:8b"
+      llm_model: "llama3:instruct"

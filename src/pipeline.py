@@ -47,6 +47,7 @@ class LlamaIndexApp:
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
+        logger.info(f"Running model {self.config.llm.llm_model}")
         Settings.llm = Ollama(model=self.config.llm.llm_model, request_timeout=30.0)
 
     def setup_vector_store(self):
@@ -211,9 +212,9 @@ class PipelineSetupError(Exception):
     pass
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Query the LlamaIndexApp")
-    parser.add_argument("--query", type=str, help="Query string to search the index with", required=True)
-    parser.add_argument("--data_path", type=str, help="Query string to search the index with", default='./data/test', required=False)
+    parser = argparse.ArgumentParser(description="ES pipeline")
+    parser.add_argument("--query", type=str, help="Query text to ask question on the data", required=True)
+    parser.add_argument("--data_path", type=str, help="Knowledge base folder path", default='./data/test', required=False)
     args = parser.parse_args()
 
     logger.info("Starting the pipeline...")
