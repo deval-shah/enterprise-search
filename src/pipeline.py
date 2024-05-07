@@ -12,13 +12,11 @@ import argparse
 import os
 import asyncio
 import qdrant_client
-from src.logger import CustomLogger
+from src.logger import logger
 from src.utils import profile_
 from typing import Optional
 from src.docxreader import DocxReader
 from src.settings import config
-
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=config.application.log_dir, log_name='pipeline.log')
 
 class LlamaIndexApp:
     """

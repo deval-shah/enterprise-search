@@ -3,13 +3,12 @@ from fastapi.responses import JSONResponse
 from fastapi import APIRouter
 from typing import List, Optional
 from src.pipeline import query_app
-from src.logger import CustomLogger
+from src.logger import logger
 from src.utils import profile_
 from src.settings import config
 import aiofiles
 import os
 
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=config.application.log_dir, log_name='server.log')
 router = APIRouter()
 
 upload_dir = os.path.join(config.application.data_path, config.application.upload_subdir)

@@ -7,12 +7,9 @@ import signal
 from datetime import datetime
 import argparse
 import asyncio
-from src.settings import config
 from src.pipeline import LlamaIndexApp
 from src.metrics import MetricsEvaluator
-from src.logger import CustomLogger
-
-logger = CustomLogger.setup_logger(__name__, save_to_disk=False, log_dir=config.application.log_dir, log_name='eval.log')
+from src.logger import logger
 
 class Eval:
     """
