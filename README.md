@@ -30,7 +30,7 @@ If you prefer to test the application locally without Docker, set up a Conda env
 - **Create and activate a new Conda environment:**
 
 ```bash
-conda create --name es_env python=3.8
+conda create --name es_env python=3.9
 conda activate es_env
 ```
 
