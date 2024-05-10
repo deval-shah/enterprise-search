@@ -10,14 +10,17 @@ import asyncio
 from src.pipeline import LlamaIndexApp
 from src.metrics import MetricsEvaluator
 from src.logger import logger
+import numpy as np
+
+metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
 
 class Eval:
     """
     This class encapsulates the evaluation of the RAG pipeline
 
     Attributes:
-        config_path (str): Path to the configuration YAML file for the LLaMA Index application.
-        data_path (str): Directory path where the data for indexing is stored.
+        data_path (str): Directory path of the knowledge base.
+        results_file__path (str): Directory path where evaluation results are saved.
     """
     def __init__(self, data_path: str, results_file_path: str):
         """
@@ -34,6 +37,7 @@ class Eval:
         self.results = self.load_existing_results()
         if self.data_path:
             self.rag_pipeline.data_path = self.data_path
+        self.metric_scores = {self.mobj.get_metric_name(self.mobj.metrics[metric_name]): [] for metric_name in metrics_to_evaluate}
         # Setup signal handlers to save results on interruption
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -64,8 +68,6 @@ class Eval:
         retrieval_context = [node.get_content() for node in response_object.source_nodes]
         logger.info("Evaluating ....")
 
-        metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
-
         metrics_results = []
         if actual_output and retrieval_context:
             for metric_name in metrics_to_evaluate:
@@ -95,7 +97,8 @@ class Eval:
             test_case = LLMTestCase(input=input, expected_output=ground_truth, actual_output=output, retrieval_context=retrieval_context)
         try:
             metric.measure(test_case)
-            logger.info(f"Metric: {self.mobj.get_metric_name(metric)}")
+            metric_name = self.mobj.get_metric_name(metric)
+            logger.info(f"Metric: {metric_name}")
             logger.info(f"Actual Output: {output}")
             score = getattr(metric, 'score', -1)
             if score is not None:
@@ -103,6 +106,7 @@ class Eval:
             reason = getattr(metric, 'reason', '-')
             if reason is not None:
                 logger.info(f"Metric Reason: {reason}")
+            self.metric_scores[metric_name].append(score)
             return {"name": self.mobj.get_metric_name(metric), "score": score, "reason": reason}
         except Exception as e:
             logger.error(f"Error evaluating metric {self.mobj.get_metric_name(metric)}: {e}")
@@ -143,7 +147,24 @@ class Eval:
         """Signal handler to save results upon receiving interruption signals."""
         logger.info("Interrupt signal received. Saving results...")
         self.save_results()
+        self.display_stats()
         exit(1)
+
+    async def display_stats(self):
+        """
+        Display statistics for each metric evaluated.
+        Prints the mean, median, and standard deviation for the metric scores using logger.info in a single line.
+        """
+        stats_summary = []
+        for metric_name, scores in self.metric_scores.items():
+            if scores:  # Ensure there are scores to calculate statistics
+                mean_score = np.mean(scores)
+                median_score = np.median(scores)
+                std_score = np.std(scores)
+                stats_summary.append(f"{metric_name}: Mean={mean_score:.2f}, Median={median_score:.2f}, Std Dev={std_score:.2f}")
+
+        # Join all metric summaries into a single line and log it
+        logger.info(" | ".join(stats_summary))
 
 async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
     """
@@ -172,6 +193,7 @@ async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
             await eval_instance.evaluate(input_query, ground_truth)
             if save_results_flag:
                 await eval_instance.save_results()
+            await eval_instance.display_stats()
             print("-"*120)
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")

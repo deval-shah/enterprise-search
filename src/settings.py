@@ -29,10 +29,10 @@ class Eval(BaseModel):
     chat_format: str = "chatml"
 
 class ApplicationConfig(BaseModel):
-    config_path: str = "./config.yaml"
-    data_path: str = "./data/files"
-    log_dir: str = "./data/app/logs"
-    upload_subdir: str = "./data/uploads"
+    config_path: str = "/app/config.yaml"
+    data_path: str = "/data/files"
+    log_dir: str = "/data/app/logs"
+    upload_subdir: str = "uploads"
 
 class Config(BaseModel):
     application: ApplicationConfig = ApplicationConfig()

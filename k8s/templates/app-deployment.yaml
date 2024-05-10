@@ -18,7 +18,6 @@ spec:
         prometheus.io/port: "8000"
     spec:
       nodeSelector:
-        #kubernetes.io/hostname: {{ .Values.app.nodeName }}
         nvidia.com/gpu.product: {{ .Values.app.gpuProduct }}
       imagePullSecrets:
       - name: es-docker-secret

@@ -26,6 +26,7 @@ metrics:
     include_reason: true
   coherence:
     name: Coherence
+    threshold: 0.5
     model_type: openai
     model: gpt-4-turbo
     criteria: "Coherence - determine if the actual output is coherent with the input."

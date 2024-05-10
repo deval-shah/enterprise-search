@@ -1,7 +1,7 @@
 application:
   config_path: "config.yaml"
-  data_path: "/data/files"
-  log_dir: "/data/app/logs"
+  data_path: "./data/files"
+  log_dir: "./data/app/logs"
   upload_subdir: "uploads"
 
 qdrant_client_config:
@@ -21,4 +21,5 @@ embedding:
   embed_model: "local:BAAI/bge-small-en-v1.5"
 
 llm:
-  llm_model: "llama3:8b"
+  llm_model: "mistral:7b-instruct"
+  #llm_model: "llama3:instruct"

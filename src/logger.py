@@ -40,10 +40,13 @@ class CustomLogger:
         return ColoredFormatter(log_format, log_colors=log_colors, secondary_log_colors={'message': message_log_colors}, reset=True)
 
     @classmethod
-    def setup_logger(cls, name: str = None, level: int = logging.DEBUG, save_to_disk: bool = False, log_dir: str = './logs', log_name: str = 'app.log') -> logging.Logger:
+    def setup_logger(cls, name: str = None, level: str = None, save_to_disk: bool = False, log_dir: str = './logs', log_name: str = 'app.log') -> logging.Logger:
         """
         Setups and returns a configured logger instance.
         """
+        log_level_ = os.getenv('LOGLEVEL', 'INFO').upper()
+        level = getattr(logging, log_level_, logging.INFO)
+
         logger = logging.getLogger(name)
         logger.setLevel(level)
         logger.propagate = False
@@ -80,11 +83,11 @@ class CustomLogger:
 
 logger = CustomLogger.setup_logger("app_logger", save_to_disk=True, log_dir=config.application.log_dir, log_name='app.log')
 
-# # Example usage
-# if __name__ == "__main__":
-#     logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='./logs', log_name='app.log')
-#     logger.debug("This debug message includes the file and line number.")
-#     logger.info("This info message does not include the file and line number.")
-#     logger.warning("This is a warning message.")
-#     logger.error("This error message includes the file and line number.")
-#     logger.critical("This critical message includes the file and line number.")
+# Example usage
+if __name__ == "__main__":
+    logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='./logs', log_name='app.log')
+    logger.debug("This debug message includes the file and line number.")
+    logger.info("This info message does not include the file and line number.")
+    logger.warning("This is a warning message.")
+    logger.error("This error message includes the file and line number.")
+    logger.critical("This critical message includes the file and line number.")

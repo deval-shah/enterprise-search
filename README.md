@@ -223,7 +223,7 @@ The evaluation process involves executing the main script with appropriate argum
 2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
 
 ```bash
-python src/eval.py --config_path config.yml --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
+python -m src.eval --config_path config.yml --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
 ```
 
 - `--config_path`: Specifies the path to the YAML configuration file for the RAG Pipeline.

@@ -7,6 +7,7 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import Settings
 from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
+from llama_index.core import PromptTemplate
 from llama_index.storage.docstore.redis import RedisDocumentStore
 import argparse
 import os
@@ -45,8 +46,15 @@ class LlamaIndexApp:
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
-        logger.info(f"Running model {self.config.llm.llm_model}")
-        Settings.llm = Ollama(model=self.config.llm.llm_model, request_timeout=30.0)
+        base_url = os.getenv('OLLAMA_SERVER_URL', 'http://localhost:11434')
+        logger.info(f"Running model {self.config.llm.llm_model} on URL : {base_url}")
+        Settings.llm = Ollama(
+                      base_url=base_url,
+                      model=self.config.llm.llm_model,
+                      temperature=0.7,
+                      additional_kwargs={"num_predict": 128, "num_ctx": 2048},
+                      request_timeout=30.0
+                    )
 
     def setup_vector_store(self):
         """Initializes the vector store client and vector store based on the configuration."""
@@ -101,7 +109,7 @@ class LlamaIndexApp:
         """Loads documents from the specified directory for indexing."""
         logger.info("Loading documents from the specified directory for indexing.")
         allowed_exts = [".pdf", ".docx", ".txt"]
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
 
     #@profile_
     async def run_pipeline(self):
@@ -127,7 +135,23 @@ class LlamaIndexApp:
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
         self.query_engine = self.index.as_query_engine()
- 
+
+    def update_prompt(self):
+        template = (
+            "\n"
+            "[INST] You are an AI trained to accurately use detailed context to answer questions. Follow these guidelines: \n"
+            "- Use the provided context information from the document below to answer the question. \n"
+            "- Your answer should be short, concise and grounded in the document's facts,  \n"
+            "- If the provided context does not contain sufficient facts to answer the question, respond with: 'I am unable to answer based on the given context information.' \n"
+            "[/INST]\n"
+            "\n"
+            "{context_str}\n"
+            "---------------------\n"
+            "Based on the above context, please answer the question: {query_str}. Strictly follow guidelines\n"
+        )
+        qa_template = PromptTemplate(template)
+        return qa_template
+
     #@profile_
     async def query_engine_response(self, query):
         """
@@ -142,6 +166,10 @@ class LlamaIndexApp:
         response = None
         try:
             logger.debug("Calling query engine...")
+            qa_template = self.update_prompt()
+            self.query_engine.update_prompts(
+                {"response_synthesizer:text_qa_template": qa_template}
+            )
             response = self.query_engine.query(query)
         except Exception as e:
             logger.error(f"An error occurred in the query engine call: {str(e)}")

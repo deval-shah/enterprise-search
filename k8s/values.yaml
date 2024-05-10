@@ -15,8 +15,7 @@ app:
       memory: "10Gi"
   env:
     CONFIG_PATH: "/app/config.yaml"
-    OLLAMA_SERVER_URL: "ollama-es-service.aiml-engineering.svc.cluster.local:80"
-    CLUSTER_DEPLOYMENT: "1"
+    OLLAMA_SERVER_URL: "http://ollama-es-service.aiml-engineering.svc.cluster.local:80"
   volumes:
     config:
       configMapName: "es-cmap"
@@ -43,8 +42,8 @@ ollama:
       cpu: "10000m"
       memory: "40Gi"
   #gpuProduct: "NVIDIA-L40S"
-  #gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
-  gpuProduct: "NVIDIA-A100-SXM4-40GB"
+  gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
+  #gpuProduct: "NVIDIA-A100-SXM4-40GB"
   env:
     OLLAMA_HOST: "0.0.0.0"
   volumes:
