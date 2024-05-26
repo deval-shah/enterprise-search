@@ -2,10 +2,8 @@ import aiohttp
 import time
 from functools import wraps
 from datetime import datetime
-from custom import CustomLogger
 from prometheus_client import Summary
-
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir='/data/app/logs/', log_name='profile.log')
+from src.logger import logger
 
 # Metrics dictionary to hold all metrics instances
 metrics = {}

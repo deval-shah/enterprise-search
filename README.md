@@ -2,72 +2,92 @@
 
 ## Overview
 
-The Enterprise Search project is intended to index and query documents efficiently using a combination of LLM and vector search database. It follows a It leverages the LLaMA index framework to process, embed, and index documents for semantic search. This project integrates Qdrant as a vector search engine and Redis for caching and document storage.
+The Enterprise Search project is intended to index and query documents efficiently using a combination of LLM and vector search database. 
+It follows a It leverages the LLaMA index framework to process, embed, and index documents for semantic search. This project integrates Qdrant as a vector search engine and Redis for caching and document storage.
 
 ## Prerequisites
 
 Before setting up the project, ensure you have the following installed:
 - Python 3.8 or higher
 - Docker and Docker Compose (for Qdrant and Redis)
-- pip for Python package management
 
 ## Setup Instructions
 
-### 1. Install Dependencies
+### 1. Installation
 
-Install the required Python dependencies using pip.
+**Building the Docker image for the ES pipeline:**
+
+To build your Docker image from the Dockerfile:
+
+```bash
+docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest .
+```
+
+**Local Testing with Conda:**
+
+If you prefer to test the application locally without Docker, set up a Conda environment and install the necessary dependencies:
+
+- **Create and activate a new Conda environment:**
+
+```bash
+conda create --name es_env python=3.9
+conda activate es_env
+```
+
+- **Install dependencies:**
+
+Navigate to the directory containing your `requirements.txt` and run:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+If you are not building the ES pipeline docker image, then comment the es service declaration in the `docker-compose.yml`.
+
 ### 2. Setup Qdrant
 
-Qdrant is used as the vector search database. Follow these steps to set it up using Docker.
+Qdrant is utilized as the vector search database to support efficient searching over vectorized data. It is configured automatically through the provided `docker-compose.yml` setup.
 
-- **Pull Qdrant Docker Image**
-
-```bash
-docker pull qdrant/qdrant
-```
-
-- **Run Qdrant Container**
+Run the docker compose file to start `redis` and `qdrant` services.
 
 ```bash
-docker run -d --name qdrant-vector-store -p 6333:6333 -p 6334:6334 qdrant/qdrant
+docker-compose up
 ```
 
-This command runs Qdrant vector store and exposes it on `http://localhost:6333`.
+- **Docker Compose Configuration**:
+  ```yaml
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    restart: always
+    environment:
+      RUST_LOG: info
+  ```
+  This configuration starts a Qdrant container and makes it available on ports 6333 and 6334.
 
-- **Create a collection Qdrant database**
-
-```bash
-curl -X PUT http://localhost:6333/collections/test   -H 'Content-Type: application/json' --data-raw '{"vectors": {"size": 384, "distance": "Cosine"} }'
-```
-
-This command sends a PUT request to the Qdrant server to create a new collection named test.
-
-The vector_size should match the dimensionality of the vectors produced by your embedding model [local:BAAI/bge-small-en-v1.5](https://huggingface.co/BAAI/bge-small-en-v1.5) which is 384. 
-
-The distance metric is set to Cosine, which is often used for semantic search applications, but you can choose another distance metric supported by Qdrant if it better suits your use case.
+- **Create a Collection in Qdrant**:
+  ```bash
+  curl -X PUT http://localhost:6333/collections/test \
+       -H 'Content-Type: application/json' \
+       --data-raw '{"vectors": {"size": 384, "distance": "Cosine"}}'
+  ```
+  Run the above command to create a collection named `test` with vectors of size 384 using Cosine distance. Ensure this matches the vector dimensions produced by your configured embedding model in `config.yaml`.
 
 ### 3. Setup Redis
 
-Redis is used for caching and document storage. Setup Redis using Docker as follows.
+Redis serves as the caching and document storage layer. It is also configured to run through `docker-compose.yml`:
 
-- **Pull Redis Docker Image**
-
-```bash
-docker pull redis
-```
-
-- **Run Redis Container**
-
-```bash
-docker run --name ingestion-redis -p 6379:6379 -d redis
-```
-
-This command runs Redis and exposes it on `localhost` on port `6379`.
+- **Docker Compose Configuration**:
+  ```yaml
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    restart: always
+  ```
+  This setup will start a Redis server accessible on port 6379 on localhost, managing data caching and session storage.
 
 ### 4. Install Ollama Model
 
@@ -75,41 +95,60 @@ This command runs Redis and exposes it on `localhost` on port `6379`.
    ```bash
    curl -fsSL https://ollama.com/install.sh | sh
    ```
-2. **Pull Mistral Model**: Download the model:
+
+2. **Explore LLM Model library**: Please have a look at [Ollama Library](https://ollama.com/library) and pull the LLM model of your choice. Update the value in `config.yaml`.
+
+3. **Pull LLM Model**: Command to download the LLM model:
    ```bash
    ollama pull mistral:7b-instruct
    ```
-3. **Explore More Models**: If you would like to change the open-source LLM models, please have a look at [Ollama Library](https://ollama.com/library) and pull the relevant model tag.
 
-### 5. Update Configuration
+### 5. Configuration Setup
 
-Update `config.yml` with the correct paths and configurations for your setup. Here's an example configuration:
+Update the `config.yaml` file with the necessary paths and configurations. The default config file assumes a local setup as per the docker compose.
 
 ```yaml
-data_path: "./data/test/"
+application:
+  config_path: "config.yaml"
+  data_path: "/data/files"
+  log_dir: "/data/app/logs"
+  upload_subdir: "uploads"
+
 qdrant_client_config:
   url: "http://localhost:6333"
   prefer_grpc: False
+
 vector_store_config:
   collection_name: "test"
+  vector_size: 384
+  distance: "Cosine"
+
 redis_config:
   host: "localhost"
   port: 6379
-embed_model: "local:BAAI/bge-small-en-v1.5"
-llm_model: "mistral"
+
+embedding:
+  embed_model: "local:BAAI/bge-small-en-v1.5"
+
+llm:
+  llm_model: "mistral:7b-instruct"
 ```
-- **data_path**: Directory containing documents to index.
-- **qdrant_client_config**: Configuration for connecting to Qdrant.
-- **vector_store_config**: Configuration for the vector store in Qdrant. The collection name should match with the one created above.
-- **redis_config**: Configuration for connecting to Redis.
-- **embed_model**: The embedding model for document processing.
-- **llm_model**: The large language model name pulled using ollama.
+
+### Configuration Descriptions:
+- **application**: General application settings including paths for data, logs, and uploads.
+- **qdrant_client_config**: Specifies the connection settings for Qdrant, including the URL and whether to use gRPC.
+- **vector_store_config**: Details about the vector store configuration in Qdrant, including collection name, vector size, and distance metric.
+- **redis_config**: Configuration settings for Redis, specifying host and port.
+- **embedding**: Configuration for the embedding model used for document processing. Pulled from HuggingFace library.
+- **llm_model**: Llm used, indicating model name and version.
+
+This configuration ensures all components of the system are appropriately directed and connected. Ensure that these values align with your actual deployment setup, particularly URLs and ports for services like Qdrant and Redis.
 
 ### 6. Running the Application
 
-Ensure you have uploaded documents into the `data_path` folder specified in your configuration and that both Qdrant and Redis dockers are running before attempting to run the application.
+Ensure you have uploaded documents into the `data_path` folder specified in your configuration file `config.yaml`. Make sure the paths exist(if running locally)
 
-A sample test pdf is added in `./data/test/` for testing. Feel free to add other pdf, text, docx.. files for testing.
+A sample test pdf is added in `./data/test/` for testing. Feel free to add other pdf, text, docx files for testing.
 
 To run the streamlit application, navigate to the project directory and use the following command:
 
@@ -120,13 +159,15 @@ streamlit run src/streamlit-app.py
 For querying without the Streamlit interface, you can use:
 
 ```bash
-python src/pipeline.py --query "your search query here"
+python -m src.pipeline --query "your search query here"
 ```
 To test the application and check its output, you can use the Streamlit interface or directly interact with the command line interface as mentioned above.
 
 ## Evaluation
 
-The Evaluation module is designed to assess the performance of the RAG Pipeline, specifically focusing on the quality of answers. It leverages a set of metrics including faithfulness, answer relevancy, contextual relevancy, and coherence to provide a comprehensive evaluation of the system's output compared to ground truth data.
+The Evaluation module is designed to assess the performance of the RAG Pipeline, specifically focusing on the quality of answers. 
+
+It leverages a set of metrics to provide a comprehensive evaluation of the system's output compared to ground truth data.
 
 ### Interpreting the Results
 
@@ -182,7 +223,7 @@ The evaluation process involves executing the main script with appropriate argum
 2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
 
 ```bash
-python src/eval.py --config_path config.yml --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
+python -m src.eval --config_path config.yml --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
 ```
 
 - `--config_path`: Specifies the path to the YAML configuration file for the RAG Pipeline.
@@ -208,10 +249,10 @@ Results will be logged and, if the `--save` flag is used, saved to a JSON file i
 
 ## Release Notes
 
-Version 1.0.2 - 19/04/2024
-- Added benchmarking support to profile sub components of the RAG pipeline
-- Updated pipeline code to async mode
-- Added support for multi file upload
-- Added integration tests for testing API endpoints
-- Bug Fixes and Improvements
-- Added prometheus support in k8s deployment to scrape metrics from server backend
+Version 1.0.3 - 08/05/2024
+- Updated pipeline and eval code to async mode
+- Updated config and code structure to simplify config loading across app
+- Updated logger and removed unwanted declarations throughout the code
+- Fixed bugs for local testing (now docker compose works for local testing)
+- Updated model to llama3 models in config.yaml
+- Fixed runtime issues during API call.

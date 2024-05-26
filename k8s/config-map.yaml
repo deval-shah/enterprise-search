@@ -4,17 +4,24 @@ metadata:
   name: es-cmap
   namespace: aiml-engineering
 data:
-  config.yml: |
+  config.yaml: |
     data_path: "/data/files"
+    application:
+      config_path: "/app/config.yaml"
+      data_path: "/data/files"
+      log_dir: "/data/app/logs"
+      upload_subdir: "uploads"
     qdrant_client_config:
       url: "http://qdrant-service.aiml-engineering.svc.cluster.local:6333"
       prefer_grpc: False
     vector_store_config:
-      collection_name: test
+      collection_name: "test"
       vector_size: 384
       distance: Cosine
     redis_config:
       host: "redis-service.aiml-engineering.svc.cluster.local"
       port: 6379
-    embed_model: "local:BAAI/bge-small-en-v1.5"
-    llm_model: "mistral:7b-instruct"
+    embedding:
+      embed_model: "local:BAAI/bge-small-en-v1.5"
+    llm:
+      llm_model: "mistral:7b-instruct"

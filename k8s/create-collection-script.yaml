@@ -11,9 +11,6 @@ data:
     # Redirect all output to a log file
     exec > /data/logs/qdrant/create_collection.log 2>&1
 
-    # Configuration path
-    CONFIG_PATH="/app/config/config.yml"
-
     # Extract values using yq
     QDRANT_SERVICE_URL=$(yq e '.qdrant_client_config.url' "$CONFIG_PATH")/
     COLLECTION_NAME=$(yq e '.vector_store_config.collection_name' "$CONFIG_PATH")

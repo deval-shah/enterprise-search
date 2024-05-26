@@ -1,42 +1,48 @@
 from fastapi import HTTPException, File, UploadFile, Form
-from typing import List, Optional
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from pipeline import query_app
-from logger import CustomLogger
-from utils import profile_
 from fastapi import APIRouter
+from typing import List, Optional
+from src.pipeline import query_app
+from src.logger import logger
+from src.utils import profile_
+from src.settings import config
+import aiofiles
 import os
 
-class Settings(BaseModel):
-    config_path: str = "/app/config/config.yml"
-    data_path: str = "/data/files"
-    log_dir: str = "/data/app/logs"
-    upload_subdir: str = "uploads"
-
-class QueryPayload(BaseModel):
-    query: str
-
-settings = Settings()
-logger = CustomLogger.setup_logger(__name__, save_to_disk=True, log_dir=settings.log_dir, log_name='server.log')
 router = APIRouter()
+
+upload_dir = os.path.join(config.application.data_path, config.application.upload_subdir)
 
 @profile_
 @router.post("/uploadfile/")
 async def upload_files(files: List[UploadFile] = File(...)):
-    responses = []
-    upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
-    os.makedirs(upload_dir, exist_ok=True)
-    for file in files:
-        file_location = os.path.join(upload_dir, file.filename)
-        with open(file_location, "wb") as buffer:
-            buffer.write(await file.read())
-        responses.append(f"File {file.filename} saved at {file_location}")
-    return {"files_uploaded": responses}
+    try:
+        logger.debug(f"Received files: {len(files)}")
+        responses = []
+        os.makedirs(upload_dir, exist_ok=True)
+        logger.debug(f"Upload dir: {upload_dir}, files: {files}")
+        for file in files:
+            file_location = os.path.join(upload_dir, file.filename)
+            async with aiofiles.open(file_location, 'wb') as out_file:
+                content = await file.read()
+                await out_file.write(content)
+            responses.append(f"File {file.filename} saved at {file_location}")
+        return {"file_upload": responses}
+    except HTTPException as e:
+        logger.error(f"HTTPException with detail: {e.detail}")
+        raise HTTPException(status_code=500, detail=f"An HTTP error occurred while uploading the files to the server {e.detail}")
+    except Exception as e:
+        logger.error(f"Unhandled exception: {str(e)}")
+        return JSONResponse(status_code=500, content={"detail": f"An error occurred while uploading the files to the server: {e.detail}"})
+
+@router.get("/files/")
+async def list_files():
+    files = os.listdir(upload_dir)
+    return JSONResponse(content={"files": files}, status_code=200)
 
 @profile_
 @router.post("/query/", response_model=dict)
-async def query_index(query: str = Form(...), files: Optional[List[UploadFile]] = File(None)) -> JSONResponse:
+async def query_index(query: str = Form(...), files: List[UploadFile] = File(None)) -> JSONResponse:
     """
     Processes a query and optionally handles file uploads, then performs a document query.
 
@@ -47,14 +53,22 @@ async def query_index(query: str = Form(...), files: Optional[List[UploadFile]] 
     Returns:
         JSONResponse: The query results and file upload status.
     """
-    upload_dir = os.path.join(settings.data_path, settings.upload_subdir)
     try:
-        file_responses = await upload_files(files) if files else []
-        response = await query_app(config_path=settings.config_path, query=query, data_path=upload_dir)
+        file_upload_response = []
+        if files:
+            logger.info(f"Uploading {len(files)} files to the server")
+            file_upload_response = await upload_files(files)
+            file_upload_response = file_upload_response['file_upload']
+        else:
+            logger.debug("No files recieved")
+        response = await query_app(query=query, data_path=upload_dir)
+        logger.debug(f"Raw response from query_app: {response}")
+        if response is None or not hasattr(response, 'response'):
+            raise ValueError(f"Invalid response from query processing {response}.")
     except HTTPException as e:
         logger.error(f"HTTPException with detail: {e.detail}")
         raise HTTPException(status_code=500, detail=f"An error occurred during processing the query: {query}")
     except Exception as e:
         logger.error(f"Unhandled exception: {str(e)}")
-        return JSONResponse(status_code=500, detail=f"An error occurred during processing the query: {query}")
-    return JSONResponse(content={"response": response.response, "file_upload": file_responses}, status_code=200)
+        return JSONResponse(status_code=500, content={"detail": f"An error occurred during processing the query: {query}"})
+    return JSONResponse(content={"response": response.response, "query": query, "file_upload": file_upload_response}, status_code=200)

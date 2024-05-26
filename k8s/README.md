@@ -15,7 +15,7 @@ This guide walks you through deploying the Enterprise Search with Ollama, Qdrant
 
 ### 1. Docker Build
 
-First, build the Docker images for your application components. Replace `llamasearch` with each application component name (e.g., Ollama, Qdrant).
+First, build the Docker image for the ES pipeline.
 
 ```bash
 docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest .
@@ -23,7 +23,7 @@ docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:lat
 
 ### 2. Docker Test
 
-Test your Docker images to ensure they are working as expected. Typically you might want to check if there is no startup errors with the docker.
+Test the Docker image. Typically you might want to check if there is no startup errors with the docker.
 
 ```bash
 docker-compose up
@@ -47,7 +47,7 @@ kubectl apply -f k8s/pvc.yaml
 
 ### 5. Create Config Map
 
-Deploy the ConfigMap to provide configuration for enterprise search RAG pipeline:
+Update the configuration in `k8s/config-map.yaml` and deploy the ConfigMap to provide configuration for enterprise search RAG pipeline.:
 
 ```bash
 kubectl apply -f k8s/config-map.yaml
@@ -97,7 +97,7 @@ Each row in the table corresponds to a variable in the configuration.
 | ollama.gpu.enabled | Boolean | true | Indicates if GPU integration is enabled. |
 | ollama.gpu.type | String | `nvidia` | The type of GPU used (`nvidia` or `amd`). |
 | ollama.gpu.number | Integer | 1 | The number of GPUs allocated. |
-| ollama.models | List | `[gemma, mistral:7b-instruct, mixtral]` | The list of models to pull at container startup. |
+| ollama.models | List | `[gemma, mistral:7b-instruct, llama3:8b, llama3:instruct]` | The list of models to pull at container startup. |
 | ollama.insecure | Boolean | true | Indicates if the service runs in insecure mode. |
 | **Qdrant Specific** | | | |
 | qdrant.collectionName | String | `test` | The name of the collection to use in Qdrant. |
@@ -196,7 +196,7 @@ pip install pytest requests
 ```
 
 #### Running Tests
-Execute tests from the project directory using:
+Execute tests from the root directory of project using command:
 ```bash
 cd testing ; pytest test.py
 ```

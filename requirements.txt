@@ -1,6 +1,6 @@
 streamlit
 pyyaml
-qdrant-client
+qdrant_client==1.8.0
 redis
 streamlit
 pathlib
@@ -21,3 +21,4 @@ uvicorn
 python-multipart
 prometheus_client
 prometheus-fastapi-instrumentator
+aiofiles

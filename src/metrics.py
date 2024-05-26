@@ -4,7 +4,7 @@ from deepeval.metrics import (
     ContextualRecallMetric, ContextualRelevancyMetric, GEval
 )
 from typing import Dict, Any
-from config import ConfigLoader
+from src.config import ConfigLoader
 
 class MetricsEvaluator:
     """Class to initialize and manage evaluation metrics based on configuration."""

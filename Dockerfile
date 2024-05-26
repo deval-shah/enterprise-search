@@ -16,8 +16,7 @@ RUN pip install -r requirements.txt
 ENV PATH=/usr/local/cuda/bin:$PATH
 ENV CUDAToolkit_ROOT=/usr/local/cuda
 # Set the environment variable required by llama-cpp-python for CUDA support
-ENV CMAKE_ARGS="-DLLAMA_CUBLAS=on"
-RUN python -m pip install llama-cpp-python --prefer-binary --no-cache-dir --extra-index-url=https://jllllll.github.io/llama-cpp-python-cuBLAS-wheels/AVX2/cu122
+COPY install.sh /app/install.sh
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"
 
 COPY src/*py /app/src/
@@ -31,6 +30,5 @@ ENV NAME es
 
 # Copy the entrypoint script and the update the permissions
 COPY entrypoint.sh /app/entrypoint.sh
-COPY update_ollama_server_url_k8s.sh /app/update_ollama_server_url_k8s.sh
-RUN chmod +x /app/entrypoint.sh /app/update_ollama_server_url_k8s.sh
+RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]

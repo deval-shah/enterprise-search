@@ -18,7 +18,6 @@ spec:
         prometheus.io/port: "8000"
     spec:
       nodeSelector:
-        #kubernetes.io/hostname: {{ .Values.app.nodeName }}
         nvidia.com/gpu.product: {{ .Values.app.gpuProduct }}
       imagePullSecrets:
       - name: es-docker-secret
@@ -60,11 +59,14 @@ spec:
           value: {{ .Values.app.env.CONFIG_PATH }}
         - name: OLLAMA_SERVER_URL
           value: {{ .Values.app.env.OLLAMA_SERVER_URL }}
+        - name: CLUSTER_DEPLOYMENT
+          value: {{ .Values.app.env.CLUSTER_DEPLOYMENT | quote }}
         volumeMounts:
         - name: data-volume
           mountPath: "/data/files"
         - name: config-volume
-          mountPath: "/app/config"
+          mountPath: "/app/config.yaml"
+          subPath: config.yaml
           readOnly: true
       volumes:
         - name: data-volume

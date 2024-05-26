@@ -44,6 +44,7 @@ class TestAPISuite:
             files = {'file': (os.path.basename(file_name), file, 'text/plain')}
             data = {'query': query}
             response = requests.post(f"{base_url}/query/", files=files, data=data)
+            print("Check",response)
             assert response.status_code == expected_status
             if response.status_code == 200:
                 assert 'file_upload' in response.json()
