@@ -2,7 +2,7 @@ import logging
 from colorlog import ColoredFormatter
 from logging.handlers import TimedRotatingFileHandler
 import os
-from src.settings import config
+from settings import config
 
 class CustomLogger:
     """

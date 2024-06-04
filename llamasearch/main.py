@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
-from src.logger import logger
-from src.server import router
+from logger import logger
+from server import router
 
 app = FastAPI()
 app.include_router(router)
@@ -21,4 +21,4 @@ app.add_exception_handler(Exception, universal_exception_handler)
 
 if __name__ == "__main__":
     logger.info("Starting FastAPI server.")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)

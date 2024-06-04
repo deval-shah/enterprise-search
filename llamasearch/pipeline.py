@@ -1,5 +1,5 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core.node_parser import SemanticSplitterNodeParser
+from llama_index.core.node_parser import SemanticSplitterNodeParser, SentenceSplitter
 from llama_index.core.extractors import TitleExtractor
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
@@ -9,15 +9,16 @@ from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
 from llama_index.core import PromptTemplate
 from llama_index.storage.docstore.redis import RedisDocumentStore
+from llama_index.core.response.pprint_utils import pprint_response
 import argparse
 import os
 import asyncio
 import qdrant_client
-from src.logger import logger
-from src.utils import profile_
+from logger import logger
+from utils import profile_
 from typing import Optional
-from src.docxreader import DocxReader
-from src.settings import config
+from docxreader import DocxReader
+from settings import config
 
 class LlamaIndexApp:
     """
@@ -51,8 +52,8 @@ class LlamaIndexApp:
         Settings.llm = Ollama(
                       base_url=base_url,
                       model=self.config.llm.llm_model,
-                      temperature=0.7,
-                      additional_kwargs={"num_predict": 128, "num_ctx": 2048},
+                      temperature=0.2,
+                      additional_kwargs={"num_predict": 128, "num_ctx": 8192},
                       request_timeout=30.0
                     )
 
@@ -91,8 +92,8 @@ class LlamaIndexApp:
             logger.info("Setting up the Ingestion pipeline....")
             self.pipeline = IngestionPipeline(
                 transformations=[
-                    SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                    #SentenceSplitter(chunk_size=1024, chunk_overlap=20),
+                    #SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
+                    SentenceSplitter(chunk_size=512, chunk_overlap=25),
                     #TitleExtractor(num_workers=8),
                     Settings.embed_model,
                 ],
@@ -134,12 +135,12 @@ class LlamaIndexApp:
     def set_query_engine(self):
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
-        self.query_engine = self.index.as_query_engine()
+        self.query_engine = self.index.as_query_engine(similarity_top_k=3)
 
     def update_prompt(self):
         template = (
             "\n"
-            "[INST] You are an AI trained to accurately use detailed context to answer questions. Follow these guidelines: \n"
+            "[INST] You are a helpful assistant that follows instructions. \n"
             "- Use the provided context information from the document below to answer the question. \n"
             "- Your answer should be short, concise and grounded in the document's facts,  \n"
             "- If the provided context does not contain sufficient facts to answer the question, respond with: 'I am unable to answer based on the given context information.' \n"
@@ -171,6 +172,7 @@ class LlamaIndexApp:
                 {"response_synthesizer:text_qa_template": qa_template}
             )
             response = self.query_engine.query(query)
+            #pprint_response(response, show_source=True)
         except Exception as e:
             logger.error(f"An error occurred in the query engine call: {str(e)}")
             os._exit(1)

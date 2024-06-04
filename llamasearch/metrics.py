@@ -4,7 +4,12 @@ from deepeval.metrics import (
     ContextualRecallMetric, ContextualRelevancyMetric, GEval
 )
 from typing import Dict, Any
-from src.config import ConfigLoader
+from config import ConfigLoader
+
+from deepeval.models import GPTModel
+
+#model = GPTModel(max_tokens=512)
+#metric = AnswerRelevancyMetric(model=model)
 
 class MetricsEvaluator:
     """Class to initialize and manage evaluation metrics based on configuration."""
@@ -24,11 +29,11 @@ class MetricsEvaluator:
         """Initialize evaluation metrics using the configuration."""
         return {
             'answer_relevancy': self._init_answer_relevancy_metric(),
-            'faithfulness': self._init_faithfulness_metric(),
-            'contextual_precision': self._init_contextual_precision_metric(),
-            'contextual_recall': self._init_contextual_recall_metric(),
-            'contextual_relevancy': self._init_contextual_relevancy_metric(),
-            'coherence': self._init_coherence_metric(),
+            'faithfulness': self._init_faithfulness_metric()
+            # 'contextual_precision': self._init_contextual_precision_metric(),
+            # 'contextual_recall': self._init_contextual_recall_metric(),
+            # 'contextual_relevancy': self._init_contextual_relevancy_metric(),
+            # 'coherence': self._init_coherence_metric(),
         }
 
     def _init_answer_relevancy_metric(self) -> AnswerRelevancyMetric:
