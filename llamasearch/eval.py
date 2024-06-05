@@ -7,9 +7,9 @@ import signal
 from datetime import datetime
 import argparse
 import asyncio
-from pipeline import LlamaIndexApp
-from metrics import MetricsEvaluator
-from logger import logger
+from .pipeline import LlamaIndexApp
+from .metrics import MetricsEvaluator
+from .logger import logger
 import numpy as np
 
 #metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
@@ -96,21 +96,21 @@ class Eval:
         test_case = LLMTestCase(input=input, actual_output=output, retrieval_context=retrieval_context)
         if ground_truth:
             test_case = LLMTestCase(input=input, expected_output=ground_truth, actual_output=output, retrieval_context=retrieval_context)
-        #try:
-        metric.measure(test_case)
-        metric_name = self.mobj.get_metric_name(metric)
-        logger.info(f"Metric: {metric_name}")
-        logger.info(f"Actual Output: {output}")
-        score = getattr(metric, 'score', -1)
-        if score is not None:
-            logger.info(f"Metric Score: {score}")
-        reason = getattr(metric, 'reason', '-')
-        if reason is not None:
-            logger.info(f"Metric Reason: {reason}")
-        self.metric_scores[metric_name].append(score)
-        return {"name": self.mobj.get_metric_name(metric), "score": score, "reason": reason}
-        # except Exception as e:
-        #     logger.error(f"Error evaluating metric {self.mobj.get_metric_name(metric)}: {e}")
+        try:
+            metric.measure(test_case)
+            metric_name = self.mobj.get_metric_name(metric)
+            logger.info(f"Metric: {metric_name}")
+            logger.info(f"Actual Output: {output}")
+            score = getattr(metric, 'score', -1)
+            if score is not None:
+                logger.info(f"Metric Score: {score}")
+            reason = getattr(metric, 'reason', '-')
+            if reason is not None:
+                logger.info(f"Metric Reason: {reason}")
+            self.metric_scores[metric_name].append(score)
+            return {"name": self.mobj.get_metric_name(metric), "score": score, "reason": reason}
+        except Exception as e:
+            logger.error(f"Error evaluating metric {self.mobj.get_metric_name(metric)}: {e}")
     
     def load_csv_to_dict(self, csv_path: str) -> List[Dict[str, Any]]:
         """
@@ -181,24 +181,24 @@ async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
         os.makedirs(results_dir)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     results_file_path = os.path.join(results_dir, f"eval_{timestamp}.json")
-    #try:
-    logger.info("Initialising the pipeline for evaluation....")
-    eval_instance = Eval(data_path, results_file_path)
-    await eval_instance.init_rag_pipeline()
-    print("-"*120)
-    csv_content = eval_instance.load_csv_to_dict(qa_csv_path)
-    for idx, qa_pair in enumerate(csv_content):
-        input_query = qa_pair['question']
-        ground_truth = qa_pair.get('ground_truth', None)
-        logger.info(f"Evaluating: ID {idx} | Question: {input_query} | Ground Truth: {ground_truth}")
-        await eval_instance.evaluate(input_query, ground_truth)
-        if save_results_flag:
-            await eval_instance.save_results()
-        await eval_instance.display_stats()
+    try:
+        logger.info("Initialising the pipeline for evaluation....")
+        eval_instance = Eval(data_path, results_file_path)
+        await eval_instance.init_rag_pipeline()
         print("-"*120)
-    # except Exception as e:
-    #     logger.error(f"Error during evaluation: {e}")
-    #     exit(1)
+        csv_content = eval_instance.load_csv_to_dict(qa_csv_path)
+        for idx, qa_pair in enumerate(csv_content):
+            input_query = qa_pair['question']
+            ground_truth = qa_pair.get('ground_truth', None)
+            logger.info(f"Evaluating: ID {idx} | Question: {input_query} | Ground Truth: {ground_truth}")
+            await eval_instance.evaluate(input_query, ground_truth)
+            if save_results_flag:
+                await eval_instance.save_results()
+            await eval_instance.display_stats()
+            print("-"*120)
+    except Exception as e:
+        logger.error(f"Error during evaluation: {e}")
+        exit(1)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate LLaMA Index Questions and Answers.")

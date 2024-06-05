@@ -1,6 +1,6 @@
 import yaml
 from typing import Dict, Any
-from custom import CustomModel
+from .custom import CustomModel
 
 class ConfigLoader:
     """Class for loading and processing evaluation metrics configuration."""

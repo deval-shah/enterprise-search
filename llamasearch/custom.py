@@ -1,13 +1,8 @@
 from deepeval.models.base_model import DeepEvalBaseLLM
-from llama_cpp import Llama
-from deepeval.metrics import AnswerRelevancyMetric
 import requests
 
-import requests
-import json
-
-#Define additional options
-options = {
+# Model options
+model_params = {
     "temperature": 0.,
     "num_predict": 4096,
     "num_ctx": 8192,
@@ -38,133 +33,98 @@ options = {
     "num_thread": 64
 }
 
+import requests
+from typing import Any, Dict, Optional
 
-def log_to_file(data, filename="api_logs.json"):
-    """
-    Logs data to a JSON file in a structured and pretty format.
-
-    Args:
-    data (dict): The data to log.
-    filename (str): The filename of the log file.
-
-    """
-    with open(filename, 'a') as file:  # Open the file in append mode
-        json.dump(data, file, indent=2)  # Write data with indentation for readability
-        file.write('\n')  # Add a newline for separating entries
+class DeepEvalBaseLLM:
+    # Placeholder for the base class
+    pass
 
 class CustomModel(DeepEvalBaseLLM):
-    def __init__(self, model="llama3:70b", base_url='http://localhost:11435'):
+    """
+    A custom model class to interact with an LLM based on the Llama3:70b model,
+    providing functionalities to load the model, generate responses, and manage model settings.
+    """
+
+    def __init__(self, model: str = "llama3:70b", base_url: str = 'http://localhost:11435') -> None:
+        """
+        Initializes the CustomModel with a specific LLM model and API base URL.
+
+        Args:
+            model (str): The model identifier, default is "llama3:70b".
+            base_url (str): The base URL for the API endpoint, default is 'http://localhost:11435'.
+        """
         self.base_url = base_url
         self.model = model
 
-    def load_model(self):
+    def load_model(self) -> str:
+        """
+        Loads the model configuration.
+
+        Returns:
+            str: The model identifier.
+        """
         return self.model
 
-    def generate(self, user_message, only_message=True):
+    def generate(self, user_message: str, only_message: bool = True, model_params: Optional[Dict[str, Any]] = None) -> Optional[str]:
+        """
+        Generates a response from the model based on the user's message.
+
+        Args:
+            user_message (str): The message from the user to which the model should respond.
+            only_message (bool): Flag to determine if only the message content should be returned, default is True.
+            model_params (Optional[Dict[str, Any]]): Additional model parameters to be sent to the API.
+
+        Returns:
+            Optional[str]: The generated response or None if an error occurs.
+        """
         url = f"{self.base_url}/api/chat"
         data = {
             "model": self.model,
-            #"prompt": user_message,
             "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a helpful AI assistant that strictly follows the given instructions"
-                },
-                {
-                    "role": "user",
-                    "content": user_message
-                }
+                {"role": "system", "content": "You are a helpful AI assistant that strictly follows the given instructions"},
+                {"role": "user", "content": user_message}
             ],
             "stream": False,
             "format": "json",
             "grammar": "./model_files/json_arr.gbnf",
-            #"raw": True,
             "keep_alive": "30m"
         }
-        # print("\n\n")   
-        # print("OLLAMA :: Sending the data to the API:")
-        # print(json.dumps(data, indent=2))
-        # print("\n\n")
-        # Include provided options in the data payload
-        if options:
-            print("Using options ", options)
-            data.update(options)
 
-        response = requests.post(url, json=data)
+        if model_params:
+            print("Using model params ", model_params)
+            data.update(model_params)
 
-        if response.status_code == 200:
-            try:
-                response_data = response.json()
-                if only_message:
-                    response_data = response_data.get('message', {}).get('content', 'Empty response from LLM')
-                    #response_data = response_data.get('response', '{"message": "Empty response from LLM"}')
-                # #############################
-                # log_data = {
-                #     "prompt": user_message,
-                #     "response": response_data
-                # }
-                # log_to_file(log_data)
-                # #############################
-                return response_data
-            except ValueError:
-                print("Failed to decode JSON response")
-                return None
-        else:
-            print(f"Failed to get valid response, status code: {response.status_code}")
+        try:
+            response = requests.post(url, json=data)
+            response.raise_for_status()  # Raises HTTPError for bad requests (4XX, 5XX)
+            response_data = response.json()
+            if only_message:
+                return response_data.get('message', {}).get('content', 'Empty response from LLM')
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed: {str(e)}")
             return None
-    
-    async def a_generate(self, prompt: str) -> str:
+        except ValueError:
+            print("Failed to decode JSON response")
+            return None
+
+    async def a_generate(self, prompt: str) -> Optional[str]:
+        """
+        Asynchronous wrapper for the generate method.
+
+        Args:
+            prompt (str): The user's prompt for which a response is generated.
+
+        Returns:
+            Optional[str]: The generated response or None if an error occurs.
+        """
         return self.generate(prompt)
 
-    def get_model_name(self):
-        return "Llama 3 70B"
+    def get_model_name(self) -> str:
+        """
+        Retrieves the name of the model.
 
-# class CustomModel(DeepEvalBaseLLM):
-#     def __init__(
-#         self
-#     ):
-#         self.model = Llama(model_path="./models/Meta-Llama-3-70B-Instruct.Q4_K_M.gguf", chat_format="chatml", n_ctx=8192, n_gpu_layers=35)
-
-#     def load_model(self):
-#         return self.model
-
-#     def generate(self, prompt: str) -> str:
-#         res = self.model.create_chat_completion(
-#             messages=[
-#                 {
-#                     "role": "system",
-#                     "content": "You are a helpful assistant that outputs in JSON. Only return a valid json when specifically asked",
-#                     "features": [
-#                         "Understand and analyze user inputs effectively.",
-#                         "Generate responses in valid JSON format.",
-#                         "Ensure accuracy and relevance of the information provided.",
-#                         "Maintain a structured and coherent output format.",
-#                         "Include necessary fields and data as per user instructions.",
-#                         "Handle a variety of topics and contexts efficiently.",
-#                         "Provide detailed and context-aware responses."
-#                     ],
-#                     "tone": {
-#                         "style": "Professional and informative",
-#                         "guidelines": "Use clear and concise language. Ensure the information is accurate and well-organized. Maintain a professional tone throughout the response."
-#                     },
-#                 },
-#                 {"role": "user", "content": prompt},
-#             ],
-#             response_format={
-#                 "type": "json_object"
-#             },
-#             temperature=0.
-#         )
-#         message = res["choices"][0]["message"]["content"]
-#         return message
-
-#     async def a_generate(self, prompt: str) -> str:
-#         return self.generate(prompt)
-
-#     def get_model_name(self):
-#         return "Llama 3 70B"
-
-
-# llama38b = LLaMA38B()
-# print(llama38b.generate("Write me a joke"))
-# metric = AnswerRelevancyMetric(model=llama38b)
+        Returns:
+            str: The name of the model.
+        """
+        return self.model

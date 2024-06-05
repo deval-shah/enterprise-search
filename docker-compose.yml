@@ -1,14 +1,13 @@
 version: '3.7'
 
 services:
-  # ES Pipeline
+  #ES Pipeline
   es:
     image: docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest
     container_name: enterprise_search
     volumes:
       - ./model_files:/app/model_files
       - ./config.yaml:/app/config.yaml  # Override the default config
-      - ./eval_metrics_config.yaml:/app/eval_metrics_config.yaml
       - ./data/test_data:/data
     network_mode: host
     deploy:

@@ -1,3 +1,4 @@
+{{- if .Values.qdrant.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,3 +35,4 @@ spec:
           timeoutSeconds: 1
           failureThreshold: 6
           successThreshold: 1
+{{- end }}

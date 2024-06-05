@@ -12,6 +12,8 @@ llama-index-embeddings-huggingface
 llama-index-vector-stores-qdrant
 llama-index-storage-kvstore-redis
 llama-index-storage-docstore-redis
+llama-index-postprocessor-flag-embedding-reranker
+git+https://github.com/FlagOpen/FlagEmbedding.git
 deepeval
 pytest
 datasets

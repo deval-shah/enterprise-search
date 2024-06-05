@@ -1,4 +1,5 @@
 ---
+{{- if .Values.prometheus.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -46,3 +47,4 @@ spec:
         - name: prometheus-storage
           persistentVolumeClaim:
             claimName: {{ .Values.prometheus.volumes.data.pvcName }}
+{{- end }}

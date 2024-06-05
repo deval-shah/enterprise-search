@@ -4,7 +4,7 @@ from deepeval.metrics import (
     ContextualRecallMetric, ContextualRelevancyMetric, GEval
 )
 from typing import Dict, Any
-from config import ConfigLoader
+from .config import ConfigLoader
 
 from deepeval.models import GPTModel
 
