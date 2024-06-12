@@ -14,7 +14,7 @@ model_params = {
     "typical_p": 0.7,
     "repeat_last_n": 33,
     "repeat_penalty": 1.2,
-    "presence_penalty": 1.5,
+    "presence_penalty": -0.5,
     "frequency_penalty": 1.0,
     "mirostat": 1,
     "mirostat_tau": 0.8,

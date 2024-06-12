@@ -106,7 +106,7 @@ class LlamaIndexApp:
     #         query_gen_prompt=QUERY_GEN_PROMPT,
     #     )
 
-    def setup_reranker(self, top_n=5):
+    def setup_reranker(self, top_n=2):
         self.reranker = FlagEmbeddingReranker(
             top_n=top_n,
             model=self.config.reranker.model,
@@ -129,9 +129,9 @@ class LlamaIndexApp:
             logger.info("Setting up the Ingestion pipeline....")
             self.pipeline = IngestionPipeline(
                 transformations=[
-                    SemanticSplitterNodeParser(buffer_size=5, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                    #SentenceSplitter(chunk_size=512, chunk_overlap=25),
-                    #TitleExtractor(num_workers=8),
+                    #SemanticSplitterNodeParser(buffer_size=5, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
+                    SentenceSplitter(chunk_size=512, chunk_overlap=25),
+                    # TitleExtractor(num_workers=8),
                     Settings.embed_model,
                 ],
                 vector_store=self.vector_store,
