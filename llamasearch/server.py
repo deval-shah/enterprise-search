@@ -1,13 +1,13 @@
 from fastapi import HTTPException, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
-from typing import List, Optional
-from pipeline import query_app, get_context_from_response
-from logger import logger
-from utils import profile_
-from settings import config
 import aiofiles
 import os
+from llamasearch.pipeline import query_app, get_context_from_response
+from llamasearch.logger import logger
+from llamasearch.utils import profile_
+from llamasearch.settings import config
+from typing import List, Optional
 
 router = APIRouter()
 

@@ -190,8 +190,11 @@ This configuration ensures all components of the system are appropriately direct
 
 ## Release Notes
 
-Version 1.0.4 - 05/06/2024
+**Version 1.0.4 - 05/06/2024**
 - Renamed src folder to llamasearch
-- Updated the default model to 'llama-chatqa' by Nvidia (https://huggingface.co/nvidia/Llama3-ChatQA-1.5-8B)
-- Updated the model prompts
+- Updated the default model to 'llama3'
+- Updated the user prompt template for the llama3 model
 - Added reranker to improve retriever results
+- Added citations support for query (Now we can see the doc id, text etc. that model used to generate)
+- Added a flag to enable/disable services in k8s deployment values file. Added to avoid deploying all services during development.
+- Simplified README, added docs folder

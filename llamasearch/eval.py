@@ -7,13 +7,12 @@ import signal
 from datetime import datetime
 import argparse
 import asyncio
-from .pipeline import LlamaIndexApp
-from .metrics import MetricsEvaluator
-from .logger import logger
+from llamasearch.pipeline import LlamaIndexApp
+from llamasearch.metrics import MetricsEvaluator
+from llamasearch.logger import logger
 import numpy as np
 
-#metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
-metrics_to_evaluate = ['faithfulness', 'answer_relevancy']
+metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
 
 class Eval:
     """

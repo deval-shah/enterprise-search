@@ -18,10 +18,10 @@ redis_config:
   port: 6379
 
 embedding:
-  model: "local:BAAI/bge-small-en-v1.5"
+  embed_model: "local:BAAI/bge-small-en-v1.5"
 
 llm:
-  model: "llama3-chatqa"
+  llm_model: "llama3"
 
 reranker:
   model: "BAAI/bge-reranker-large"

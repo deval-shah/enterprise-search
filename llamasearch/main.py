@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
-from logger import logger
-from server import router
+from llamasearch.logger import logger
+from llamasearch.server import router
 
 app = FastAPI()
 app.include_router(router)

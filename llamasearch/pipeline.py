@@ -19,12 +19,12 @@ from llama_index.postprocessor.flag_embedding_reranker import (
 import argparse
 import os
 import asyncio
-import qdrant_client
-from .logger import logger
-from .utils import profile_
 from typing import Optional
-from .docxreader import DocxReader
-from .settings import config
+import qdrant_client
+from llamasearch.logger import logger
+from llamasearch.utils import profile_
+from llamasearch.docxreader import DocxReader
+from llamasearch.settings import config
 
 QUERY_GEN_PROMPT = (
     "You are a helpful assistant that generates multiple search queries based on a "
@@ -129,8 +129,8 @@ class LlamaIndexApp:
             logger.info("Setting up the Ingestion pipeline....")
             self.pipeline = IngestionPipeline(
                 transformations=[
-                    #SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                    SentenceSplitter(chunk_size=512, chunk_overlap=25),
+                    SemanticSplitterNodeParser(buffer_size=5, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
+                    #SentenceSplitter(chunk_size=512, chunk_overlap=25),
                     #TitleExtractor(num_workers=8),
                     Settings.embed_model,
                 ],
@@ -178,13 +178,13 @@ class LlamaIndexApp:
     def update_prompt(self):
         template = (
         """
-            You are a conversational AI developed by NVIDIA. Use the detailed context provided to accurately answer the question. If the context lacks necessary details, kindly reply with: 'Insufficient context to provide an answer.' Here’s how you should respond:
-            System: This chat involves complex question answering. Please adhere strictly to the context for facts.
-            {context_str}
+            You are a helpful AI assistant. Use the provided context to accurately answer the question.
+            If the context lacks necessary details, please reply with: 'Insufficient context to provide an answer.\n' and end the response.
             User: {query_str}
+            Context: {context_str}
             Assistant: 
             ---------------------
-            Kindly answer the above question considering the provided context. Ensure your response is concise and informative.
+            Kindly answer the above question considering the provided context. Ensure your response is concise and strictly follows the instructions.
         """
         )
         qa_template = PromptTemplate(template)
@@ -209,7 +209,7 @@ class LlamaIndexApp:
                 {"response_synthesizer:text_qa_template": qa_template}
             )
             response = self.query_engine.query(query)
-            #pprint_response(response, show_source=True)
+            pprint_response(response, show_source=True)
         except Exception as e:
             logger.error(f"An error occurred in the query engine call: {str(e)}")
             os._exit(1)
@@ -287,10 +287,10 @@ if __name__ == "__main__":
     try:
         response = asyncio.run(query_app(args.query, args.data_path))
         logger.info(f"Response: {response}")
-        if args.context is True:
+        if args.context:
             document_info, retrieval_context = get_context_from_response(response)
             context_details = '\n'.join(["File Path: {}, File Name: {}, Last Modified: {}, Document ID: {}".format(
                 path, details['file_name'], details['last_modified_date'], details['doc_id']) for path, details in document_info.items()])
-            logger.debug('\n' + '=' * 60 + '\nDocument Context Information\n' + context_details + '\n' + '=' * 60)
+            logger.info('\n' + '=' * 60 + '\nDocument Context Information\n' + context_details + '\n' + '=' * 60)
     except Exception as e:
         logger.error(f"An error occurred: {e}")
