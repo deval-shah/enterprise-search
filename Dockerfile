@@ -15,7 +15,7 @@ COPY install.sh /app/install.sh
 ENV PATH=/usr/local/cuda/bin:$PATH
 ENV CUDAToolkit_ROOT=/usr/local/cuda
 ENV PYTHONPATH="${PYTHONPATH}:/app/llamasearch"
-RUN pip install --upgrade pip && pip install -r requirements.txt && pip install git+https://github.com/FlagOpen/FlagEmbedding.git
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY llamasearch/*py /app/llamasearch/
 COPY model_files/*.gbnf /app/model_files/

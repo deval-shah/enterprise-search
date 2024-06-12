@@ -28,10 +28,9 @@ class ConfigLoader:
         for metric_name, metric_config in self.config['metrics'].items():
             model_type = metric_config.get('model_type', 'api')
             if model_type == 'custom':
-                logger.info("Using custom model for evalution....")
+                logger.debug("Using custom model for evalution....")
                 # Assuming a function or a way to get a custom model instance
                 metric_config['model'] = self.get_model(model_type, metric_config['model'])
-                logger.info("Using custom model for evalution....", metric_config['model'])
             else:
                 # For API models, assume using the model identifier as is or another way to handle API models
                 metric_config['model'] = metric_config['model']

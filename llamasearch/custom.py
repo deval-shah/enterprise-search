@@ -1,9 +1,10 @@
 from deepeval.models.base_model import DeepEvalBaseLLM
+from typing import Any, Dict, Optional
 import requests
 
 # Model options
 model_params = {
-    "temperature": 0.,
+    "temperature": 0.2,
     "num_predict": 4096,
     "num_ctx": 8192,
     "seed": 42,
@@ -19,8 +20,8 @@ model_params = {
     "mirostat_tau": 0.8,
     "mirostat_eta": 0.6,
     "penalize_newline": True,
-    #"stop": ["\n", "user:"],
-    "stop": ["\n\n"],
+    "stop": ["\n", "user:"],
+    # "stop": ["\n\n"],
     "numa": False,
     "num_batch": 2,
     "num_gpu": 1,
@@ -32,13 +33,6 @@ model_params = {
     "use_mlock": False,
     "num_thread": 64
 }
-
-import requests
-from typing import Any, Dict, Optional
-
-class DeepEvalBaseLLM:
-    # Placeholder for the base class
-    pass
 
 class CustomModel(DeepEvalBaseLLM):
     """
@@ -128,3 +122,25 @@ class CustomModel(DeepEvalBaseLLM):
             str: The name of the model.
         """
         return self.model
+
+def main():
+    # Create an instance of the model
+    model = CustomModel()
+    # Load the model, which currently just returns the model name
+    model_name = model.load_model()
+    print(f"Loaded model: {model_name}")
+    # Take input from the user and generate responses
+    try:
+        while True:
+            # Take input from the user
+            user_input = input("Enter your message (type 'exit' to quit): ")
+            if user_input.lower() == 'exit':
+                break
+            # Generate a response using the custom model
+            response = model.generate(user_input, only_message=True)
+            print(f"Response: {response}")
+    except KeyboardInterrupt:
+        print("\nExited by user")
+
+if __name__ == "__main__":
+    main()

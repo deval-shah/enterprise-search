@@ -61,7 +61,6 @@ The evaluation process involves executing the main script with appropriate argum
 python -m llamasearch.eval --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
 ```
 
-- `--config_path`: Specifies the path to the YAML configuration file for the RAG Pipeline.
 - `--data_path`: Indicates the directory where your documents for indexing are stored.
 - `--qa_csv_path`: The path to the QA CSV file containing your evaluation dataset.
 - `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.

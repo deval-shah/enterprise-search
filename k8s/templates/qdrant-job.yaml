@@ -1,3 +1,4 @@
+{{- if .Values.qdrant.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -29,3 +30,4 @@ spec:
         - name: config
           configMap:
             name: {{ .Values.qdrant.volumes.config.configMapName }}
+{{- end }}
