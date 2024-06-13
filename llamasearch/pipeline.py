@@ -1,6 +1,5 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core.node_parser import SemanticSplitterNodeParser
-from llama_index.core.extractors import TitleExtractor
+from llama_index.core.node_parser import SemanticSplitterNodeParser, SentenceSplitter
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.vector_stores.qdrant import QdrantVectorStore
@@ -9,15 +8,31 @@ from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.ollama import Ollama
 from llama_index.core import PromptTemplate
 from llama_index.storage.docstore.redis import RedisDocumentStore
+from llama_index.core.response.pprint_utils import pprint_response
+from llama_index.postprocessor.flag_embedding_reranker import (
+    FlagEmbeddingReranker,
+)
+# from llama_index.core.extractors import TitleExtractor
+# from llama_index.retrievers.bm25 import BM25Retriever
+# from llama_index.core.retrievers import QueryFusionRetriever
+# from llama_index.core.query_engine import RetrieverQueryEngine
 import argparse
 import os
 import asyncio
-import qdrant_client
-from src.logger import logger
-from src.utils import profile_
 from typing import Optional
-from src.docxreader import DocxReader
-from src.settings import config
+import qdrant_client
+from llamasearch.logger import logger
+from llamasearch.utils import profile_
+from llamasearch.docxreader import DocxReader
+from llamasearch.settings import config
+
+QUERY_GEN_PROMPT = (
+    "You are a helpful assistant that generates multiple search queries based on a "
+    "single input query. Generate {num_queries} search queries, one on each line, "
+    "related to the following input query:\n"
+    "Query: {query}\n"
+    "Queries:\n"
+)
 
 class LlamaIndexApp:
     """
@@ -39,20 +54,22 @@ class LlamaIndexApp:
         self.setup_vector_store()
         self.setup_cache()
         self.setup_pipeline()
+        self.setup_reranker()
+        #self.setup_bm25_retriever()
 
     def setup_embed_model(self):
         """Initializes the embedding model based on the configuration."""
-        Settings.embed_model = resolve_embed_model(self.config.embedding.embed_model)
+        Settings.embed_model = resolve_embed_model(self.config.embedding.model)
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
         base_url = os.getenv('OLLAMA_SERVER_URL', 'http://localhost:11434')
-        logger.info(f"Running model {self.config.llm.llm_model} on URL : {base_url}")
+        logger.info(f"Running model {self.config.llm.model} on URL : {base_url}")
         Settings.llm = Ollama(
                       base_url=base_url,
-                      model=self.config.llm.llm_model,
-                      temperature=0.7,
-                      additional_kwargs={"num_predict": 128, "num_ctx": 2048},
+                      model=self.config.llm.model,
+                      temperature=0.2,
+                      additional_kwargs={"num_predict": 256, "num_ctx": 8192},
                       request_timeout=30.0
                     )
 
@@ -74,6 +91,27 @@ class LlamaIndexApp:
             logger.error(f"Failed to initialize the vector store: {e}")
             raise PipelineSetupError("Failed to initialize the vector store") from e
 
+    # def setup_bm25_retriever(self):
+    #     self.bm25_retriever = BM25Retriever.from_defaults(
+    #         docstore=self.index.docstore, similarity_top_k=2
+    #     )
+        
+    #     self.retriever = QueryFusionRetriever(
+    #         [self.vector_store, self.bm25_retriever],
+    #         similarity_top_k=2,
+    #         num_queries=4,  # set this to 1 to disable query generation
+    #         mode="reciprocal_rerank",
+    #         use_async=True,
+    #         verbose=True,
+    #         query_gen_prompt=QUERY_GEN_PROMPT,
+    #     )
+
+    def setup_reranker(self, top_n=2):
+        self.reranker = FlagEmbeddingReranker(
+            top_n=top_n,
+            model=self.config.reranker.model,
+        )
+
     def setup_cache(self):
         """Initializes the ingestion cache using Redis for storing intermediate results."""
         try:
@@ -91,9 +129,9 @@ class LlamaIndexApp:
             logger.info("Setting up the Ingestion pipeline....")
             self.pipeline = IngestionPipeline(
                 transformations=[
-                    SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                    #SentenceSplitter(chunk_size=1024, chunk_overlap=20),
-                    #TitleExtractor(num_workers=8),
+                    #SemanticSplitterNodeParser(buffer_size=5, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
+                    SentenceSplitter(chunk_size=512, chunk_overlap=25),
+                    # TitleExtractor(num_workers=8),
                     Settings.embed_model,
                 ],
                 vector_store=self.vector_store,
@@ -104,14 +142,14 @@ class LlamaIndexApp:
             logger.error(f"Failed to setup ingestion pipeline: {e}")
             raise PipelineSetupError("Failed to setup pipeline.") from e
 
-    #@profile_
+    @profile_
     async def load_documents(self):
         """Loads documents from the specified directory for indexing."""
         logger.info("Loading documents from the specified directory for indexing.")
-        allowed_exts = [".pdf", ".docx", ".txt"]
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
+        allowed_exts = [".pdf", ".docx", ".txt", ".csv"]
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
 
-    #@profile_
+    @profile_
     async def run_pipeline(self):
         """
         Processes the loaded documents through the ingestion pipeline.
@@ -124,7 +162,7 @@ class LlamaIndexApp:
         logger.info(f"Ingested {len(nodes)} Nodes")
         return nodes
 
-    #@profile_
+    @profile_
     async def index_documents(self, nodes):
         """Indexes the processed documents."""
         logger.debug("Indexing processed documents.")
@@ -134,20 +172,20 @@ class LlamaIndexApp:
     def set_query_engine(self):
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
-        self.query_engine = self.index.as_query_engine()
+        self.query_engine = self.index.as_query_engine(similarity_top_k=20, node_postprocessors=[self.reranker])
+        #self.query_engine = RetrieverQueryEngine.from_args(self.retriever)
 
     def update_prompt(self):
         template = (
-            "\n"
-            "[INST] You are an AI trained to accurately use detailed context to answer questions. Follow these guidelines: \n"
-            "- Use the provided context information from the document below to answer the question. \n"
-            "- Your answer should be short, concise and grounded in the document's facts,  \n"
-            "- If the provided context does not contain sufficient facts to answer the question, respond with: 'I am unable to answer based on the given context information.' \n"
-            "[/INST]\n"
-            "\n"
-            "{context_str}\n"
-            "---------------------\n"
-            "Based on the above context, please answer the question: {query_str}. Strictly follow guidelines\n"
+        """
+            You are a helpful AI assistant. Use the provided context to accurately answer the question.
+            If the context lacks necessary details, please reply with: 'Insufficient context to provide an answer.\n' and end the response.
+            User: {query_str}
+            Context: {context_str}
+            Assistant: 
+            ---------------------
+            Kindly answer the above question considering the provided context. Ensure your response is concise and strictly follows the instructions.
+        """
         )
         qa_template = PromptTemplate(template)
         return qa_template
@@ -171,6 +209,7 @@ class LlamaIndexApp:
                 {"response_synthesizer:text_qa_template": qa_template}
             )
             response = self.query_engine.query(query)
+            pprint_response(response, show_source=True)
         except Exception as e:
             logger.error(f"An error occurred in the query engine call: {str(e)}")
             os._exit(1)
@@ -189,7 +228,7 @@ def get_context_from_response(response_object):
             - List of contents extracted from the 'source_nodes' that contribute to the response
 
     Iterating over each document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
-    summary of these details and maps it to the response. Useful for citing the source.
+    summary of these details and maps it to the response.
     """
     document_info = {}
     retrieval_context = None
@@ -241,15 +280,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ES pipeline")
     parser.add_argument("--query", type=str, help="Query text to ask question on the data", required=True)
     parser.add_argument("--data_path", type=str, help="Knowledge base folder path", default='./data/test', required=False)
+    parser.add_argument("--context", type=bool, help="Flag to display retrieved context", default=True, required=False)
     args = parser.parse_args()
 
     logger.info("Starting the pipeline...")
     try:
         response = asyncio.run(query_app(args.query, args.data_path))
         logger.info(f"Response: {response}")
-        document_info, retrieval_context = get_context_from_response(response)
-        context_details = '\n'.join(["File Path: {}, File Name: {}, Last Modified: {}, Document ID: {}".format(
-            path, details['file_name'], details['last_modified_date'], details['doc_id']) for path, details in document_info.items()])
-        logger.debug('\n' + '=' * 60 + '\nDocument Context Information\n' + context_details + '\n' + '=' * 60)
+        if args.context:
+            document_info, retrieval_context = get_context_from_response(response)
+            context_details = '\n'.join(["File Path: {}, File Name: {}, Last Modified: {}, Document ID: {}".format(
+                path, details['file_name'], details['last_modified_date'], details['doc_id']) for path, details in document_info.items()])
+            logger.info('\n' + '=' * 60 + '\nDocument Context Information\n' + context_details + '\n' + '=' * 60)
     except Exception as e:
         logger.error(f"An error occurred: {e}")

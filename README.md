@@ -3,7 +3,8 @@
 ## Overview
 
 The Enterprise Search project is intended to index and query documents efficiently using a combination of LLM and vector search database. 
-It follows a It leverages the LLaMA index framework to process, embed, and index documents for semantic search. This project integrates Qdrant as a vector search engine and Redis for caching and document storage.
+
+It leverages the LLaMA index framework to process, embed, and index documents for semantic search. We use Qdrant as a vector search engine (for indexing/retrieval of the document data) and Redis for document storage and caching.
 
 ## Prerequisites
 
@@ -13,36 +14,43 @@ Before setting up the project, ensure you have the following installed:
 
 ## Setup Instructions
 
-### 1. Installation
+You have two options to set up the Enterprise Search application: using Docker or Conda. Choose the method that best suits your development environment and preferences.
 
-**Building the Docker image for the ES pipeline:**
+### Option 1: Docker Setup
 
-To build your Docker image from the Dockerfile:
+**Build and run the Docker image for the Enterprise Search pipeline:**
 
-```bash
-docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest .
-```
+1. **Build the Docker Image:**
+   Open your terminal and run the following command to build the Docker image:
+   ```bash
+   docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest .
+   ```
 
-**Local Testing with Conda:**
+2. **Run the Docker Compose:**
+   After building the image, use Docker Compose to start the services:
+   ```bash
+   docker-compose up
+   ```
+   **Note:** Ensure the Enterprise Search service declaration is active in the `docker-compose.yml`.
 
-If you prefer to test the application locally without Docker, set up a Conda environment and install the necessary dependencies:
+### Option 2: Conda Setup (Local Testing)
 
-- **Create and activate a new Conda environment:**
+**Set up a local Conda environment and install dependencies:**
 
-```bash
-conda create --name es_env python=3.9
-conda activate es_env
-```
+1. **Create a Conda Environment:**
+   Use these commands to create and activate a new environment named `es_env` with Python 3.9:
+   ```bash
+   conda create --name es_env python=3.9
+   conda activate es_env
+   ```
 
-- **Install dependencies:**
+2. **Install Dependencies:**
+   Navigate to the directory containing your `requirements.txt` file, then install the required Python packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Navigate to the directory containing your `requirements.txt` and run:
-
-```bash
-pip install -r requirements.txt
-```
-
-If you are not building the ES pipeline docker image, then comment the es service declaration in the `docker-compose.yml`.
+   **Important:** If you choose the Conda setup, ensure the Enterprise Search service declaration in the `docker-compose.yml` is commented out to avoid conflicts.
 
 ### 2. Setup Qdrant
 
@@ -51,7 +59,7 @@ Qdrant is utilized as the vector search database to support efficient searching 
 Run the docker compose file to start `redis` and `qdrant` services.
 
 ```bash
-docker-compose up
+docker-compose -f docker-compose.yml up
 ```
 
 - **Docker Compose Configuration**:
@@ -144,98 +152,31 @@ llm:
 
 This configuration ensures all components of the system are appropriately directed and connected. Ensure that these values align with your actual deployment setup, particularly URLs and ports for services like Qdrant and Redis.
 
-### 6. Running the Application
+### Test the Application
 
-Ensure you have uploaded documents into the `data_path` folder specified in your configuration file `config.yaml`. Make sure the paths exist(if running locally)
+**Before you start:**
+- Ensure that documents are uploaded to the `data_path` folder as specified in your `config.yaml`. This folder should exist on your system and be accessible.
+- A sample test PDF is provided in `./data/test/` for initial testing. You can also add other file types like text or DOCX files to this directory for further testing.
 
-A sample test pdf is added in `./data/test/` for testing. Feel free to add other pdf, text, docx files for testing.
+### Option 1: Using Streamlit Interface
+1. **Open your terminal and navigate to the project directory.**
+2. **Run the Streamlit application** by executing the following command:
+   ```bash
+   streamlit run src/streamlit-app.py
+   ```
+   This will start the Streamlit web interface, where you can interact with the application through a web browser.
 
-To run the streamlit application, navigate to the project directory and use the following command:
+### Option 2: Command Line Querying
+1. **If you prefer to use the command line** (useful for automation or integration into other processes), you can query the application directly. Navigate to the project directory in your terminal.
+2. **Execute a search query** by running:
+   ```bash
+   python -m llamasearch.pipeline --query "your search query here"
+   ```
+   Replace `"your search query here"` with your specific search terms.
 
-```bash
-streamlit run src/streamlit-app.py
-```
+## Kubernetes/Helm Deployment to the DPC cluster
 
-For querying without the Streamlit interface, you can use:
-
-```bash
-python -m src.pipeline --query "your search query here"
-```
-To test the application and check its output, you can use the Streamlit interface or directly interact with the command line interface as mentioned above.
-
-## Evaluation
-
-The Evaluation module is designed to assess the performance of the RAG Pipeline, specifically focusing on the quality of answers. 
-
-It leverages a set of metrics to provide a comprehensive evaluation of the system's output compared to ground truth data.
-
-### Interpreting the Results
-
-The results will include metrics scores for each query in a json, providing insights into the quality of the answers. These metrics measure the component wise and end to end accuracy of the rag pipeline.
-
-#### Metrics Explained:
-- `faithfulness`: A generator based metric that measures how factually accurate is the generated answer. 
-- `answer_relevancy`: A generator based metric that measures how relevant is the generated answer to the question.
-- `contextual_precision`: A retrievar based metric that measures the signal to noise ratio of retrieved context. Requires ground truth.
-- `contextual_recall`:  A retrievar based metric that measures whether it can retrieve all the relevant information required to answer the question. Requires ground truth.
-- `contextual_relevancy`: A retrievar based metric that measures the relevancy of the retrieved context, calculated based on both the question and contexts.
-- `coherence`: Checks alignment of answer with the question. It is custom LLM metric evaluated using model.
-
-### Prerequisites for Evaluation
-
-Ensure the system is set up as per the setup instructions above, with all dependencies installed and both Qdrant and Redis services running.
-
-### Preparing the Dataset
-
-1. Prepare a CSV file containing the questions and their corresponding ground truth answers. The CSV file should have at least two columns: `question` and `ground_truth`. There is a sample data in `./data/eval` folder that can be used for testing.
-
-2. Place your dataset in an accessible directory and note the path to this CSV file for the evaluation process.
-
-### Evaluation Metrics Configuration
-
-The evaluation process utilizes a metrics configuration file. The configuration specifies the thresholds and models used for each metric, as outlined below:
-
-- **Metrics**:
-  - `answer_relevancy`, `faithfulness`, `contextual_precision`, `contextual_recall`, `contextual_relevancy`, `coherence`: Each metric is configured with a `threshold` indicating the minimum acceptable score.
-- **Model Types**:
-  - `api`: Utilizes OpenAI's API for metric evaluation, suitable for production environments where high accuracy is essential.
-  - `custom`: Uses locally hosted LLM models for evaluation, offering flexibility and reduced costs at the expense of potential stability issues. Note: Custom model evaluation is currently experimental and may exhibit bugs, which will be addressed in future releases.
-- **Model Selection**:
-  - The `model` field specifies the model used for evaluation. For API model types, this typically refers to an OpenAI model identifier, such as `gpt-4-0125-preview` which is most suitable for the evaluation.
-- **Thresholds**:
-  - The `threshold` value for each metric defines the cut-off score for considering a response satisfactory. Scores above this threshold indicate acceptable performance on the metric.
-
-#### Environment Setup for Evaluation
-
-To perform evaluations using the `api` model type, you must set the `OPENAI_API_KEY` environment variable with your API key from OpenAI account [settings](https://platform.openai.com/api-keys). This key enables the application to authenticate with OpenAI's API for generating evaluation scores. Set the environment variable as follows before running evaluations:
-
-```bash
-export OPENAI_API_KEY='your_openai_api_key_here'
-```
-Ensure this variable is set in your environment to avoid authentication issues during the evaluation process.
-
-### Running the Evaluation
-
-The evaluation process involves executing the main script with appropriate arguments to specify the configuration file, data path, path to the QA CSV file, and an option to save the results.
-
-1. **Navigate to the Project Directory**: Ensure you are in the root directory of the Enterprise Search project.
-
-2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
-
-```bash
-python -m src.eval --config_path config.yml --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
-```
-
-- `--config_path`: Specifies the path to the YAML configuration file for the RAG Pipeline.
-- `--data_path`: Indicates the directory where your documents for indexing are stored.
-- `--qa_csv_path`: The path to the QA CSV file containing your evaluation dataset.
-- `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
-
-The script will process each question in the CSV file, perform a query against the indexed documents, and evaluate the responses using the specified metrics.
-
-You can replace the dataset with your documents and relevant Q/A pairs.
-
-Results will be logged and, if the `--save` flag is used, saved to a JSON file in the `./results` directory with a timestamped filename.
+- The [Eval README](docs/eval.md) file outlines the instructions on how to evaluate the ES pipeline.
 
 ## Kubernetes/Helm Deployment to the DPC cluster
 
@@ -249,10 +190,11 @@ Results will be logged and, if the `--save` flag is used, saved to a JSON file i
 
 ## Release Notes
 
-Version 1.0.3 - 08/05/2024
-- Updated pipeline and eval code to async mode
-- Updated config and code structure to simplify config loading across app
-- Updated logger and removed unwanted declarations throughout the code
-- Fixed bugs for local testing (now docker compose works for local testing)
-- Updated model to llama3 models in config.yaml
-- Fixed runtime issues during API call.
+**Version 1.0.4 - 05/06/2024**
+- Renamed src folder to llamasearch
+- Updated the default model to 'llama3'
+- Updated the user prompt template for the llama3 model
+- Added reranker to improve retriever results
+- Added citations support for query (Now we can see the doc id, text etc. that model used to generate)
+- Added a flag to enable/disable services in k8s deployment values file. Added to avoid deploying all services during development.
+- Simplified README, added docs folder

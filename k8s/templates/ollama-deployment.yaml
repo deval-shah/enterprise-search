@@ -1,3 +1,4 @@
+{{- if .Values.ollama.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -75,3 +76,4 @@ spec:
         - name: ollama-data
           persistentVolumeClaim:
             claimName: {{ .Values.ollama.volumes.data.pvcName }}
+{{- end }}

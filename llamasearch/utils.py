@@ -3,7 +3,7 @@ import time
 from functools import wraps
 from datetime import datetime
 from prometheus_client import Summary
-from src.logger import logger
+from llamasearch.logger import logger
 
 # Metrics dictionary to hold all metrics instances
 metrics = {}

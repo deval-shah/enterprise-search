@@ -4,7 +4,7 @@ import tempfile
 import shutil
 import os, streamlit as st
 from typing import List
-from pipeline import query_app
+from llamasearch.pipeline import query_app
 
 def profile_app(config_path: str, query: str) -> None:
     """

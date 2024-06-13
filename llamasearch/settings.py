@@ -17,10 +17,13 @@ class RedisConfig(BaseModel):
     port: int = 6379
 
 class Embedding(BaseModel):
-    embed_model: str = "local:BAAI/bge-small-en-v1.5"
+    model: str = "local:BAAI/bge-small-en-v1.5"
 
 class Llm(BaseModel):
-    llm_model: str = "llama3:8b"
+    model: str = "llama3:8b"
+
+class Reranker(BaseModel):
+    model: str = "BAAI/bge-reranker-large"
 
 class Eval(BaseModel):
     custom_model_grammar_path: str = "./model_files/json.gbnf"
@@ -40,6 +43,7 @@ class Config(BaseModel):
     vector_store_config: VectorStoreConfig = VectorStoreConfig()
     redis_config: RedisConfig = RedisConfig()
     embedding: Embedding = Embedding()
+    reranker: Reranker = Reranker()
     llm: Llm = Llm()
     eval: Eval = Eval()
 

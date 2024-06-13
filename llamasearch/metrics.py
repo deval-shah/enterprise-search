@@ -4,7 +4,11 @@ from deepeval.metrics import (
     ContextualRecallMetric, ContextualRelevancyMetric, GEval
 )
 from typing import Dict, Any
-from src.config import ConfigLoader
+from llamasearch.config import ConfigLoader
+
+# from deepeval.models import GPTModel
+# model = GPTModel(max_tokens=512)
+# metric = AnswerRelevancyMetric(model=model)
 
 class MetricsEvaluator:
     """Class to initialize and manage evaluation metrics based on configuration."""

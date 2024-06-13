@@ -1,4 +1,5 @@
 ---
+{{- if .Values.app.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -75,3 +76,4 @@ spec:
         - name: config-volume
           configMap:
             name: {{ .Values.app.volumes.config.configMapName }}
+{{- end }}

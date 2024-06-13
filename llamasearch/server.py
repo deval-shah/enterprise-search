@@ -1,13 +1,13 @@
 from fastapi import HTTPException, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
-from typing import List, Optional
-from src.pipeline import query_app
-from src.logger import logger
-from src.utils import profile_
-from src.settings import config
 import aiofiles
 import os
+from llamasearch.pipeline import query_app, get_context_from_response
+from llamasearch.logger import logger
+from llamasearch.utils import profile_
+from llamasearch.settings import config
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -65,10 +65,13 @@ async def query_index(query: str = Form(...), files: List[UploadFile] = File(Non
         logger.debug(f"Raw response from query_app: {response}")
         if response is None or not hasattr(response, 'response'):
             raise ValueError(f"Invalid response from query processing {response}.")
+        document_info, retrieval_context = get_context_from_response(response)
+        context_details = '\n'.join(["File Path: {}, File Name: {}, Last Modified: {}, Document ID: {}".format(
+            path, details['file_name'], details['last_modified_date'], details['doc_id']) for path, details in document_info.items()])
     except HTTPException as e:
         logger.error(f"HTTPException with detail: {e.detail}")
         raise HTTPException(status_code=500, detail=f"An error occurred during processing the query: {query}")
     except Exception as e:
         logger.error(f"Unhandled exception: {str(e)}")
         return JSONResponse(status_code=500, content={"detail": f"An error occurred during processing the query: {query}"})
-    return JSONResponse(content={"response": response.response, "query": query, "file_upload": file_upload_response}, status_code=200)
+    return JSONResponse(content={"response": response.response, "context": context_details, "query": query, "file_upload": file_upload_response}, status_code=200)
