@@ -4,6 +4,8 @@ from functools import wraps
 from datetime import datetime
 from prometheus_client import Summary
 from llamasearch.logger import logger
+import os, yaml
+from typing import Dict, Any
 
 # Metrics dictionary to hold all metrics instances
 metrics = {}
@@ -73,3 +75,28 @@ async def send_profiling_data(function_name, elapsed_time):
                     logger.error(f"Failed to send profiling data. Status: {response.status}")
     except Exception as e:
         logger.error(f"Failed to connect to profiling server: {e}")
+
+def load_yaml_file(filepath: str) -> Dict[str, Any]:
+    """
+    Load a YAML file and return the data as a dictionary.
+
+    Args:
+        filepath (str): The path to the YAML file to be loaded.
+
+    Returns:
+        Dict[str, Any]: The data from the YAML file as a dictionary.
+
+    Raises:
+        FileNotFoundError: If the YAML file does not exist.
+        yaml.YAMLError: If there is an error parsing the YAML.
+    """
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"No such file: '{filepath}'")
+
+    with open(filepath, 'r') as file:
+        try:
+            data = yaml.safe_load(file)  # Use safe_load to prevent execution of arbitrary code
+            return data
+        except yaml.YAMLError as exc:
+            print(f"Error in configuration file: {exc}")
+            raise

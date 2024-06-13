@@ -20,13 +20,13 @@ class Embedding(BaseModel):
     model: str = "local:BAAI/bge-small-en-v1.5"
 
 class Llm(BaseModel):
-    model: str = "llama3:8b"
+    modelfile: str = "modelfile.yaml"
 
 class Reranker(BaseModel):
     model: str = "BAAI/bge-reranker-large"
 
 class Eval(BaseModel):
-    custom_model_grammar_path: str = "./model_files/json.gbnf"
+    custom_model_grammar_path: str = "./model_files/json_arr.gbnf"
     model_name: str = "TheBloke/Mistral-7B-Instruct-v0.2-GGUF"
     filename: str = "mistral-7b-instruct-v0.2.Q5_K_M.gguf"
     chat_format: str = "chatml"
