@@ -1,0 +1,43 @@
+version: 1.0
+metadata:
+  author: "Deval Shah"
+  last_modified: "2024-06-07"
+  description: "Prompt to generate answer based on the query and context"
+model:
+  name: "llama3:8b"
+  # format: "json"
+  options:
+    temperature: 0.3 # controlling the randomness of the responses.
+    num_predict: 256
+    num_ctx: 8192
+    top_k: 20 # Reduces the probability of generating nonsense.
+    top_p: 0.7
+  stream: false
+  raw: true
+  #keep_alive: "5m" # Configures how long the model remains loaded in memory after a request.
+  system: "You are a helpful AI assistant that gives precise answers based on the user provided context." #"system message to (overrides what is defined in the Modelfile)"
+  #context: the context parameter returned from a previous request to /generate, this can be used to keep a short conversational memory
+prompts:
+  - role: user
+    text: >
+      Based on the provided context, please generate a direct answer to the posed query.
+
+      ===== START OF EXAMPLE ======
+      Example:
+      Example Query:
+      "How effective are current solar panels in converting sunlight into energy?"
+
+      Example Context:
+      Recent studies and product releases in 2024 show that solar panel technology has advanced significantly, with several manufacturers now offering panels that achieve higher efficiency rates.
+
+      Example Response:
+      The recent 2024 studies show significant advancements in solar panel technology with higher efficiency rates.
+      ===== END OF EXAMPLE ======
+
+      **
+      IMPORTANT: Please ensure the responses are in raw format. No additional words or explanations are needed.
+      Only include responses that are factual and directly relevant to the query, using the full context provided by the retrieved documents.
+      Align your response with context.
+      If the provided context does not sufficiently answer the query, respond with: 'I am unable to answer due to insufficient context.'
+      **
+    type: text

@@ -19,8 +19,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY llamasearch/*py /app/llamasearch/
 COPY model_files/*.gbnf /app/model_files/
-COPY config.yaml /app/
-COPY eval_metrics_config.yaml /app/
+COPY *.yaml /app/
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000

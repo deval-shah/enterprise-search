@@ -10,7 +10,7 @@ It leverages the LLaMA index framework to process, embed, and index documents fo
 
 Before setting up the project, ensure you have the following installed:
 - Python 3.8 or higher
-- Docker and Docker Compose (for Qdrant and Redis)
+- Docker and Docker Compose (for ES, Qdrant and Redis services)
 
 ## Setup Instructions
 
@@ -108,7 +108,7 @@ Redis serves as the caching and document storage layer. It is also configured to
 
 3. **Pull LLM Model**: Command to download the LLM model:
    ```bash
-   ollama pull mistral:7b-instruct
+   ollama pull llama3:8b
    ```
 
 ### 5. Configuration Setup
@@ -118,7 +118,7 @@ Update the `config.yaml` file with the necessary paths and configurations. The d
 ```yaml
 application:
   config_path: "config.yaml"
-  data_path: "/data/files"
+  data_path: "/data/test_data/"
   log_dir: "/data/app/logs"
   upload_subdir: "uploads"
 
@@ -129,7 +129,7 @@ qdrant_client_config:
 vector_store_config:
   collection_name: "test"
   vector_size: 384
-  distance: "Cosine"
+  distance: Cosine
 
 redis_config:
   host: "localhost"
@@ -139,7 +139,10 @@ embedding:
   embed_model: "local:BAAI/bge-small-en-v1.5"
 
 llm:
-  llm_model: "mistral:7b-instruct"
+  llm_model: "llama3"
+
+reranker:
+  model: "BAAI/bge-reranker-large"
 ```
 
 ### Configuration Descriptions:
@@ -148,7 +151,8 @@ llm:
 - **vector_store_config**: Details about the vector store configuration in Qdrant, including collection name, vector size, and distance metric.
 - **redis_config**: Configuration settings for Redis, specifying host and port.
 - **embedding**: Configuration for the embedding model used for document processing. Pulled from HuggingFace library.
-- **llm_model**: Llm used, indicating model name and version.
+- **llm_model**: llm used, indicating model name and version.
+- **reranker**: Reranker model to refine the results post retrieval stage.
 
 This configuration ensures all components of the system are appropriately directed and connected. Ensure that these values align with your actual deployment setup, particularly URLs and ports for services like Qdrant and Redis.
 
@@ -162,7 +166,7 @@ This configuration ensures all components of the system are appropriately direct
 1. **Open your terminal and navigate to the project directory.**
 2. **Run the Streamlit application** by executing the following command:
    ```bash
-   streamlit run src/streamlit-app.py
+   streamlit run llamasearch/streamlit-app.py
    ```
    This will start the Streamlit web interface, where you can interact with the application through a web browser.
 
@@ -174,11 +178,19 @@ This configuration ensures all components of the system are appropriately direct
    ```
    Replace `"your search query here"` with your specific search terms.
 
-## Kubernetes/Helm Deployment to the DPC cluster
+## Unit Testing
+
+- Run docker for all services and make sure all services are up and running. Follow steps 1 to 5.
+- Run the pytest file
+  ```bash
+    cd testing ; pytest test.py
+  ```
+
+## Evaluation
 
 - The [Eval README](docs/eval.md) file outlines the instructions on how to evaluate the ES pipeline.
 
-## Kubernetes/Helm Deployment to the DPC cluster
+## Deployment
 
 - The [README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using kubernetes and helm.
 
@@ -190,11 +202,7 @@ This configuration ensures all components of the system are appropriately direct
 
 ## Release Notes
 
-**Version 1.0.4 - 05/06/2024**
-- Renamed src folder to llamasearch
-- Updated the default model to 'llama3'
-- Updated the user prompt template for the llama3 model
-- Added reranker to improve retriever results
-- Added citations support for query (Now we can see the doc id, text etc. that model used to generate)
-- Added a flag to enable/disable services in k8s deployment values file. Added to avoid deploying all services during development.
-- Simplified README, added docs folder
+**Version 1.0.5 - 13/06/2024**
+- Added prompt template for llama3 8b model
+- Added Modelfile to configure llm settings
+- Pipeline updates and fixes

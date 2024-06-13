@@ -24,3 +24,4 @@ python-multipart
 prometheus_client
 prometheus-fastapi-instrumentator
 aiofiles
+IPython

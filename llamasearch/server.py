@@ -12,6 +12,7 @@ from typing import List, Optional
 router = APIRouter()
 
 upload_dir = os.path.join(config.application.data_path, config.application.upload_subdir)
+os.makedirs(upload_dir, exist_ok=True)
 
 @profile_
 @router.post("/uploadfile/")
@@ -19,7 +20,6 @@ async def upload_files(files: List[UploadFile] = File(...)):
     try:
         logger.debug(f"Received files: {len(files)}")
         responses = []
-        os.makedirs(upload_dir, exist_ok=True)
         logger.debug(f"Upload dir: {upload_dir}, files: {files}")
         for file in files:
             file_location = os.path.join(upload_dir, file.filename)
@@ -60,7 +60,7 @@ async def query_index(query: str = Form(...), files: List[UploadFile] = File(Non
             file_upload_response = await upload_files(files)
             file_upload_response = file_upload_response['file_upload']
         else:
-            logger.debug("No files recieved")
+            logger.info("No files recieved")
         response = await query_app(query=query, data_path=upload_dir)
         logger.debug(f"Raw response from query_app: {response}")
         if response is None or not hasattr(response, 'response'):

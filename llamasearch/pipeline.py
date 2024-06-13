@@ -20,9 +20,10 @@ import argparse
 import os
 import asyncio
 from typing import Optional
+from IPython.display import Markdown, display
 import qdrant_client
 from llamasearch.logger import logger
-from llamasearch.utils import profile_
+from llamasearch.utils import profile_, load_yaml_file
 from llamasearch.docxreader import DocxReader
 from llamasearch.settings import config
 
@@ -63,15 +64,19 @@ class LlamaIndexApp:
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
+        llm_config = load_yaml_file(self.config.llm.modelfile)
+        model_settings = llm_config['model']
+        model_name = model_settings.pop('name', None)
+        if not model_name:
+            raise ValueError("Model name is not specified in the model YAML {} configuration.")
         base_url = os.getenv('OLLAMA_SERVER_URL', 'http://localhost:11434')
-        logger.info(f"Running model {self.config.llm.model} on URL : {base_url}")
+        logger.info(f"Running model {model_name} on {base_url}")
         Settings.llm = Ollama(
-                      base_url=base_url,
-                      model=self.config.llm.model,
-                      temperature=0.2,
-                      additional_kwargs={"num_predict": 256, "num_ctx": 8192},
-                      request_timeout=30.0
-                    )
+            base_url=base_url,
+            model=model_name,
+            **model_settings
+        )
+        self.prompt_template = llm_config['prompts'][0]['text']
 
     def setup_vector_store(self):
         """Initializes the vector store client and vector store based on the configuration."""
@@ -106,7 +111,7 @@ class LlamaIndexApp:
     #         query_gen_prompt=QUERY_GEN_PROMPT,
     #     )
 
-    def setup_reranker(self, top_n=2):
+    def setup_reranker(self, top_n=5):
         self.reranker = FlagEmbeddingReranker(
             top_n=top_n,
             model=self.config.reranker.model,
@@ -172,23 +177,31 @@ class LlamaIndexApp:
     def set_query_engine(self):
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
-        self.query_engine = self.index.as_query_engine(similarity_top_k=20, node_postprocessors=[self.reranker])
+        self.query_engine = self.index.as_query_engine(similarity_top_k=30, node_postprocessors=[self.reranker])
         #self.query_engine = RetrieverQueryEngine.from_args(self.retriever)
 
     def update_prompt(self):
+        query_context_str = """
+            Query:
+            {query_str}
+
+            Context:
+            {context_str}
+
+            Response:
+        """
         template = (
-        """
-            You are a helpful AI assistant. Use the provided context to accurately answer the question.
-            If the context lacks necessary details, please reply with: 'Insufficient context to provide an answer.\n' and end the response.
-            User: {query_str}
-            Context: {context_str}
-            Assistant: 
-            ---------------------
-            Kindly answer the above question considering the provided context. Ensure your response is concise and strictly follows the instructions.
-        """
+            self.prompt_template+"\n"+query_context_str
         )
         qa_template = PromptTemplate(template)
         return qa_template
+
+    def display_prompt_dict(self, prompts_dict):
+        for k, p in prompts_dict.items():
+            text_md = f"**Prompt Key**: {k}<br>" f"**Text:** <br>"
+            display(Markdown(text_md))
+            print(p.get_template())
+            display(Markdown("<br><br>"))
 
     #@profile_
     async def query_engine_response(self, query):
@@ -208,6 +221,8 @@ class LlamaIndexApp:
             self.query_engine.update_prompts(
                 {"response_synthesizer:text_qa_template": qa_template}
             )
+            # prompts_dict = self.query_engine.get_prompts()
+            # self.display_prompt_dict(prompts_dict)
             response = self.query_engine.query(query)
             pprint_response(response, show_source=True)
         except Exception as e:
@@ -227,7 +242,7 @@ def get_context_from_response(response_object):
             - A dictionary of (file path, details).
             - List of contents extracted from the 'source_nodes' that contribute to the response
 
-    Iterating over each document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
+    Iterating over the document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
     summary of these details and maps it to the response.
     """
     document_info = {}
@@ -280,7 +295,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ES pipeline")
     parser.add_argument("--query", type=str, help="Query text to ask question on the data", required=True)
     parser.add_argument("--data_path", type=str, help="Knowledge base folder path", default='./data/test', required=False)
-    parser.add_argument("--context", type=bool, help="Flag to display retrieved context", default=True, required=False)
+    parser.add_argument("--context", type=bool, help="Flag to display retrieved context", default=False, required=False)
     args = parser.parse_args()
 
     logger.info("Starting the pipeline...")
