@@ -1,0 +1,25 @@
+.chatLayout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .chatContainer {
+    flex-grow: 1;
+    overflow-y: auto;
+    scroll-padding-bottom: 100px; /* Adjust this value based on your prompt container height */
+  }
+  
+  .promptContainer {
+    position: sticky;
+    bottom: 0;
+    background-color: inherit;
+    z-index: 10;
+  }
+  
+  .messageList {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
