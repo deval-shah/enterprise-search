@@ -21,19 +21,19 @@ import os
 import asyncio
 from typing import Optional
 from IPython.display import Markdown, display
-import qdrant_client
+from qdrant_client import QdrantClient,models
 from llamasearch.logger import logger
 from llamasearch.utils import profile_, load_yaml_file
 from llamasearch.docxreader import DocxReader
 from llamasearch.settings import config
 
-QUERY_GEN_PROMPT = (
-    "You are a helpful assistant that generates multiple search queries based on a "
-    "single input query. Generate {num_queries} search queries, one on each line, "
-    "related to the following input query:\n"
-    "Query: {query}\n"
-    "Queries:\n"
-)
+# QUERY_GEN_PROMPT = (
+#     "You are a helpful assistant that generates multiple search queries based on a "
+#     "single input query. Generate {num_queries} search queries, one on each line, "
+#     "related to the following input query:\n"
+#     "Query: {query}\n"
+#     "Queries:\n"
+# )
 
 class LlamaIndexApp:
     """
@@ -82,16 +82,20 @@ class LlamaIndexApp:
         """Initializes the vector store client and vector store based on the configuration."""
         try:
             logger.debug(f"Initializing Qdrant Client with config: URL={self.config.qdrant_client_config}")
-            self.client = qdrant_client.QdrantClient(
+            self.client = QdrantClient(
                 url=self.config.qdrant_client_config.url,
-                prefer_grpc=self.config.qdrant_client_config.prefer_grpc
+                prefer_grpc=self.config.qdrant_client_config.prefer_grpc,
+                # hnsw_config=models.HnswConfigDiff(
+                #     payload_m=16, #Payload filtering for each user
+                #     m=0, #Set m in hnsw config to 0. This will disable building global index for the whole collection.
+                #  ),
             )
             logger.debug(f"Initializing vector store with config: URL={self.config.vector_store_config}")
             self.vector_store = QdrantVectorStore(client=self.client,
                                                   collection_name=self.config.vector_store_config.collection_name,
                                                   vector_size=self.config.vector_store_config.vector_size,
-                                                  distance=self.config.vector_store_config.distance,
-                                                  max_optimization_threads=1)
+                                                  distance=self.config.vector_store_config.distance)
+                                                  #max_optimization_threads=1)
         except Exception as e:
             logger.error(f"Failed to initialize the vector store: {e}")
             raise PipelineSetupError("Failed to initialize the vector store") from e
@@ -134,9 +138,9 @@ class LlamaIndexApp:
             logger.info("Setting up the Ingestion pipeline....")
             self.pipeline = IngestionPipeline(
                 transformations=[
-                    #SemanticSplitterNodeParser(buffer_size=5, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                    SentenceSplitter(chunk_size=512, chunk_overlap=25),
-                    # TitleExtractor(num_workers=8),
+                    SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
+                    #SentenceSplitter(chunk_size=512, chunk_overlap=25),
+                    #TitleExtractor(num_workers=8),
                     Settings.embed_model,
                 ],
                 vector_store=self.vector_store,
@@ -152,7 +156,7 @@ class LlamaIndexApp:
         """Loads documents from the specified directory for indexing."""
         logger.info("Loading documents from the specified directory for indexing.")
         allowed_exts = [".pdf", ".docx", ".txt", ".csv"]
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=True, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
+        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
 
     @profile_
     async def run_pipeline(self):
@@ -177,7 +181,7 @@ class LlamaIndexApp:
     def set_query_engine(self):
         if not hasattr(self, 'index') or self.index is None:
             raise Exception("Index is not ready. Please load and index documents before querying.")
-        self.query_engine = self.index.as_query_engine(similarity_top_k=30, node_postprocessors=[self.reranker])
+        self.query_engine = self.index.as_query_engine(similarity_top_k=20, node_postprocessors=[self.reranker])
         #self.query_engine = RetrieverQueryEngine.from_args(self.retriever)
 
     def update_prompt(self):
@@ -223,7 +227,8 @@ class LlamaIndexApp:
             )
             # prompts_dict = self.query_engine.get_prompts()
             # self.display_prompt_dict(prompts_dict)
-            response = self.query_engine.query(query)
+            #response = self.query_engine.query(query)
+            response = await asyncio.to_thread(self.query_engine.query, query)
             pprint_response(response, show_source=True)
         except Exception as e:
             logger.error(f"An error occurred in the query engine call: {str(e)}")
@@ -278,6 +283,7 @@ async def query_app(query: str, data_path: Optional[str] = None):
         app = LlamaIndexApp()
         if data_path:
             app.data_path = data_path
+        logger.info("Data Path : {}".format(app.data_path))
         await app.load_documents()
         nodes = await app.run_pipeline()
         await app.index_documents(nodes)
@@ -285,6 +291,7 @@ async def query_app(query: str, data_path: Optional[str] = None):
         return response
     except Exception as e:
         logger.error(f"An error occurred in query app fn: {str(e)}")
+        raise
 
 # Custom exception for pipeline setup errors
 class PipelineSetupError(Exception):
