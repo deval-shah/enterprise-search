@@ -6,10 +6,9 @@
 - Docker
 
 ## Test Frontend using Docker
-1. Build image: docker build -t llamasearch-frontend .
-2. Run container: docker-compose up
+1. Build and run container: `docker-compose up --build`
 3. Access at `http://localhost:3000`
-4. Stop Frontend: docker-compose down
+4. Stop Frontend: `docker-compose down`
 
 ## Learn More
 

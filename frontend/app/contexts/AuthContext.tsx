@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase'; // Adjust this import path as needed
+import { auth } from '../lib/firebase';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_URL) {

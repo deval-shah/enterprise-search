@@ -1,6 +1,6 @@
 // app/components/MessageItem.tsx
 import React, { useState } from 'react';
-import { FiThumbsUp, FiThumbsDown, FiCopy } from 'react-icons/fi';
+import { FiThumbsUp, FiThumbsDown, FiCopy, FiUser } from 'react-icons/fi';
 import ContextDetails from './ContextDetails';
 import { Message } from '../types';
 
@@ -21,6 +21,11 @@ const MessageItem: React.FC<{ message: Message }> = ({ message }) => {
 
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
+      {/* {message.role !== 'user' && (
+        <div className="mr-2 bg-gray-300 rounded-full p-2">
+          <FiUser className="w-5 h-5 text-gray-600" />
+        </div>
+      )} */}
       <div className={`max-w-[70%] rounded-lg p-3 ${
         message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
       }`}>

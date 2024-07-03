@@ -32,13 +32,12 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
 
     try {
       const headers = await getAuthHeader();
+      delete (headers as Record<string, string>)['Content-Type'];
+
       const formData = new FormData();
       acceptedFiles.forEach((file) => {
         formData.append('files', file);
       });
-
-      // Remove the Content-Type header to let the browser set it with the correct boundary
-      delete headers['Content-Type'];
 
       const response = await fetch('/api/v1/uploadfile', {  // Note: no trailing slash
         method: 'POST',
@@ -56,7 +55,7 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
       onUploadComplete(acceptedFiles);
     } catch (error) {
       console.error('Error uploading files:', error);
-      setUploadStatus(`Error uploading files: ${error.message}`);
+      setUploadStatus(`Error uploading files: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsUploading(false);
     }
