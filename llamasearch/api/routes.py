@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, File, 
 from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 # API Imports
 from llamasearch.api.core.security import get_current_user, get_optional_user, logout_user
 from llamasearch.api.db.session import get_db
@@ -13,6 +13,7 @@ from llamasearch.api.services.user import UserService
 from llamasearch.api.services.chat import ChatService
 from llamasearch.api.utils import handle_file_upload, get_user_upload_dir
 from llamasearch.api.tasks import log_query_task
+from llamasearch.api.services.session import session_service
 # Pipeline imports
 from llamasearch.pipeline import query_app, get_context_from_response
 from llamasearch.logger import logger
@@ -31,7 +32,6 @@ async def login(
 ):
     try:
         user, is_new_session = await get_current_user(request, response, credentials, db)
-        
         return {
             "message": "Logged in successfully" if is_new_session else "Already logged in",
             "user": {
@@ -49,17 +49,18 @@ async def login(
 async def logout(
     request: Request,
     response: Response,
-    user_info: Tuple[User, bool] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    user, _ = user_info
-    try:
-        await logout_user(request, response, user, db)
-        return {"message": "Logged out successfully"}
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred during logout: {str(e)}")
+    session_id = request.cookies.get("session_id")
+    user = None
+    if session_id:
+        user = await session_service.get_user_session(db, session_id)
+    await logout_user(request, response, user, db)
+    if user:
+        logger.info(f"User {user.id} logged out successfully")
+    else:
+        logger.info("Logged out (no active user session)")
+    return {"message": "Logged out successfully"}
 
 @router.get("/protected")
 async def protected_route(request: Request, user_info: Tuple[User, bool] = Depends(get_current_user)):
@@ -79,16 +80,17 @@ async def optional_auth_route(request: Request, user_info: Optional[Tuple[Option
 async def query_index(
     query: str = Form(...),
     user_info: Tuple[User, bool] = Depends(get_current_user),
-    files: Optional[List[UploadFile]] = File(None),
+    files: Union[UploadFile, List[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
+    logger.debug(f"Received query: {query}")
     user, _ = user_info
-    try:
+    try: 
         file_upload_response = []
         if files:
-            logger.info(f"Uploading {len(files)} files to the server for user {user.firebase_uid}")
-            file_upload_response = await handle_file_upload(files, user.firebase_uid)
-        
+            file_upload_response = await handle_file_upload([files], user.firebase_uid)
+        else:
+            logger.debug("No files received")
         user_upload_dir = await get_user_upload_dir(user.firebase_uid)
         response = await query_app(query=query, data_path=user_upload_dir)
         logger.debug(f"Raw response from query_app: {response}")
@@ -106,7 +108,7 @@ async def query_index(
             }
             for path, details in document_info.items()
         ]
-        logger.info("Context details: " + str(context_details))
+        logger.debug("Context details: " + str(context_details))
         # Log query in db
         try:
             await log_query_task(db, user.firebase_uid, query, context_details, response.response)
@@ -120,7 +122,7 @@ async def query_index(
             "file_upload": file_upload_response
         }, status_code=200)
     except Exception as e:
-        logger.error(f"Error processing query: {str(e)}")
+        logger.error(f"Error processing query: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An error occurred during processing the query: {query}")
 
 @profile_

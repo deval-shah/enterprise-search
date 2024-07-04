@@ -1,4 +1,5 @@
 # app/core/middleware.py
+
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from llamasearch.api.services.session import session_service
@@ -12,21 +13,21 @@ class SessionMiddleware(BaseHTTPMiddleware):
         session_id = request.cookies.get("session_id")
         request.state.user = None
         request.state.session_id = None
-        logger.info(f"Validating request: {request}")
         if settings.USE_SESSION_AUTH and session_id:
             logger.info(f"Validating session: {session_id}")
             user = await session_service.validate_session(db, session_id)
             if user:
-                logger.info(f"Valid session found for user: {user.id}")
+                logger.debug(f"Valid session found for user: {user.id}")
                 request.state.user = user
                 request.state.session_id = session_id
             else:
-                logger.info(f"Invalid or expired session: {session_id}")
+                logger.debug(f"Invalid or expired session: {session_id}")
+                request.state.invalid_session = True
 
         response = await call_next(request)
 
         if hasattr(request.state, 'new_session_id'):
-            logger.info(f"Setting new session cookie: {request.state.new_session_id}")
+            logger.debug(f"Setting new session cookie: {request.state.new_session_id}")
             response.set_cookie(
                 key="session_id",
                 value=request.state.new_session_id,
@@ -35,10 +36,10 @@ class SessionMiddleware(BaseHTTPMiddleware):
                 samesite='lax',
                 max_age=3600  # Set to match the Redis expiry time
             )
-        elif not request.state.session_id and session_id:
-            logger.info(f"Clearing invalid session cookie: {session_id}")
+        elif hasattr(request.state, 'invalid_session') and request.state.invalid_session:
+            # Only clear the cookie after the request has been processed
+            logger.debug(f"Clearing invalid session cookie: {session_id}")
             response.delete_cookie(key="session_id")
-
         return response
 
 async def session_middleware(request: Request, call_next):

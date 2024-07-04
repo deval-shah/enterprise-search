@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
+from pydantic import parse_obj_as
 
 class ChatService:
     @staticmethod
@@ -30,7 +31,7 @@ class ChatService:
 
             db.commit()
             db.refresh(chat)
-            return ChatResponse.from_orm(chat)
+            return parse_obj_as(ChatResponse, chat.__dict__)
         except SQLAlchemyError as e:
             db.rollback()
             print(f"Database error occurred: {str(e)}")
@@ -65,7 +66,7 @@ class ChatService:
         chat = db.query(Chat).filter(Chat.id == chat_id).first()
         if not chat:
             raise ValueError("Chat not found")
-        return ChatResponse.from_orm(chat)
+        return parse_obj_as(ChatResponse, chat.__dict__)
 
     @staticmethod
     async def add_message_to_chat(db: Session, chat_id: str, message_create: MessageCreate) -> MessageResponse:
@@ -89,7 +90,7 @@ class ChatService:
         chat.updated_at = datetime.utcnow()
         db.commit()
         db.refresh(db_message)
-        return MessageResponse.from_orm(db_message)
+        return parse_obj_as(MessageResponse, db_message.__dict__)
 
     @staticmethod
     async def get_recent_queries(db: Session, firebase_uid: str, limit: int = 10):

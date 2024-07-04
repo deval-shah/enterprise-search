@@ -7,10 +7,10 @@ model:
   name: "llama3:8b"
   # format: "json"
   options:
-    temperature: 0.3 # controlling the randomness of the responses.
+    temperature: 0.5 # controlling the randomness of the responses.
     num_predict: 256
     num_ctx: 8192
-    top_k: 20 # Reduces the probability of generating nonsense.
+    top_k: 30 # Reduces the probability of generating nonsense.
     top_p: 0.7
   stream: false
   raw: true
@@ -21,22 +21,9 @@ prompts:
   - role: user
     text: >
       Based on the provided context, please generate a direct answer to the posed query.
-
-      ===== START OF EXAMPLE ======
-      Example:
-      Example Query:
-      "How effective are current solar panels in converting sunlight into energy?"
-
-      Example Context:
-      Recent studies and product releases in 2024 show that solar panel technology has advanced significantly, with several manufacturers now offering panels that achieve higher efficiency rates.
-
-      Example Response:
-      The recent 2024 studies show significant advancements in solar panel technology with higher efficiency rates.
-      ===== END OF EXAMPLE ======
-
       **
-      IMPORTANT: Please ensure the responses are in raw format. No additional words or explanations are needed.
-      Only include responses that are factual and directly relevant to the query, using the full context provided by the retrieved documents.
+      IMPORTANT: Please ensure the responses are in raw format.
+      Respond factualy and directly relevant to the query, using the full context provided by the retrieved documents.
       Align your response with context.
       If the provided context does not sufficiently answer the query, respond with: 'I am unable to answer due to insufficient context.'
       **

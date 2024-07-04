@@ -1,6 +1,6 @@
 # app/schemas/chat.py
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 from enum import Enum
@@ -26,42 +26,42 @@ class MessageType(str, Enum):
     USER = "user"
     SYSTEM = "system"
 
+
 class MessageCreate(BaseModel):
     content: str
     message_type: MessageType
 
-class MessageResponse(BaseModel):
+class Message(MessageCreate):
     id: str
     chat_id: str
-    content: str
     timestamp: datetime
-    message_type: MessageType
     sequence_number: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
 class ChatCreate(BaseModel):
-    messages: List[MessageCreate]
+    messages: List[MessageCreate] = []
 
-class ChatResponse(BaseModel):
+class Chat(BaseModel):
     id: str
     user_id: str
     created_at: datetime
     updated_at: datetime
-    messages: List[MessageResponse]
+    messages: List[Message] = []
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
+class ChatResponse(Chat):
+    pass
 
 class ChatListResponse(BaseModel):
     id: str
     user_id: str
     created_at: datetime
     updated_at: datetime
-    last_message: MessageResponse
+    last_message: Optional[Message] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
-
+class MessageResponse(Message):
+    pass

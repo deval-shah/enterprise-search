@@ -4,4 +4,8 @@
 *tgz
 *backup*
 .pytest_cache
+*json
 __pycache__
+*.pyc
+*.pyo
+*.pyd_

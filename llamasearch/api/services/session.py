@@ -1,5 +1,6 @@
 # app/services/session.py
 from llamasearch.api.db.models import Session, User
+from llamasearch.api.services.user import user_to_pydantic
 from llamasearch.logger import logger
 from sqlalchemy.orm import Session as DBSession
 from sqlalchemy.sql import func
@@ -58,7 +59,8 @@ class SessionService:
                     db_session.last_activity = func.now()
                     db.commit()
             logger.info(f"Session validated and refreshed: {session_id}")
-        return user
+            return user_to_pydantic(user)
+        return None
 
     async def end_session(self, db: DBSession, session_id: str):
         if self.redis_client:

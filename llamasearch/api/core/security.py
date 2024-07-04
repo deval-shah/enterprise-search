@@ -27,11 +27,9 @@ async def get_current_user(
 ) -> Tuple[User, bool]:
     user = request.state.user
     is_new_session = False
-
     if user:
-        print(f"User {user} already authenticated, new session : {is_new_session}")
+        logger.info(f"User {user} already authenticated, new session : {is_new_session}")
         return user, is_new_session
-
     # If no valid session, authenticate with Firebase token
     if not credentials:
         auth_header = request.headers.get('Authorization')
@@ -50,31 +48,17 @@ async def get_current_user(
             display_name=firebase_user.display_name or ""
         )
         user = await UserService.create_or_get_user(db, user_data)
-
+        logger.debug(f"User retrieved/created: {user}")
         if settings.USE_SESSION_AUTH:
             session_id = request.state.session_id or request.cookies.get("session_id")
-            if session_id:
-                # Session validation is already done by middleware, so we can skip it here
-                if not request.state.user:
-                    # If middleware didn't set the user, we need to validate the session
-                    user = await session_service.validate_session(db, session_id)
-                    if user:
-                        request.state.user = user
-                        request.state.session_id = session_id
-                        logger.info(f"Existing session validated: {session_id}")
-                    else:
-                        # If the session is invalid or expired, create a new one
-                        session_id = await session_service.create_session(db, user.id)
-                        request.state.new_session_id = session_id
-                        is_new_session = True
-                        logger.info(f"New session created: {session_id}")
-            else:
-                # If no session exists, create a new one
+            if not session_id or not request.state.user:
+                # Create a new session if there's no valid session
                 session_id = await session_service.create_session(db, user.id)
                 request.state.new_session_id = session_id
                 is_new_session = True
                 logger.info(f"New session created: {session_id}")
 
+        logger.info(f"Authentication successful for user: {user.id}")
         return user, is_new_session
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid authentication credentials: {str(e)}")
@@ -93,34 +77,28 @@ async def get_optional_user(
 async def logout_user(
     request: Request,
     response: Response,
-    user: User,
+    user: Optional[User],
     db: Session
 ) -> None:
     try:
         session_id = request.cookies.get("session_id")
         logger.info(f"Logout user with session {session_id}")
-
-        # Handle session-based logout
         if settings.USE_SESSION_AUTH and session_id:
             await session_service.end_session(db, session_id)
-            response.delete_cookie(key="session_id", path="/", domain=None)
-            logger.info(f"Session ended for user {user.id}")
-
-        # Handle token-based logout (Firebase)
-        try:
-            logger.info(f"Logout user for firebase user {user.firebase_uid}")
-            auth.revoke_refresh_tokens(user.firebase_uid)
-            logger.info(f"Refresh tokens revoked for user {user.id}")
-        except Exception as e:
-            logger.error(f"Error revoking refresh tokens for user {user.id}: {str(e)}")
-        
-        logger.info("Clearing cookies")
+            logger.debug(f"Session ended for session_id: {session_id}")
+        if user:
+            # Handle token-based logout (Firebase)
+            try:
+                logger.debug(f"Revoking refresh tokens for firebase user {user.firebase_uid}")
+                auth.revoke_refresh_tokens(user.firebase_uid)
+                logger.debug(f"Refresh tokens revoked for user {user.id}")
+            except Exception as e:
+                logger.error(f"Error revoking refresh tokens for user {user.id}: {str(e)}")
+            # Invalidate all sessions for this user
+            await session_service.end_all_sessions(db, user.id)
         # Clear any other client-side storage
         response.delete_cookie(key="firebase_token", path="/", domain=None)
-        
-        # Invalidate all sessions for this user
-        await session_service.end_all_sessions(db, user.id)
-
+        response.delete_cookie(key="session_id", path="/", domain=None)
     except Exception as e:
-        logger.error(f"Unexpected error during logout for user {user.id}: {str(e)}")
-        raise HTTPException(status_code=500, detail="An error occurred during logout")
+        logger.error(f"Unexpected error during logout: {str(e)}", exc_info=True)
+        raise
