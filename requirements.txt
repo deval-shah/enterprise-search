@@ -18,10 +18,16 @@ deepeval
 pytest
 datasets
 colorlog
-fastapi
-uvicorn
-python-multipart
 prometheus_client
 prometheus-fastapi-instrumentator
-aiofiles
 IPython
+#API dependencies
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+python-multipart
+aiofiles
+firebase-admin
+aioredis

@@ -202,7 +202,8 @@ This configuration ensures all components of the system are appropriately direct
 
 ## Release Notes
 
-**Version 1.0.5 - 13/06/2024**
-- Added prompt template for llama3 8b model
-- Added Modelfile to configure llm settings
-- Pipeline updates and fixes
+**Version 1.0.6 - 02/07/2024**
+- Added UI in `frontend/` folder in project root(first commit)
+- Updated the Backend API to streamline the development and testing with UI
+- Added authentication flow for the UI
+- Added unit tests for auth and session flow and postman collection to test backend API
