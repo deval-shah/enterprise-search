@@ -5,8 +5,12 @@ import os
 
 class VectorStoreConfig(BaseModel):
     collection_name: str = "default"
-    vector_size: int = 384
+    vector_size: int = 1536
     distance: str = "Cosine"
+    batch_size: int = 30
+    alpha: float = 0.5 
+    top_k: int = 10
+    use_async: bool = False
 
 class QdrantClientConfig(BaseModel):
     url: str = "http://localhost:6333"
@@ -17,7 +21,8 @@ class RedisConfig(BaseModel):
     port: int = 6379
 
 class Embedding(BaseModel):
-    model: str = "local:BAAI/bge-small-en-v1.5"
+    # model: str = "local:BAAI/bge-small-en-v1.5"
+    model: str = "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
 
 class Llm(BaseModel):
     modelfile: str = "modelfile.yaml"
@@ -33,9 +38,10 @@ class Eval(BaseModel):
 
 class ApplicationConfig(BaseModel):
     config_path: str = "/app/config.yaml"
-    data_path: str = "/data/files"
+    data_path: str = "./llamasearch/sample-docs/"
     log_dir: str = "/data/app/logs"
     upload_subdir: str = "uploads"
+    enable_prometheus: bool = False
 
 class Config(BaseModel):
     application: ApplicationConfig = ApplicationConfig()
@@ -56,5 +62,5 @@ def load_config(config_path: str) -> Config:
     else:
         raise FileNotFoundError(f"No configuration file found at {config_path}")
 
-config_path = os.path.join(os.path.dirname(__file__), '..', 'config.yaml')
+config_path = os.path.join(os.path.dirname(__file__), '..', 'config/config.dev.yaml')
 config = load_config(config_path)

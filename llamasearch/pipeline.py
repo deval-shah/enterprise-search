@@ -1,70 +1,98 @@
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core.node_parser import SemanticSplitterNodeParser, SentenceSplitter
-from llama_index.core.ingestion import IngestionPipeline, IngestionCache
-from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.core import Settings
-from llama_index.core.embeddings import resolve_embed_model
-from llama_index.llms.ollama import Ollama
-from llama_index.core import PromptTemplate
-from llama_index.storage.docstore.redis import RedisDocumentStore
-from llama_index.core.response.pprint_utils import pprint_response
+
+from typing import Any, List, Tuple, Dict, Optional
+from tabulate import tabulate
+import asyncio
+import os
+
+from llamasearch.logger import logger
+from llamasearch.latency import track_latency, LatencyTracker
+from llamasearch.utils import load_yaml_file
+from llamasearch.settings import config
+from llamasearch.qdrant_hybrid_search import QdrantHybridSearch
+
 from llama_index.postprocessor.flag_embedding_reranker import (
     FlagEmbeddingReranker,
 )
-# from llama_index.core.extractors import TitleExtractor
-# from llama_index.retrievers.bm25 import BM25Retriever
-# from llama_index.core.retrievers import QueryFusionRetriever
-# from llama_index.core.query_engine import RetrieverQueryEngine
-import argparse
-import os
-import asyncio
-from typing import Optional
-from IPython.display import Markdown, display
-from qdrant_client import QdrantClient,models
-from llamasearch.logger import logger
-from llamasearch.utils import profile_, load_yaml_file
-from llamasearch.docxreader import DocxReader
-from llamasearch.settings import config
+from llama_index.storage.docstore.redis import RedisDocumentStore
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.embeddings import resolve_embed_model
+from llama_index.core import PromptTemplate
+from llama_index.llms.ollama import Ollama
+from llama_index.core import SimpleDirectoryReader, Settings
+from llama_index.core.ingestion import (
+    DocstoreStrategy,
+    IngestionPipeline,
+    IngestionCache,
+)
+from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
+from llama_index.core.response.pprint_utils import pprint_response
 
-# QUERY_GEN_PROMPT = (
-#     "You are a helpful assistant that generates multiple search queries based on a "
-#     "single input query. Generate {num_queries} search queries, one on each line, "
-#     "related to the following input query:\n"
-#     "Query: {query}\n"
-#     "Queries:\n"
-# )
+#import nest_asyncio
+#nest_asyncio.apply()
 
-class LlamaIndexApp:
+class Pipeline:
     """
-    A class to encapsulate the application logic for indexing and querying documents using LLaMA index.
+    Manages document processing and querying pipeline. Main operations:
+    - Document loading and parsing
+    - Embedding and indexing
+    - Query processing and reranking
+    - Context extraction and formatting
     """
-    def __init__(self):
-        """
-        Initializes the application with the provided configuration.
-        """
+    def __init__(self, config):
         self.config = config
-        self.setup()
-
-    def setup(self):
-        """
-        Sets up the application components including embedding model, vector store, cache, and ingestion pipeline.
-        """
-        self.setup_embed_model()
         self.setup_llm()
-        self.setup_vector_store()
-        self.setup_cache()
-        self.setup_pipeline()
-        self.setup_reranker()
-        #self.setup_bm25_retriever()
+        #self.setup_embed_model()
+        self.reranker = None
+        self.index = None
+        self.qa_template = None
+        self.prompt_template = ""
+        self.qdrant_search = QdrantHybridSearch(config)
+        self.is_setup_complete = False
+        self.documents = None
 
-    def setup_embed_model(self):
-        """Initializes the embedding model based on the configuration."""
-        Settings.embed_model = resolve_embed_model(self.config.embedding.model)
+    async def setup(self):
+        if self.is_setup_complete:
+            logger.info("Setup already completed. Skipping.")
+            return
+
+        setup_steps: List[tuple[str, callable]] = [
+            ("Qdrant index", self.qdrant_search.setup_index_async),
+            ("Docstore", self.setup_docstore),
+            ("Parser", self.setup_parser),
+            ("Reranker", self.setup_reranker),
+            ("Documents", self.load_documents_async),
+            ("Index creation", self.qdrant_search.create_index_async),
+            ("Ingestion pipeline", self.setup_ingestion_pipeline),
+            ("Query engine", self.setup_query_engine)
+        ]
+
+        for step_name, step_func in setup_steps:
+            try:
+                logger.info(f"Setting up {step_name}...")
+                if step_name == "Documents":
+                    self.documents = await step_func()
+                elif step_name == "Ingestion pipeline":
+                    await step_func()
+                    nodes = await self.ingest_documents(self.documents)
+                    await self.qdrant_search.add_nodes_to_index_async(nodes)
+                else:
+                    await step_func()
+                logger.info(f"{step_name} setup completed.")
+            except Exception as e:
+                logger.error(f"Error during {step_name} setup: {str(e)}")
+                raise
+        self.is_setup_complete = True
+        logger.info("All setup steps completed successfully.")
+
+    async def setup_reranker(self, top_n=3):
+        self.reranker = FlagEmbeddingReranker(
+            top_n=top_n,
+            model=config.reranker.model,
+        )
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
-        llm_config = load_yaml_file(self.config.llm.modelfile)
+        llm_config = load_yaml_file(config.llm.modelfile)
         model_settings = llm_config['model']
         model_name = model_settings.pop('name', None)
         if not model_name:
@@ -78,111 +106,67 @@ class LlamaIndexApp:
         )
         self.prompt_template = llm_config['prompts'][0]['text']
 
-    def setup_vector_store(self):
-        """Initializes the vector store client and vector store based on the configuration."""
-        try:
-            logger.debug(f"Initializing Qdrant Client with config: URL={self.config.qdrant_client_config}")
-            self.client = QdrantClient(
-                url=self.config.qdrant_client_config.url,
-                prefer_grpc=self.config.qdrant_client_config.prefer_grpc,
-                # hnsw_config=models.HnswConfigDiff(
-                #     payload_m=16, #Payload filtering for each user
-                #     m=0, #Set m in hnsw config to 0. This will disable building global index for the whole collection.
-                #  ),
-            )
-            logger.debug(f"Initializing vector store with config: URL={self.config.vector_store_config}")
-            self.vector_store = QdrantVectorStore(client=self.client,
-                                                  collection_name=self.config.vector_store_config.collection_name,
-                                                  vector_size=self.config.vector_store_config.vector_size,
-                                                  distance=self.config.vector_store_config.distance)
-                                                  #max_optimization_threads=1)
-        except Exception as e:
-            logger.error(f"Failed to initialize the vector store: {e}")
-            raise PipelineSetupError("Failed to initialize the vector store") from e
+    def setup_embed_model(self):
+        """Initializes the embedding model based on the configuration."""
+        logger.info("Using embedding model : {}".format(config.embedding.model))
+        Settings.embed_model = resolve_embed_model(config.embedding.model)
 
-    # def setup_bm25_retriever(self):
-    #     self.bm25_retriever = BM25Retriever.from_defaults(
-    #         docstore=self.index.docstore, similarity_top_k=2
-    #     )
-        
-    #     self.retriever = QueryFusionRetriever(
-    #         [self.vector_store, self.bm25_retriever],
-    #         similarity_top_k=2,
-    #         num_queries=4,  # set this to 1 to disable query generation
-    #         mode="reciprocal_rerank",
-    #         use_async=True,
-    #         verbose=True,
-    #         query_gen_prompt=QUERY_GEN_PROMPT,
-    #     )
-
-    def setup_reranker(self, top_n=5):
-        self.reranker = FlagEmbeddingReranker(
-            top_n=top_n,
-            model=self.config.reranker.model,
+    async def setup_docstore(self):
+        """
+        Creates a docstore and adds the nodes to it.
+        """
+        self.docstore = RedisDocumentStore.from_host_and_port(
+            host=self.config.redis_config.host, port=self.config.redis_config.port, namespace="llamasearch"
         )
 
-    def setup_cache(self):
-        """Initializes the ingestion cache using Redis for storing intermediate results."""
-        try:
-            logger.info("Setting up the Ingestion Cache ....")
-            self.cache = IngestionCache(cache=RedisCache.from_host_and_port(host=self.config.redis_config.host, port=self.config.redis_config.port), collection="redis_cache")
-        except Exception as e:
-            logger.error(f"Failed to initialize Ingestion Redis cache: {e}")
-            raise PipelineSetupError("Failed to setup initialize Ingestion Redis cache.") from e
+    async def setup_parser(self):
+        self.parser = SentenceSplitter()
 
-    def setup_pipeline(self):
-        """
-        Initializes the ingestion pipeline with specified transformations and stores.
-        """
-        try:
-            logger.info("Setting up the Ingestion pipeline....")
-            self.pipeline = IngestionPipeline(
-                transformations=[
-                    SemanticSplitterNodeParser(buffer_size=3, breakpoint_percentile_threshold=95, embed_model=Settings.embed_model),
-                    #SentenceSplitter(chunk_size=512, chunk_overlap=25),
-                    #TitleExtractor(num_workers=8),
-                    Settings.embed_model,
-                ],
-                vector_store=self.vector_store,
-                cache=self.cache,
-                docstore=RedisDocumentStore.from_host_and_port(host=self.config.redis_config.host, port=self.config.redis_config.port, namespace="document_store"),
+    async def setup_ingestion_pipeline(self):
+        self.ingestion = IngestionPipeline(
+            transformations=[self.parser],
+            docstore=self.docstore,
+            vector_store=self.qdrant_search.vector_store,
+            cache=IngestionCache(
+                cache=RedisCache.from_host_and_port(
+                        host=self.config.redis_config.host, 
+                        port=self.config.redis_config.port
+                    ),
+                    collection="redis_cache",
+                ),
+            docstore_strategy=DocstoreStrategy.UPSERTS,
+        )
+
+    async def ingest_documents(self, documents):
+        return await self.ingestion.arun(documents=documents)
+
+    async def setup_query_engine(self):
+        self.query_engine = self.qdrant_search.index.as_query_engine(
+            node_postprocessors=[self.reranker]
+        )
+
+    @track_latency
+    async def perform_query_async(self, query: str):
+        if not self.is_setup_complete:
+            raise RuntimeError("Pipeline setup is not complete. Call setup() first.")
+        self.update_prompt()
+        if hasattr(self, 'qa_template') and self.qa_template is not None:
+            self.query_engine.update_prompts(
+                {"response_synthesizer:text_qa_template": self.qa_template}
             )
-        except Exception as e:
-            logger.error(f"Failed to setup ingestion pipeline: {e}")
-            raise PipelineSetupError("Failed to setup pipeline.") from e
+        response = await self.query_engine.aquery(query)
+        return response
 
-    @profile_
-    async def load_documents(self):
-        """Loads documents from the specified directory for indexing."""
-        logger.info("Loading documents from the specified directory for indexing.")
-        allowed_exts = [".pdf", ".docx", ".txt", ".csv"]
-        self.documents = SimpleDirectoryReader(self.data_path, recursive=False, filename_as_id=True, required_exts=allowed_exts, file_extractor={".docx":DocxReader()}).load_data()
-
-    @profile_
-    async def run_pipeline(self):
-        """
-        Processes the loaded documents through the ingestion pipeline.
-
-        Returns:
-            List: A list of processed document nodes.
-        """
-        logger.info("Generating nodes from ingested documents")
-        nodes = self.pipeline.run(documents=self.documents)
-        logger.info(f"Ingested {len(nodes)} Nodes")
-        return nodes
-
-    @profile_
-    async def index_documents(self, nodes):
-        """Indexes the processed documents."""
-        logger.debug("Indexing processed documents.")
-        self.index = VectorStoreIndex.from_vector_store(self.vector_store, Settings.embed_model)
-        self.set_query_engine()
-        
-    def set_query_engine(self):
-        if not hasattr(self, 'index') or self.index is None:
-            raise Exception("Index is not ready. Please load and index documents before querying.")
-        self.query_engine = self.index.as_query_engine(similarity_top_k=20, node_postprocessors=[self.reranker])
-        #self.query_engine = RetrieverQueryEngine.from_args(self.retriever)
+    @track_latency
+    async def load_documents_async(self, use_llamaparse=False):
+        # if use_llamaparse:
+        #     doc_list  = [os.path.join(self.config["documents_dir"], f) for f in os.listdir(self.config["documents_dir"]) if os.path.isfile(os.path.join(self.config["documents_dir"], f))]
+        #     logger.info(doc_list)
+        #     from llama_parse import LlamaParse
+        #     documents = LlamaParse(result_type="markdown").load_data(doc_list)
+        #     return documents
+        documents = SimpleDirectoryReader(self.config.application.data_path).load_data()
+        return documents
 
     def update_prompt(self):
         query_context_str = """
@@ -197,122 +181,143 @@ class LlamaIndexApp:
         template = (
             self.prompt_template+"\n"+query_context_str
         )
-        qa_template = PromptTemplate(template)
-        return qa_template
+        self.qa_template = PromptTemplate(template)
 
-    def display_prompt_dict(self, prompts_dict):
-        for k, p in prompts_dict.items():
-            text_md = f"**Prompt Key**: {k}<br>" f"**Text:** <br>"
-            display(Markdown(text_md))
-            print(p.get_template())
-            display(Markdown("<br><br>"))
-
-    #@profile_
-    async def query_engine_response(self, query):
+    @staticmethod
+    def get_context_from_response(response_object):
         """
-        Queries the index with the given query string.
+        Extracts and logs document metadata from a response object, avoiding duplicate entries for the same document.
 
         Args:
-            query (str): The query string.
-
+            response_object: An object containing metadata about documents processed in a pipeline.
+            Expected to have 'metadata' and 'source_nodes' attributes if present.
         Returns:
-            dict: The query response.
+            tuple: A tuple containing:
+                - A dictionary of (file path, details).
+                - List of contents extracted from the 'source_nodes' that contribute to the response
+
+        Iterating over the document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
+        summary of these details and maps it to the response.
         """
-        response = None
+        document_info = {}
+        retrieval_context = None
+        if response_object:
+            try:
+                if hasattr(response_object, 'source_nodes'):
+                    retrieval_context = [node.get_content() for node in response_object.source_nodes]
+                if hasattr(response_object, 'metadata'):
+                    for doc_id, info in response_object.metadata.items():
+                        print("\n\n")
+                        print(info)
+                        print("\n\n")
+                        file_path = info.get('file_path')
+                        file_name = info.get('file_name')
+                        # Check if this file_path or combination of file_name and doc_id already exists
+                        if (file_path not in document_info and 
+                            not any(d['file_name'] == file_name and d['doc_id'] == doc_id 
+                                    for d in document_info.values())):
+                            
+                            document_info[file_path] = {
+                                'file_name': file_name,
+                                'last_modified_date': info.get('last_modified_date'),
+                                'doc_id': doc_id
+                            }
+            except Exception as e:
+                logger.error("An error occurred while processing the response object: {}".format(e))
+        return document_info, retrieval_context
+
+    def pretty_print_context(self, response):
+        document_info, retrieval_context = self.get_context_from_response(response)
+        print("\n--- Document Information ---")
+        if document_info:
+            headers = ["File Name", "Last Modified", "Doc ID"]
+            table_data = [[info['file_name'], info['last_modified_date'], info['doc_id']] 
+                          for info in document_info.values()]
+            print(tabulate(table_data, headers=headers, tablefmt="grid"))
+        else:
+            print("No document information available.")
+        print("\n--- Retrieval Context ---")
+        if retrieval_context:
+            for i, context in enumerate(retrieval_context, 1):
+                print(f"\nContext {i}:")
+                print(context[:500] + "..." if len(context) > 500 else context)
+        else:
+            print("No retrieval context available.")
+
+    def cleanup(self):
+        self.qdrant_search.cleanup()
+
+class PipelineFactory:
+    def __init__(self):
+        self.pipelines: Dict[str, Pipeline] = {}
+        self.config = config
+
+    async def create_pipeline_async(self, user_id: str) -> Pipeline:
+        if user_id in self.pipelines:
+            logger.info(f"Returning existing pipeline for user {user_id}")
+            return self.pipelines[user_id]
+
+        logger.info(f"Creating new pipeline for user {user_id}")
+        pipeline = Pipeline(self.config.copy())
+
         try:
-            logger.debug("Calling query engine...")
-            qa_template = self.update_prompt()
-            self.query_engine.update_prompts(
-                {"response_synthesizer:text_qa_template": qa_template}
-            )
-            # prompts_dict = self.query_engine.get_prompts()
-            # self.display_prompt_dict(prompts_dict)
-            #response = self.query_engine.query(query)
-            response = await asyncio.to_thread(self.query_engine.query, query)
-            pprint_response(response, show_source=True)
+            await pipeline.setup()
+            self.pipelines[user_id] = pipeline
+            logger.info(f"Pipeline setup completed successfully for user {user_id}")
+            return pipeline
         except Exception as e:
-            logger.error(f"An error occurred in the query engine call: {str(e)}")
-            os._exit(1)
-        return response
+            logger.error(f"Error setting up pipeline for user {user_id}: {str(e)}")
+            await self.cleanup_pipeline(user_id, pipeline)
+            raise
 
-def get_context_from_response(response_object):
-    """
-    Extracts and logs document metadata from a response object, avoiding duplicate entries for the same document.
+    async def get_or_create_pipeline_async(self, user_id: str) -> Pipeline:
+        pipeline = self.get_pipeline(user_id)
+        if not pipeline:
+            pipeline = await self.create_pipeline_async(user_id)
+        return pipeline
 
-    Args:
-        response_object: An object containing metadata about documents processed in a pipeline.
-        Expected to have 'metadata' and 'source_nodes' attributes if present.
-    Returns:
-        tuple: A tuple containing:
-            - A dictionary of (file path, details).
-            - List of contents extracted from the 'source_nodes' that contribute to the response
+    def get_pipeline(self, user_id: str) -> Pipeline:
+        return self.pipelines.get(user_id)
 
-    Iterating over the document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
-    summary of these details and maps it to the response.
-    """
-    document_info = {}
-    retrieval_context = None
-    if response_object:
-        try:
-            if hasattr(response_object, 'source_nodes'):
-                retrieval_context = [node.get_content() for node in response_object.source_nodes]
-            if hasattr(response_object, 'metadata'):
-                for doc_id, info in response_object.metadata.items():
-                    file_path = info.get('file_path')
-                    if file_path and file_path not in document_info:
-                        document_info[file_path] = {
-                            'file_name': info.get('file_name'),
-                            'last_modified_date': info.get('last_modified_date'),
-                            'doc_id': doc_id
-                        }
-        except Exception as e:
-            logger.error("An error occurred while processing the response object: {}".format(e))
-    return document_info, retrieval_context
+    async def cleanup_pipeline(self, user_id: str, pipeline: Pipeline = None):
+        if pipeline is None:
+            pipeline = self.pipelines.pop(user_id, None)
+        if pipeline:
+            try:
+                await pipeline.cleanup()
+                logger.info(f"Pipeline cleaned up for user {user_id}")
+            except Exception as e:
+                logger.error(f"Error during pipeline cleanup for user {user_id}: {str(e)}")
 
-@profile_
-async def query_app(query: str, data_path: Optional[str] = None):
-    """
-    Loads documents, runs the ingestion pipeline, indexes documents, and queries the index.
+    async def cleanup_all(self):
+        for user_id in list(self.pipelines.keys()):
+            await self.cleanup_pipeline(user_id)
+        logger.info("All pipelines cleaned up")
 
-    Args:
-        query: The query string to search the index.
-        data_path: Optional; The path to the data directory. If provided, overrides the default path.
-    """
+
+async def main_async():
     try:
-        logger.info(f"Initializing the pipeline...")
-        app = LlamaIndexApp()
-        if data_path:
-            app.data_path = data_path
-        logger.info("Data Path : {}".format(app.data_path))
-        await app.load_documents()
-        nodes = await app.run_pipeline()
-        await app.index_documents(nodes)
-        response = await app.query_engine_response(query)
-        return response
-    except Exception as e:
-        logger.error(f"An error occurred in query app fn: {str(e)}")
-        raise
-
-# Custom exception for pipeline setup errors
-class PipelineSetupError(Exception):
-    """Exception raised for errors during the setup of the ingestion pipeline."""
-    pass
+        factory = PipelineFactory()
+        user_id = "123456"
+        pipeline = await factory.get_or_create_pipeline_async(user_id)
+        while True:
+            query = input("Enter your query (or 'quit' to exit): ").strip()
+            if query.lower() == "quit":
+                break
+            try:
+                response = await pipeline.perform_query_async(query)
+                pprint_response(response, show_source=True)
+                print("\n\n")
+                logger.info(f"Response: {response}")
+                pipeline.pretty_print_context(response)
+                LatencyTracker().print_summary()
+            except Exception as e:
+                logger.info(f"An error occurred during query: {e}")
+    except Exception as err:
+        logger.error(f"An error occurred: {err}")
+    finally:
+        LatencyTracker().report_stats()
+        await factory.cleanup_all()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ES pipeline")
-    parser.add_argument("--query", type=str, help="Query text to ask question on the data", required=True)
-    parser.add_argument("--data_path", type=str, help="Knowledge base folder path", default='./data/test', required=False)
-    parser.add_argument("--context", type=bool, help="Flag to display retrieved context", default=False, required=False)
-    args = parser.parse_args()
-
-    logger.info("Starting the pipeline...")
-    try:
-        response = asyncio.run(query_app(args.query, args.data_path))
-        logger.info(f"Response: {response}")
-        if args.context:
-            document_info, retrieval_context = get_context_from_response(response)
-            context_details = '\n'.join(["File Path: {}, File Name: {}, Last Modified: {}, Document ID: {}".format(
-                path, details['file_name'], details['last_modified_date'], details['doc_id']) for path, details in document_info.items()])
-            logger.info('\n' + '=' * 60 + '\nDocument Context Information\n' + context_details + '\n' + '=' * 60)
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
+    asyncio.run(main_async())

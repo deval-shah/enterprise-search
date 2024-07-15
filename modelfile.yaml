@@ -4,27 +4,21 @@ metadata:
   last_modified: "2024-06-07"
   description: "Prompt to generate answer based on the query and context"
 model:
-  name: "llama3:8b"
+  name: "llama3"
   # format: "json"
   options:
-    temperature: 0.5 # controlling the randomness of the responses.
+    temperature: 0.3 # controlling the randomness of the responses.
     num_predict: 256
-    num_ctx: 8192
-    top_k: 30 # Reduces the probability of generating nonsense.
-    top_p: 0.7
+    num_ctx: 4096
+    #top_k: 40 # Reduces the probability of generating nonsense.
+    #top_p: 0.9
   stream: false
   raw: true
-  #keep_alive: "5m" # Configures how long the model remains loaded in memory after a request.
-  system: "You are a helpful AI assistant that gives precise answers based on the user provided context." #"system message to (overrides what is defined in the Modelfile)"
+  keep_alive: "5m" # Configures how long the model remains loaded in memory after a request.
+  system: "You are an assistant for question-answering tasks" #"system message to (overrides what is defined in the Modelfile)"
   #context: the context parameter returned from a previous request to /generate, this can be used to keep a short conversational memory
 prompts:
   - role: user
     text: >
-      Based on the provided context, please generate a direct answer to the posed query.
-      **
-      IMPORTANT: Please ensure the responses are in raw format.
-      Respond factualy and directly relevant to the query, using the full context provided by the retrieved documents.
-      Align your response with context.
-      If the provided context does not sufficiently answer the query, respond with: 'I am unable to answer due to insufficient context.'
-      **
+      Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
     type: text

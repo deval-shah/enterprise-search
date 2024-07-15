@@ -6,6 +6,8 @@ from prometheus_client import Summary
 from llamasearch.logger import logger
 import os, yaml
 from typing import Dict, Any
+import sys
+import traceback
 
 # Metrics dictionary to hold all metrics instances
 metrics = {}
@@ -100,3 +102,25 @@ def load_yaml_file(filepath: str) -> Dict[str, Any]:
         except yaml.YAMLError as exc:
             print(f"Error in configuration file: {exc}")
             raise
+
+def custom_exception_handler(exc_type, exc_value, exc_traceback):
+    # Get the traceback object
+    tb = traceback.extract_tb(exc_traceback)
+    
+    # Find the last frame in the traceback that's from our file
+    for frame in reversed(tb):
+        if frame.filename.endswith('qdrant_hybrid_search.py'):
+            filename = frame.filename
+            line_number = frame.lineno
+            line = frame.line
+            break
+    else:
+        # If we didn't find our file in the traceback, fall back to default handling
+        return sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+    # Log the error
+    error_msg = f"Error in {filename} at line {line_number}:\n{line}\n{exc_type.__name__}: {exc_value}"
+    logger.error(error_msg)
+
+
+sys.excepthook = custom_exception_handler
