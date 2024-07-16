@@ -38,7 +38,7 @@ class Eval(BaseModel):
 
 class ApplicationConfig(BaseModel):
     config_path: str = "/app/config.yaml"
-    data_path: str = "./llamasearch/sample-docs/"
+    data_path: str = "./data/sample-docs/"
     log_dir: str = "/data/app/logs"
     upload_subdir: str = "uploads"
     enable_prometheus: bool = False

@@ -27,8 +27,8 @@ from llama_index.core.ingestion import (
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.core.response.pprint_utils import pprint_response
 
-#import nest_asyncio
-#nest_asyncio.apply()
+ALLOWED_EXTS = [".pdf", ".docx", ".csv"]
+HARD_LIMIT_FILE_UPLOAD = 10
 
 class Pipeline:
     """
@@ -41,7 +41,7 @@ class Pipeline:
     def __init__(self, config):
         self.config = config
         self.setup_llm()
-        #self.setup_embed_model()
+        self.setup_embed_model()
         self.reranker = None
         self.index = None
         self.qa_template = None
@@ -54,18 +54,16 @@ class Pipeline:
         if self.is_setup_complete:
             logger.info("Setup already completed. Skipping.")
             return
-
         setup_steps: List[tuple[str, callable]] = [
             ("Qdrant index", self.qdrant_search.setup_index_async),
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
             ("Reranker", self.setup_reranker),
-            ("Documents", self.load_documents_async),
+            ("Documents", lambda: self.load_documents_async(data_dir=self.config.application.data_path)),
             ("Index creation", self.qdrant_search.create_index_async),
             ("Ingestion pipeline", self.setup_ingestion_pipeline),
             ("Query engine", self.setup_query_engine)
         ]
-
         for step_name, step_func in setup_steps:
             try:
                 logger.info(f"Setting up {step_name}...")
@@ -74,7 +72,9 @@ class Pipeline:
                 elif step_name == "Ingestion pipeline":
                     await step_func()
                     nodes = await self.ingest_documents(self.documents)
+                    logger.info(f"Ingesting {len(nodes)} nodes for {len(self.ingestion.docstore.docs)} chunks")
                     await self.qdrant_search.add_nodes_to_index_async(nodes)
+                    logger.info("Ingestion pipeline setup completed.")
                 else:
                     await step_func()
                 logger.info(f"{step_name} setup completed.")
@@ -87,12 +87,12 @@ class Pipeline:
     async def setup_reranker(self, top_n=3):
         self.reranker = FlagEmbeddingReranker(
             top_n=top_n,
-            model=config.reranker.model,
+            model=self.config.reranker.model,
         )
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
-        llm_config = load_yaml_file(config.llm.modelfile)
+        llm_config = load_yaml_file(self.config.llm.modelfile)
         model_settings = llm_config['model']
         model_name = model_settings.pop('name', None)
         if not model_name:
@@ -108,8 +108,8 @@ class Pipeline:
 
     def setup_embed_model(self):
         """Initializes the embedding model based on the configuration."""
-        logger.info("Using embedding model : {}".format(config.embedding.model))
-        Settings.embed_model = resolve_embed_model(config.embedding.model)
+        logger.info("Using embedding model : {}".format(self.config.embedding.model))
+        Settings.embed_model = resolve_embed_model(self.config.embedding.model)
 
     async def setup_docstore(self):
         """
@@ -157,15 +157,64 @@ class Pipeline:
         response = await self.query_engine.aquery(query)
         return response
 
+    async def insert_documents(self, file_paths):
+        documents = await self.load_documents_async(input_files=file_paths)
+        for doc in documents:
+            logger.debug(f"Processing Document ID: {doc.id_}")
+        nodes = await self.ingest_documents(documents)
+        logger.info(f"Insertion :: Ingesting {len(nodes)} nodes for {len(self.ingestion.docstore.docs)} chunks")
+        await self.qdrant_search.add_nodes_to_index_async(nodes)
+        return nodes
+
+    async def get_ref_info(self):
+        try:
+            all_ref_doc_info = self.qdrant_search.index.ref_doc_info
+            pprint(dict(list(all_ref_doc_info.items())[:5]), width=100, compact=True)
+        except Exception as e:
+            logger.error(f"Error getting ref_doc_info: {e}")
+
+    # Delete a document from index and docstore
+    # TODO :: Issue with deleting from docstore not fixed yet
+    async def delete_document_using_id(self, doc_id, delete_from_docstore=True):
+        try:
+            if self.qdrant_search.index is None:
+                print(f"Error: The index is not initialized in qdrant_search.")
+                return
+            # Check if the document exists in the index
+            # if doc_id not in qdrant_search.index.docstore.docs:
+            #     print(f"Document with ID {doc_id} is not in the index. Nothing to delete.")
+            #     return
+            # Delete the document from the index
+            self.qdrant_search.index.delete_ref_doc(doc_id, delete_from_docstore=delete_from_docstore)
+            logger.info(f"Document with ID {doc_id} has been deleted from the index.")
+            if delete_from_docstore:
+                logger.info(f"Document with ID {doc_id} has also been deleted from the docstore.")
+            else:
+                logger.info(f"Document with ID {doc_id} remains in the docstore but will not be used for querying.")        
+        except Exception as e:
+            logger.error(f"Error deleting document with ID {doc_id}: {str(e)}")
+
     @track_latency
-    async def load_documents_async(self, use_llamaparse=False):
+    async def load_documents_async(self, data_dir=None, input_files=None, use_llamaparse=False):
         # if use_llamaparse:
         #     doc_list  = [os.path.join(self.config["documents_dir"], f) for f in os.listdir(self.config["documents_dir"]) if os.path.isfile(os.path.join(self.config["documents_dir"], f))]
         #     logger.info(doc_list)
         #     from llama_parse import LlamaParse
         #     documents = LlamaParse(result_type="markdown").load_data(doc_list)
         #     return documents
-        documents = SimpleDirectoryReader(self.config.application.data_path).load_data()
+        reader_kwargs = {
+            "filename_as_id": True,
+            "required_exts": ALLOWED_EXTS,
+            "num_files_limit": HARD_LIMIT_FILE_UPLOAD
+        }
+        if data_dir:
+            reader_kwargs["input_dir"] = data_dir
+            reader_kwargs["recursive"] = False
+        elif input_files:
+            reader_kwargs["input_files"] = [input_files] if isinstance(input_files, str) else input_files
+        else:
+            raise ValueError("Please provide either data_path or input_files.")
+        documents = SimpleDirectoryReader(**reader_kwargs).load_data()
         return documents
 
     def update_prompt(self):
@@ -207,9 +256,9 @@ class Pipeline:
                     retrieval_context = [node.get_content() for node in response_object.source_nodes]
                 if hasattr(response_object, 'metadata'):
                     for doc_id, info in response_object.metadata.items():
-                        print("\n\n")
-                        print(info)
-                        print("\n\n")
+                        # print("\n\n")
+                        # print(info)
+                        # print("\n\n")
                         file_path = info.get('file_path')
                         file_name = info.get('file_name')
                         # Check if this file_path or combination of file_name and doc_id already exists
@@ -252,6 +301,10 @@ class PipelineFactory:
         self.pipelines: Dict[str, Pipeline] = {}
         self.config = config
 
+    async def initialize_common_resources(self):
+        # TODO :: Initialize any shared resources here
+        pass
+
     async def create_pipeline_async(self, user_id: str) -> Pipeline:
         if user_id in self.pipelines:
             logger.info(f"Returning existing pipeline for user {user_id}")
@@ -271,13 +324,11 @@ class PipelineFactory:
             raise
 
     async def get_or_create_pipeline_async(self, user_id: str) -> Pipeline:
-        pipeline = self.get_pipeline(user_id)
-        if not pipeline:
-            pipeline = await self.create_pipeline_async(user_id)
-        return pipeline
-
-    def get_pipeline(self, user_id: str) -> Pipeline:
-        return self.pipelines.get(user_id)
+        if user_id not in self.pipelines:
+            pipeline = Pipeline(self.config.copy())
+            await pipeline.setup()
+            self.pipelines[user_id] = pipeline
+        return self.pipelines[user_id]
 
     async def cleanup_pipeline(self, user_id: str, pipeline: Pipeline = None):
         if pipeline is None:

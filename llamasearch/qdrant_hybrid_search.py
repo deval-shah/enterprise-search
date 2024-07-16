@@ -27,7 +27,7 @@ class QdrantHybridSearch:
         """Set up the Qdrant index for hybrid search asynchronously."""
         try:
             await self.initialize_qdrant_client_async()
-            await self.recreate_collection_async()
+            await self.create_collection_async()
             await self.create_vector_store_async()
         except Exception as e:
             logger.error(f"Error: {e}")
@@ -59,22 +59,27 @@ class QdrantHybridSearch:
             raise ValueError("Async Qdrant client has not been initialized. Call initialize_qdrant_client_async first.")
         return self._aclient
 
-    async def recreate_collection_async(self):
+    async def create_collection_async(self):
         """Recreate the Qdrant collection with specified configuration asynchronously."""
         try:
-            await self.aclient.recreate_collection(
-                collection_name=self.vectordb_config.collection_name,
-                vectors_config={
-                    "text-dense": models.VectorParams(
-                        size=self.vectordb_config.vector_size,
-                        distance=self.vectordb_config.distance,
-                    )
-                },
-                sparse_vectors_config={
-                    "text-sparse": models.SparseVectorParams(
-                        index=models.SparseIndexParams()
-                    )
-                },
+            collections = await self.aclient.get_collections()
+            collection_names = [collection.name for collection in collections.collections]
+            logger.debug(f"Collection names: {collection_names}")
+            if collection_name not in collection_names:
+                logger.info("Collection {} does not exist. Creating new collection...".format(self.vectordb_config.collection_name))
+                await self.aclient.create_collection(
+                    collection_name=self.vectordb_config.collection_name,
+                    vectors_config={
+                        "text-dense": models.VectorParams(
+                            size=self.vectordb_config.vector_size,
+                            distance=self.vectordb_config.distance,
+                        )
+                    },
+                    sparse_vectors_config={
+                        "text-sparse": models.SparseVectorParams(
+                            index=models.SparseIndexParams()
+                        )
+                    },
                 )
         except Exception as e:
             logger.error(f"Error recreating collection: {e}")
@@ -89,8 +94,8 @@ class QdrantHybridSearch:
             print(f"Creating vector store for collection {collection_name}")
             self.vector_store = QdrantVectorStore(
                 collection_name=collection_name,
-                # client=self._client,
-                aclient=self._aclient,
+                client=self.client,
+                aclient=self.aclient,
                 enable_hybrid=True,
                 batch_size=self.vectordb_config.batch_size,
                 hybrid_fusion_fn=self.relative_score_fusion
@@ -105,11 +110,12 @@ class QdrantHybridSearch:
         self.index = VectorStoreIndex.from_vector_store(
             self.vector_store,
             Settings.embed_model,
-            store_nodes_override = True
+            store_nodes_override=True
         )
 
     @track_latency
     async def add_nodes_to_index_async(self, nodes):
+        print("Adding nodes to index...")
         await self.index._async_add_nodes_to_index(
             self.index.index_struct,
             nodes,

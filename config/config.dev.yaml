@@ -1,6 +1,6 @@
 application:
   config_path: "config.yaml"
-  data_path: "./llamasearch/sample-docs/"
+  data_path: "./data/sample-docs/"
   log_dir: "./data/app/logs"
   upload_subdir: "uploads"
 
@@ -27,6 +27,7 @@ embedding:
 
 llm:
   llm_model: "llama3"
+  modelfile: "./modelfile.yaml"
 
 reranker:
   model: "BAAI/bge-reranker-large"

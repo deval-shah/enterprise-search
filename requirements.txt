@@ -1,11 +1,13 @@
 streamlit
 pyyaml
-qdrant_client
+# qdrant_client
 redis
 streamlit
 pathlib
 docx2txt
 dvc[gs]
+onnxruntime
+qdrant-client[fastembed-gpu]
 llama-index
 llama-index-llms-ollama
 llama-index-embeddings-huggingface
@@ -14,6 +16,7 @@ llama-index-storage-kvstore-redis
 llama-index-storage-docstore-redis
 llama-index-postprocessor-flag-embedding-reranker
 FlagEmbedding
+# fastembed-gpu
 deepeval
 pytest
 datasets
@@ -31,3 +34,5 @@ python-multipart
 aiofiles
 firebase-admin
 aioredis
+dependency-injector
+tabulate

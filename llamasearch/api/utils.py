@@ -34,7 +34,8 @@ async def handle_file_upload(files: List[UploadFile], user_id: str) -> List[Dict
                     logger.info(f"File {original_filename} already exists and content is likely identical")
                     return {
                         "filename": original_filename,
-                        "status": "File already exists and content is likely identical",
+                        "status": "success",
+                        "info": "File already exists and content is likely identical",
                         "location": file_location
                     }
                 else:
@@ -51,14 +52,16 @@ async def handle_file_upload(files: List[UploadFile], user_id: str) -> List[Dict
             logger.info(f"File {original_filename} uploaded successfully to {file_location}")
             return {
                 "filename": original_filename,
-                "status": "File uploaded successfully",
+                "status": "success",
+                "info": "File uploaded successfully",
                 "location": file_location
             }
         except Exception as e:
             logger.error(f"Error uploading file {file.filename}: {str(e)}")
             return {
                 "filename": file.filename,
-                "status": f"Error uploading file: {str(e)}",
+                "status": "error",
+                "info": f"Error uploading file: {str(e)}",
                 "location": None
             }
 
