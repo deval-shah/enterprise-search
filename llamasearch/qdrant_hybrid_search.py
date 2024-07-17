@@ -65,7 +65,7 @@ class QdrantHybridSearch:
             collections = await self.aclient.get_collections()
             collection_names = [collection.name for collection in collections.collections]
             logger.debug(f"Collection names: {collection_names}")
-            if collection_name not in collection_names:
+            if self.vectordb_config.collection_name not in collection_names:
                 logger.info("Collection {} does not exist. Creating new collection...".format(self.vectordb_config.collection_name))
                 await self.aclient.create_collection(
                     collection_name=self.vectordb_config.collection_name,
@@ -82,7 +82,7 @@ class QdrantHybridSearch:
                     },
                 )
         except Exception as e:
-            logger.error(f"Error recreating collection: {e}")
+            logger.error(f"Error creating collection: {e}")
             raise
     
     @track_latency

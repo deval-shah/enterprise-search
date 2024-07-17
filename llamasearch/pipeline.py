@@ -92,6 +92,10 @@ class Pipeline:
 
     def setup_llm(self):
         """Initializes the Large Language Model (LLM) based on the configuration."""
+        if self.config.llm.use_openai:
+            logger.info("Using OpenAI for generation...")
+            # TODO :: Pass model settings from config to init the openai llm model
+            return
         llm_config = load_yaml_file(self.config.llm.modelfile)
         model_settings = llm_config['model']
         model_name = model_settings.pop('name', None)
@@ -106,7 +110,13 @@ class Pipeline:
         )
         self.prompt_template = llm_config['prompts'][0]['text']
 
+    # TODO :: Embedding model should be shared across users, we should not init embed models for each user (for local model)
     def setup_embed_model(self):
+        if self.config.embedding.use_openai:
+            logger.info("Using OpenAI for embeddings...")
+            "By default LlamaIndex uses openai:text-embedding-ada-002, which is the default embedding used by OpenAI"
+            # TODO :: Pass embed model settings from config to init the openai embed model
+            return
         """Initializes the embedding model based on the configuration."""
         logger.info("Using embedding model : {}".format(self.config.embedding.model))
         Settings.embed_model = resolve_embed_model(self.config.embedding.model)
@@ -345,7 +355,7 @@ class PipelineFactory:
             await self.cleanup_pipeline(user_id)
         logger.info("All pipelines cleaned up")
 
-
+# TODO :: Move embed model per user to docker setting to avoid reinitializing same model for every user
 async def main_async():
     try:
         factory = PipelineFactory()

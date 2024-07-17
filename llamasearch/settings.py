@@ -22,10 +22,12 @@ class RedisConfig(BaseModel):
 
 class Embedding(BaseModel):
     # model: str = "local:BAAI/bge-small-en-v1.5"
-    model: str = "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+    model: str = "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct" # 13048 MiB memory
+    use_openai: bool = False
 
 class Llm(BaseModel):
     modelfile: str = "modelfile.yaml"
+    use_openai: bool = True
 
 class Reranker(BaseModel):
     model: str = "BAAI/bge-reranker-large"
@@ -53,12 +55,20 @@ class Config(BaseModel):
     llm: Llm = Llm()
     eval: Eval = Eval()
 
+def check_openai_api_key():
+    if not os.getenv('OPENAI_API_KEY'):
+        print("ERROR :: OPENAI_API_KEY is not set in the environment.")
+        exit(1)
+
 def load_config(config_path: str) -> Config:
     config_file = Path(config_path)
     if config_file.is_file():
         with open(config_file, 'r') as file:
             config_data = yaml.safe_load(file)
-            return Config(**config_data)
+            config = Config(**config_data)
+            if config.embedding.use_openai or config.llm.use_openai:
+                check_openai_api_key()
+            return config
     else:
         raise FileNotFoundError(f"No configuration file found at {config_path}")
 
