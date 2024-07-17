@@ -9,7 +9,7 @@ model:
   options:
     temperature: 0.3 # controlling the randomness of the responses.
     num_predict: 256
-    num_ctx: 4096
+    num_ctx: 2048
     #top_k: 40 # Reduces the probability of generating nonsense.
     #top_p: 0.9
   stream: false

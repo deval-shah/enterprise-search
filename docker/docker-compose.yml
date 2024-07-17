@@ -1,24 +1,29 @@
 version: '3.7'
 
 services:
-  #ES Pipeline
-  # es:
-  #   image: docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest
-  #   container_name: enterprise_search
-  #   volumes:
-  #     - ./model_files:/app/model_files
-  #     - ./config.yaml:/app/config.yaml  # Override the default config
-  #     - ./data/:/data
-  #   network_mode: host
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: all
-  #             capabilities: [gpu]
+  # ES Pipeline
+  es:
+    image: docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest
+    container_name: enterprise_search
+    volumes:
+      - ../model_files:/app/model_files
+      - ../config/config.dev.yaml:/app/config.dev.yaml
+      - ../firebase.json:/app/creds/firebase.json
+      - ../data:/data
+    env_file:
+      - ../.env
+    environment:
+      - DOCKER_ENV=true
+    network_mode: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
-  # # Vector Store
+  # Vector Store
   qdrant:
     image: qdrant/qdrant
     container_name: qdrant_vector_store

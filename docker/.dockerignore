@@ -1,0 +1,61 @@
+# Version control
+.git
+.gitignore
+
+# Python cache files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environment
+venv
+env
+.env
+
+# IDE specific files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test coverage
+htmlcov
+.coverage
+.coverage.*
+.pytest_cache
+
+# Documentation
+docs
+
+# Data directories (if you don't want to include these in the image)
+model_files
+
+# Build artifacts
+*.egg-info
+dist
+build
+
+# Docker files (no need to copy these into the image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Other unnecessary files for the Docker image
+README.md
+LICENSE
+*.md

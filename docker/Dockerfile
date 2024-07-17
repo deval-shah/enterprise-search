@@ -1,15 +1,25 @@
 # Start with an NVIDIA CUDA base image that includes cuDNN
 FROM nvidia/cuda:12.0.1-cudnn8-runtime-ubuntu22.04
 
-# Install Python and pip
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.9 and pip
 RUN apt-get update && \
-    apt-get install -y python3-pip python3-dev curl vim git && \
-    if [ ! -f /usr/bin/python ]; then ln -s /usr/bin/python3 /usr/bin/python; fi && \
-    if [ ! -f /usr/bin/pip ]; then ln -s /usr/bin/pip3 /usr/bin/pip; fi && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.9 python3.9-dev python3.9-distutils curl vim git && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.9 get-pip.py && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1 && \
+    rm get-pip.py && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+COPY .env /app/.env
 COPY requirements.txt /app/requirements.txt
 COPY docker/install.sh /app/install.sh
 ENV PATH=/usr/local/cuda/bin:$PATH
@@ -17,16 +27,15 @@ ENV CUDAToolkit_ROOT=/usr/local/cuda
 ENV PYTHONPATH="${PYTHONPATH}:/app/llamasearch"
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-COPY llamasearch/*py /app/llamasearch/
-COPY llamasearch/api /app/llamasearch/
-COPY *.yaml /app/
+RUN mkdir -p /app/llamasearch
+COPY llamasearch /app/llamasearch
+COPY config/*.yaml /app/
 
-# Make port 8000 available to the world outside this container
 EXPOSE 8010
 ENV NAME es
 ENV PYTHONPATH="/app:${PYTHONPATH}"
+ENV DOCKER_ENV=true
 
-# Copy the entrypoint script and the update the permissions
 COPY docker/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]

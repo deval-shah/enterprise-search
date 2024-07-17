@@ -5,6 +5,11 @@ from firebase_admin import credentials
 from firebase_admin import auth
 import json, requests
 
+FIREBASE_API_KEY = "" # Firebase web key (from firebase console)
+UID = "" # Firebase User ID
+# Path to your service account credentials JSON file (from firebase console)
+CRED_PATH = "/path/to/firebase.json"
+
 def initialize_firebase(cred_path):
     try:
         firebase_admin.get_app()
@@ -19,8 +24,7 @@ def generate_firebase_tokens(uid, cred_path):
     custom_token = auth.create_custom_token(uid).decode('utf-8')
 
     # Exchange custom token for ID token
-    firebase_api_key = ""
-    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={firebase_api_key}"
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={FIREBASE_API_KEY}"
     
     payload = json.dumps({
         "token": custom_token,
@@ -40,12 +44,8 @@ def generate_firebase_tokens(uid, cred_path):
         raise Exception(f"Failed to exchange custom token for ID token: {response.text}")
 
 if __name__ == "__main__":
-    # Path to your service account credentials JSON file
-    cred_path = "firebase.json"
-    # User ID for which you want to generate the token
-    uid = "T0wDP1JGrmdKSZWSRLBPRAT8zvE2"
     try:
-        custom_token, id_token = generate_firebase_tokens(uid, cred_path)
+        custom_token, id_token = generate_firebase_tokens(UID, CRED_PATH)
         print("Generated Firebase Custom Token:")
         print(custom_token)
         print("\nGenerated Firebase ID Token:")

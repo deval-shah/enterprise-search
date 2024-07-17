@@ -2,6 +2,9 @@ from pydantic import BaseModel
 import yaml
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class VectorStoreConfig(BaseModel):
     collection_name: str = "default"
@@ -27,7 +30,7 @@ class Embedding(BaseModel):
 
 class Llm(BaseModel):
     modelfile: str = "modelfile.yaml"
-    use_openai: bool = True
+    use_openai: bool = False
 
 class Reranker(BaseModel):
     model: str = "BAAI/bge-reranker-large"
@@ -68,9 +71,12 @@ def load_config(config_path: str) -> Config:
             config = Config(**config_data)
             if config.embedding.use_openai or config.llm.use_openai:
                 check_openai_api_key()
+            # Adjust paths for Docker environment
+            if os.getenv('DOCKER_ENV') == 'true':
+                config.llm.modelfile = f"/app/{config.llm.modelfile}"
             return config
     else:
         raise FileNotFoundError(f"No configuration file found at {config_path}")
 
-config_path = os.path.join(os.path.dirname(__file__), '..', 'config/config.dev.yaml')
+config_path = os.getenv('CONFIG_PATH', '/app/config.dev.yaml')
 config = load_config(config_path)

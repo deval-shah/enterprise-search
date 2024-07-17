@@ -95,6 +95,7 @@ class Pipeline:
         if self.config.llm.use_openai:
             logger.info("Using OpenAI for generation...")
             # TODO :: Pass model settings from config to init the openai llm model
+            # TODO :: Override the openai client with external settings
             return
         llm_config = load_yaml_file(self.config.llm.modelfile)
         model_settings = llm_config['model']

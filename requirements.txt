@@ -8,6 +8,7 @@ docx2txt
 dvc[gs]
 onnxruntime
 qdrant-client[fastembed-gpu]
+huggingface-hub
 llama-index
 llama-index-llms-ollama
 llama-index-embeddings-huggingface
@@ -34,4 +35,7 @@ aiofiles
 firebase-admin
 aioredis
 dependency-injector
+python-dotenv
 tabulate
+huggingface-hub==0.23.0
+transformers==4.37.0
