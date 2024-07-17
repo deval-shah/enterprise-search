@@ -3,10 +3,19 @@
 ## Authentication
 
 ### 1. Generate User Token
-First, use the `generate_token.py` script to get a Firebase ID token:
+
+Get firebase credentials and values by following the instructions in [firebase](docs/firebase.md) file.
 
 ```bash
-python generate_token.py
+FIREBASE_API_KEY = "" # Firebase web key
+UID = "" # Firebase User ID
+CRED_PATH = "" # Credentials file
+```
+
+Update constant values in the [generate_token.py](llamasearch/api/tests/generate_token.py) script and API requests.
+
+```bash
+python llamasearch/api/tests/generate_token.py
 ```
 This will output a Firebase ID token. Copy this token for use in the login request.
 
