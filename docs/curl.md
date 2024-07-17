@@ -21,9 +21,7 @@ curl -i -X POST http://localhost:8010/api/v1/login \
 
 Replace `YOUR_FIREBASE_ID_TOKEN` with the token you got from step 1.
 
-This command will create a cookies.txt file in your current directory and show the response headers and body.
-
-Now that you have the cookies.txt file, you can use it to authenticate your requests to the AP
+This command will create a `cookies.txt` file in your current directory and show the response headers and body. Use it to authenticate your requests to the backend api server.
 
 ### Before testing API using curl commands
 - Replace placeholder text (like "Your query text here" or file paths) with your actual data.
@@ -131,8 +129,3 @@ curl -X POST http://localhost:8010/api/v1/chats/{chat_id}/messages \
   -b cookies.txt
 ```
 Replace {chat_id} with an actual chat ID.
-
-FIREBASE_API_KEY = "AIzaSyDjFrhSSLhC3AwJphgegzPtLvrQjwoafWI" # Firebase web key (from firebase console)
-UID = "T0wDP1JGrmdKSZWSRLBPRAT8zvE2" # Firebase User ID
-# Path to your service account credentials JSON file (from firebase console)
-CRED_PATH = "/home/deval/Documents/Work/Deval/ES/LlamaSearch/keys/aiml-shop-enterprisesearch-firebase-adminsdk-35tmo-51c1b36ea1.json"
