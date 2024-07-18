@@ -24,9 +24,8 @@ Before setting up the project, ensure you have the following installed:
 - Docker and Docker Compose
 - Cuda 11 or higher
 
-## Setup Instructions
 
-### 1. Conda Setup (Local Testing)
+## Conda Setup (Local Testing)
 
 **Set up a local Conda environment and install dependencies:**
 
@@ -37,42 +36,26 @@ conda activate es_env
 pip install -r requirements.txt
 ```
 
-### 2. Qdrant
+## Services
+
+### 1. Qdrant
 
 Qdrant is used as the vector search database to support efficient searching over vectorized data for retrieval. It is configured to run through `docker/docker-compose.yml`:
 
 This default configuration starts the Qdrant container on localhost on the ports 6333 and 6334.
 
-### 3. Redis
+### 2. Redis
 
 Redis serves as the caching and document storage layer. It is configured to run through `docker/docker-compose.yml`:
 
 This default configuration starts the Redis server accessible on port 6379 on localhost.
 
-### 4. LLM
+### 3. LLM
 
-The pipeline supports open source llms via Ollama and OpenAI models. Update the `config/config.dev.yaml` file to use the desired LLM.
+The pipeline supports open source llms via Ollama and OpenAI models. Update the `config/config.dev.yaml` file to use the desired LLM. Currently, we support open source llms using Ollama server and OpenAI models via API.
 
-#### Open-Source Option: Ollama
 
-1. **Start Ollama docker:**: Use the `docker/docker-compose-ollama.yml` file to run Ollama:
-   ```bash
-   docker-compose -f docker/docker-compose-ollama.yml up -d
-   ```
-   The docker container will pull models mentioned in the `config/config.dev.yaml` on startup. It may take few minutes to download the models.
-2. **Explore LLM Model library**: Please have a look at [Ollama Library](https://ollama.com/library) and pull the LLM model of your choice. Update the model name in the `config/config.dev.yaml`.
-
-#### Closed-Source Option: OpenAI Models
-
-Alternatively, you can use OpenAI's proprietary models, if you setup `OPENAI_API_KEY` then it will be used as default llm.
-
-1. **Set up OpenAI API key**: Export your OpenAI API key:
-   ```bash
-   export OPENAI_API_KEY=your_api_key_here
-   ```
-2. **Configure for OpenAI:**: Update the `config/config.dev.yaml` file to use an OpenAI model instead of a local Ollama model using `use_openai` flag. Check the [openai models list](https://platform.openai.com/docs/models).
-
-### 5. Configuration Setup
+### 4. Configuration Setup
 
 Update the `config/config.dev.yaml` file with the necessary paths and configurations. The default config file assumes a localhost setup.
 
@@ -85,7 +68,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 - **llm_model**: Generation model to generate response using context from retreival stage.
 - **reranker**: Reranker model to refine the results post retrieval stage.
 
-## Testing
+## Running Locally
 
 ### Before you start
 
@@ -93,14 +76,33 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 
 2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
 
-### Option 1: Testing the ES pipeline locally
+### Option 1: Test the ES pipeline
 
 1. **Run Qdrant and Redis services using docker-compose**: 
    ```bash
    docker-compose -f docker/docker-compose.yml up -d redis qdrant
    ```
 
-2. **Setup LLM**: Refer to the [LLM](#4-llm) section above for instructions on setting up LLM for the pipeline.
+2. **Setup LLM**: Setup up LLM of your choice.
+
+   #### Open-Source Option: Ollama
+
+   1. **Start Ollama docker:**: Use the `docker/docker-compose-ollama.yml` file to run Ollama:
+      ```bash
+      docker-compose -f docker/docker-compose-ollama.yml up -d
+      ```
+      The docker container will pull models mentioned in the `config/config.dev.yaml` on startup. It may take few minutes to download the models. Check ollama docker logs for progress.
+   2. **Explore LLM Model library**: Please have a look at [Ollama Library](https://ollama.com/library) and pull the LLM model of your choice. Update the model name in the `config/config.dev.yaml`.
+
+   #### Closed-Source Option: OpenAI Models
+
+   To use OpenAI's proprietary models, set `OPENAI_API_KEY`.
+
+   1. **Set up OpenAI API key**: Export your OpenAI API key:
+      ```bash
+      export OPENAI_API_KEY=your_api_key_here
+      ```
+   2. **Configure for OpenAI:**: Update the `config/config.dev.yaml` file to use an OpenAI model, set `use_openai` flag to `True`. Check the [openai models list](https://platform.openai.com/docs/models).
 
 3. **Run the ES pipeline:**:
    ```bash
@@ -108,7 +110,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    ```
 4. **Test**: The pipeline loads documents from `application->data_path` defined in config file, processes and indexes them. When prompted, enter your query. Results will be displayed in the terminal.
 
-### Option 2: Testing the backend server (API) using curl locally 
+### Option 2: Testing the pipeline and backend server (API) using curl locally 
 
 1. **Build the Docker Image:**
    Open your terminal and run the following command to build the Docker image and run the docker image:
@@ -116,7 +118,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest -f docker/Dockerfile .
    ```
 
-2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Step 4 has instructions on how to setup firebase credentials.
+2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Refer to [Firebase Authentication](docs/firebase.md) for instructions.
 
 3. **Run the docker image:**
    Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
@@ -125,12 +127,12 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    ```
 
 4. **Test the API:**
-For detailed instructions on how to test the API using curl, refer to the [curl.md](docs/curl.md) file.
+Refer to the [curl.md](docs/curl.md) For detailed instructions on how to test the API using curl.
 
 ### Option 3: Testing the UI and backend server locally
 
 1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2-testing-the-backend-server-api-using-curl-locally)
-2. **Run the UI**: Follow the [UI README](frontend/README.md) file to run the UI locally.
+2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally.
 
 ## Unit Testing
 
@@ -138,11 +140,11 @@ Under maintainance
 
 ## Evaluation
 
-- Follow steps in [Eval README](docs/eval.md) to evaluate the ES pipeline.
+Follow steps in [Eval README](docs/eval.md) to evaluate the ES pipeline.
 
 ## Deployment
 
-- The [Deployment README](k8s/README.md) to deploy Enterprise Search using Kubernetes and Helm.
+Follow steps in [Deployment README](k8s/README.md) to deploy Enterprise Search using Kubernetes and Helm.
 
 ## Release Notes
 
