@@ -81,7 +81,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 1. **Update the config file**: Modify the [config](config/config.dev.yaml) file with the necessary data paths and configurations.
 - A sample test PDF is provided in `./data/test/`.
 
-2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. By default, it is set to `config/config.dev.yaml`.
+2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
 
 ### Option 1: Testing the ES pipeline locally
 
@@ -106,7 +106,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest -f docker/Dockerfile .
    ```
 
-2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. [Step 4](#step-4)has instructions on how to setup firebase credentials.
+2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Step 4 has instructions on how to setup firebase credentials.
 
 3. **Run the docker image:**
    Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
@@ -119,8 +119,8 @@ For detailed instructions on how to test the API using curl, refer to the [curl.
 
 ### Option 3: Testing the UI and backend server locally
 
-1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2)
-2. **Run the UI**: Follow the [UI README](frontend/README.md) file to run the UI locally.s
+1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2-testing-the-backend-server-api-using-curl-locally)
+2. **Run the UI**: Follow the [UI README](frontend/README.md) file to run the UI locally.
 
 ## Unit Testing
 
