@@ -94,7 +94,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
       The docker container will pull models mentioned in the `config/config.dev.yaml` on startup. It may take few minutes to download the models. Check ollama docker logs for progress.
    2. **Explore LLM Model library**: Please have a look at [Ollama Library](https://ollama.com/library) and pull the LLM model of your choice. Update the model name in the `config/config.dev.yaml`.
 
-   #### Closed-Source Option: OpenAI Models
+   #### External Providers Option: OpenAI Models
 
    To use OpenAI's proprietary models, set `OPENAI_API_KEY`.
 
@@ -118,15 +118,17 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest -f docker/Dockerfile .
    ```
 
-2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Refer to [Firebase Authentication](docs/firebase.md) for instructions.
+2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Refer to [Firebase README](docs/firebase.md) for instructions.
 
-3. **Run the docker image:**
+3. **Setup LLM**: Setup up LLM of your choice. Follow instructions listed in above section.
+
+4. **Run the docker image:**
    Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
    ```bash
    docker-compose -f docker/docker-compose.yml up -d
    ```
 
-4. **Test the API:**
+5. **Test the API:**
 Refer to the [curl.md](docs/curl.md) For detailed instructions on how to test the API using curl.
 
 ### Option 3: Testing the UI and backend server locally
@@ -151,7 +153,7 @@ Follow steps in [Deployment README](k8s/README.md) to deploy Enterprise Search u
 **Version 1.0.7 - 12/07/2024**
 - Added support async support for faster ingestion
 - Refractored the pipeline code to seperate vector search methods from pipeline code
-- Added support for pipeline factory to manage simulatneous pipeline initializations and caching
+- Added support for pipeline factory to manage simulatneous pipeline initializations and caching at user level
 - Added support for OpenAI models (embedding/generation)
 - Added Ollama docker with auto pull of models defined in [config](config/config.dev.yaml)
 - Restructured the code for easier maintainance
