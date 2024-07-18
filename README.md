@@ -6,6 +6,17 @@ Enterprise search aims to give accurate answers on your documents.
 
 The Enterprise Search pipeline is built using LLaMA index framework to process, embed, and index documents for semantic search and generate answers using indexed documents. We use Qdrant as a vector search engine (for indexing/retrieval of the document data) and Redis for document storage and caching.
 
+## Architecture
+
+This architecture illustrates the main components and data flow of the Enterprise Search pipeline, including the indexing and generation stages, as well as the hybrid search mechanism.
+
+<figure>
+  <img src="assets/pipeline_1.0.7.png" alt="Enterprise Search Pipeline Architecture - 1.0.7" style="display: block; margin: auto;" />
+  <figcaption style="text-align: center; font-style: italic;">
+    <i>Figure 1: High-level architecture of the Enterprise Search pipeline (v1.0.7)</i>
+  </figcaption>
+</figure>
+
 ## Prerequisites
 
 Before setting up the project, ensure you have the following installed:
@@ -78,8 +89,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 
 ### Before you start
 
-1. **Update the config file**: Modify the [config](config/config.dev.yaml) file with the necessary data paths and configurations.
-- A sample test PDF is provided in `./data/test/`.
+1. **Update the config file**: Modify the [config](config/config.dev.yaml) file with the necessary data paths and configurations. A sample test PDF is provided in `./data/test/`.
 
 2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
 
