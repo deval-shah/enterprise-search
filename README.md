@@ -10,12 +10,12 @@ The Enterprise Search pipeline is built using LLaMA index framework to process, 
 
 This architecture illustrates the main components and data flow of the Enterprise Search pipeline, including the indexing and generation stages, as well as the hybrid search mechanism.
 
-<figure>
-  <img src="assets/pipeline_1.0.7.png" alt="Enterprise Search Pipeline Architecture - 1.0.7" style="display: block; margin: auto;" />
-  <figcaption style="text-align: center; font-style: italic;">
-    <i>Figure 1: High-level architecture of the Enterprise Search pipeline (v1.0.7)</i>
-  </figcaption>
-</figure>
+<div align="center">
+  <figure>
+    <img src="assets/pipeline_1.0.7.png" alt="Enterprise Search Pipeline Architecture - 1.0.7" />
+    <figcaption><i>Figure 1: High-level architecture of the Enterprise Search pipeline (v1.0.7)</i></figcaption>
+  </figure>
+</div>
 
 ## Prerequisites
 
