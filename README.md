@@ -12,7 +12,7 @@ This architecture illustrates the main components and data flow of the Enterpris
 
 <div align="center">
   <figure>
-    <img src="assets/pipeline_1.0.7.png" alt="Enterprise Search Pipeline Architecture - 1.0.7" />
+    <img src="assets/pipeline.png" alt="Enterprise Search Pipeline Architecture - 1.0.7" />
     <figcaption><i>Figure 1: High-level architecture of the Enterprise Search pipeline (v1.0.7)</i></figcaption>
   </figure>
 </div>
