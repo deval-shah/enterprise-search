@@ -107,7 +107,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest -f docker/Dockerfile .
    ```
 
-2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file.
+2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file. [Step 4](#step-4)has instructions on how to setup firebase credentials.
 
 3. **Run the docker image:**
    Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
@@ -121,11 +121,7 @@ For detailed instructions on how to test the API using curl, refer to the [curl.
 ### Option 3: Testing the UI and backend server locally
 
 1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2)
-2. **Run the UI:**
-   ```bash
-   cd frontend
-   ```
-   Follow the README file in the frontend folder to run the UI locally.
+2. **Run the UI**: Follow the README file in the frontend folder to run the UI locally.
 
 ## Unit Testing
 
@@ -137,7 +133,7 @@ Under maintainance
 
 ## Deployment
 
-- The [README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using kubernetes and helm.
+- The [README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using Kubernetes and Helm.
 
 ## Release Notes
 
