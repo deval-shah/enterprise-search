@@ -15,7 +15,7 @@ Before setting up the project, ensure you have the following installed:
 
 ## Setup Instructions
 
-### Conda Setup (Local Testing)
+### 1. Conda Setup (Local Testing)
 
 **Set up a local Conda environment and install dependencies:**
 
@@ -65,7 +65,7 @@ Alternatively, you can use OpenAI's proprietary models, if you setup `OPENAI_API
 
 Update the `config/config.dev.yaml` file with the necessary paths and configurations. The default config file assumes a localhost setup.
 
-### Configuration Descriptions:
+#### Configuration Descriptions:
 - **application**: General application settings.
 - **vector_store_config**: Qdrant is used as vector store for storing dense and sparse vectors for data retrieval.
 - **qdrant_client_config**: Specifies the connection settings for Qdrant.
@@ -74,30 +74,29 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 - **llm_model**: Generation model to generate response using context from retreival stage.
 - **reranker**: Reranker model to refine the results post retrieval stage.
 
-### Test the Application
+## Testing
 
-**Before you start:**
-- Ensure there is atleast one document present in the `data_path` folder as defined in the [config](config/config.dev.yaml).
-- A sample test PDF is provided in `./data/test/`.
-
-### Option 1: Testing the ES pipeline locally
+### Before you start
 
 1. **Update the config file**: Modify the [config](config/config.dev.yaml) file with the necessary data paths and configurations.
+- A sample test PDF is provided in `./data/test/`.
 
 2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. By default, it is set to [config](config/config.dev.yaml).
 
-2. **Run Qdrant and Redis services using docker-compose**: 
+### Option 1: Testing the ES pipeline locally
+
+1. **Run Qdrant and Redis services using docker-compose**: 
    ```bash
    docker-compose -f docker/docker-compose.yml up -d redis qdrant
    ```
 
-3. **Setup LLM**: Refer to the [Setup LLM](#setup-llm) section above for instructions on setting up LLM for the pipeline.
+2. **Setup LLM**: Refer to the [Setup LLM](#setup-llm) section above for instructions on setting up LLM for the pipeline.
 
-4. **Run the ES pipeline:**:
+3. **Run the ES pipeline:**:
    ```bash
    python -m llamasearch.pipeline
    ```
-5. **Test**: The pipeline loads documents from `application/data_path` defined in config file, processes and indexes them. When prompted, enter your query. Results will be displayed in the terminal.
+4. **Test**: The pipeline loads documents from `application->data_path` defined in config file, processes and indexes them. When prompted, enter your query. Results will be displayed in the terminal.
 
 ### Option 2: Testing the backend server (API) using curl locally 
 
@@ -107,7 +106,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest -f docker/Dockerfile .
    ```
 
-2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file. [Step 4](#step-4)has instructions on how to setup firebase credentials.
+2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. [Step 4](#step-4)has instructions on how to setup firebase credentials.
 
 3. **Run the docker image:**
    Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
@@ -121,7 +120,7 @@ For detailed instructions on how to test the API using curl, refer to the [curl.
 ### Option 3: Testing the UI and backend server locally
 
 1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2)
-2. **Run the UI**: Follow the README file in the frontend folder to run the UI locally.
+2. **Run the UI**: Follow the [UI README](frontend/README.md) file to run the UI locally.s
 
 ## Unit Testing
 
@@ -133,7 +132,7 @@ Under maintainance
 
 ## Deployment
 
-- The [README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using Kubernetes and Helm.
+- The [Deployment README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using Kubernetes and Helm.
 
 ## Release Notes
 
