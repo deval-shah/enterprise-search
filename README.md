@@ -26,19 +26,19 @@ conda activate es_env
 pip install -r requirements.txt
 ```
 
-### 2. Setup Qdrant
+### 2. Qdrant
 
-Qdrant is used as the vector search database to support efficient searching over vectorized data for retrieval. It is configured to run through `docker-compose.yml`:
+Qdrant is used as the vector search database to support efficient searching over vectorized data for retrieval. It is configured to run through `docker/docker-compose.yml`:
 
 This default configuration starts the Qdrant container on localhost on the ports 6333 and 6334.
 
-### 3. Setup Redis
+### 3. Redis
 
-Redis serves as the caching and document storage layer. It is configured to run through `docker-compose.yml`:
+Redis serves as the caching and document storage layer. It is configured to run through `docker/docker-compose.yml`:
 
 This default configuration starts the Redis server accessible on port 6379 on localhost.
 
-### 4. Setup LLM
+### 4. LLM
 
 The pipeline supports open source llms via Ollama and OpenAI models. Update the `config/config.dev.yaml` file to use the desired LLM.
 
@@ -68,8 +68,8 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 #### Configuration Descriptions:
 - **application**: General application settings.
 - **vector_store_config**: Qdrant is used as vector store for storing dense and sparse vectors for data retrieval.
-- **qdrant_client_config**: Specifies the connection settings for Qdrant.
-- **redis_config**: Redis is used for docstore and cache.
+- **qdrant_client_config**: Specifies the connection settings for Qdrant client.
+- **redis_config**: Redis is used for document store and cache.
 - **embedding**: Embedding model used for document processing. Pulled from HuggingFace library.
 - **llm_model**: Generation model to generate response using context from retreival stage.
 - **reranker**: Reranker model to refine the results post retrieval stage.
@@ -81,7 +81,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 1. **Update the config file**: Modify the [config](config/config.dev.yaml) file with the necessary data paths and configurations.
 - A sample test PDF is provided in `./data/test/`.
 
-2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. By default, it is set to [config](config/config.dev.yaml).
+2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the config file path that matches your local setup. By default, it is set to `config/config.dev.yaml`.
 
 ### Option 1: Testing the ES pipeline locally
 
@@ -90,7 +90,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
    docker-compose -f docker/docker-compose.yml up -d redis qdrant
    ```
 
-2. **Setup LLM**: Refer to the [Setup LLM](#setup-llm) section above for instructions on setting up LLM for the pipeline.
+2. **Setup LLM**: Refer to the [LLM](#4-llm) section above for instructions on setting up LLM for the pipeline.
 
 3. **Run the ES pipeline:**:
    ```bash
@@ -128,11 +128,11 @@ Under maintainance
 
 ## Evaluation
 
-- The [Eval README](docs/eval.md) file outlines the instructions on how to evaluate the ES pipeline.
+- Follow steps in [Eval README](docs/eval.md) to evaluate the ES pipeline.
 
 ## Deployment
 
-- The [Deployment README](k8s/README.md) file outlines the instructions on how to deploy Enterprise Search on a cluster using Kubernetes and Helm.
+- The [Deployment README](k8s/README.md) to deploy Enterprise Search using Kubernetes and Helm.
 
 ## Release Notes
 
