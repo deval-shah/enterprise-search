@@ -1,7 +1,7 @@
 application:
-  config_path: "config.yaml"
-  data_path: "./data/sample-docs/"
-  log_dir: "./data/app/logs"
+  config_path: "config/config.dev.yaml"
+  data_path: "data/sample-docs/"
+  log_dir: "data/app/logs"
   upload_subdir: "uploads"
 
 qdrant_client_config:
@@ -23,13 +23,14 @@ redis_config:
 
 embedding:
   # embed_model: "local:BAAI/bge-small-en-v1.5"
-  embed_model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  # embed_model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  embed_model: "dunzhang/stella_en_400M_v5"
   use_openai: False
 
 llm:
   llm_model: "llama3"
   modelfile: "./config/modelfile.yaml"
-  use_openai: False
+  use_openai: True
 
 reranker:
   model: "BAAI/bge-reranker-large"

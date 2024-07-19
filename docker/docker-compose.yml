@@ -7,13 +7,15 @@ services:
     container_name: enterprise_search
     volumes:
       - ../model_files:/app/model_files
-      - ../config/config.dev.yaml:/app/config.dev.yaml
-      - ../firebase.json:/app/creds/firebase.json
-      - ../data:/data
+      - ../config/config.dev.yaml:/app/config/config.dev.yaml
+      - ../keys/firebase.json:/app/keys/firebase.json
+      - ../data:/app/data
     env_file:
       - ../.env
     environment:
       - DOCKER_ENV=true
+      - APP_BASE_PATH=/app
+      - FIREBASE_CREDENTIALS_PATH=/app/keys/firebase.json
     network_mode: host
     deploy:
       resources:

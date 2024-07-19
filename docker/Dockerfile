@@ -19,17 +19,18 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY .env /app/.env
-COPY requirements.txt /app/requirements.txt
-COPY docker/install.sh /app/install.sh
+COPY requirements.txt /app/
+COPY docker/install.sh /app/
+COPY docker/entrypoint.sh /app/
+
 ENV PATH=/usr/local/cuda/bin:$PATH
 ENV CUDAToolkit_ROOT=/usr/local/cuda
 ENV PYTHONPATH="${PYTHONPATH}:/app/llamasearch"
+
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN mkdir -p /app/llamasearch
-COPY llamasearch /app/llamasearch
-COPY config/*.yaml /app/
+COPY llamasearch /app/llamasearch/
+COPY config/*.yaml /app/config/
 
 EXPOSE 8010
 ENV NAME es

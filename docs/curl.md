@@ -12,7 +12,7 @@ UID = "" # Firebase User ID
 CRED_PATH = "" # Credentials file
 ```
 
-Update constant values in the [generate_token.py](llamasearch/api/tests/generate_token.py) script and API requests.
+Update these values in `.env` file in the root directory.
 
 ```bash
 python llamasearch/api/tests/generate_token.py

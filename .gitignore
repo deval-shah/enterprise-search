@@ -9,3 +9,6 @@ __pycache__
 *.pyo
 *.pyd_
 .env
+*pdf
+!assets/*.png
+!data/test/*.pdf

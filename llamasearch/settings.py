@@ -1,10 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from dotenv import load_dotenv
 import yaml
 from pathlib import Path
 import os
-from dotenv import load_dotenv
 
 load_dotenv()
+
+# Determine the base path
+BASE_PATH = Path(os.getenv('APP_BASE_PATH', '.')).resolve()
+
+def get_path(relative_path):
+    full_path = BASE_PATH / relative_path
+    return str(full_path)
 
 class VectorStoreConfig(BaseModel):
     collection_name: str = "default"
@@ -29,7 +36,7 @@ class Embedding(BaseModel):
     use_openai: bool = False
 
 class Llm(BaseModel):
-    modelfile: str = "modelfile.yaml"
+    modelfile: str = get_path("config/modelfile.yaml")
     use_openai: bool = False
 
 class Reranker(BaseModel):
@@ -42,11 +49,20 @@ class Eval(BaseModel):
     chat_format: str = "chatml"
 
 class ApplicationConfig(BaseModel):
-    config_path: str = "/app/config.yaml"
-    data_path: str = "./data/sample-docs/"
-    log_dir: str = "/data/app/logs"
+    config_path: str = Field(default="config/config.dev.yaml", env="CONFIG_PATH")
+    data_path: str = Field(default="data/sample-docs/", env="DATA_PATH")
+    log_dir: str = Field(default="data/app/logs", env="LOG_DIR")
     upload_subdir: str = "uploads"
     enable_prometheus: bool = False
+
+    def get_config_path(self):
+        return get_path(self.config_path)
+
+    def get_data_path(self):
+        return get_path(self.data_path)
+
+    def get_log_dir(self):
+        return get_path(self.log_dir)
 
 class Config(BaseModel):
     application: ApplicationConfig = ApplicationConfig()
@@ -78,5 +94,19 @@ def load_config(config_path: str) -> Config:
     else:
         raise FileNotFoundError(f"No configuration file found at {config_path}")
 
-config_path = os.getenv('CONFIG_PATH', '/app/config.dev.yaml')
+config_path = os.getenv('CONFIG_PATH', 'config/config.dev.yaml')
 config = load_config(config_path)
+
+def pretty_print_paths():
+    print("\n" + "="*80)
+    print("Path Configuration:")
+    print("="*80)
+    print(f"BASE_PATH:     {BASE_PATH}")
+    print("-"*80)
+    print("Resolved Paths:")
+    print(f"Config File:   {config.application.get_config_path()}")
+    print(f"Data Path:     {config.application.get_data_path()}")
+    print(f"Log Directory: {config.application.get_log_dir()}")
+    print("="*80 + "\n")
+
+pretty_print_paths()
