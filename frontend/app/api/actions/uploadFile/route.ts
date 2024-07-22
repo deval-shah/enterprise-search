@@ -1,5 +1,5 @@
-// api/actions/uploadFile/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { apiConfig } from '@/config';
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
@@ -11,20 +11,31 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData();
-    const files = formData.getAll('files') as File[];
+    const files = formData.getAll('files');
 
     if (files.length === 0) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 });
     }
 
-    const response = await fetch('http://localhost:8010/api/v1/uploadfile/', {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
+
+    // Create a new FormData object to send to the backend
+    const backendFormData = new FormData();
+    files.forEach((file, index) => {
+      backendFormData.append('files', file as Blob, (file as File).name);
+    });
+
+    const response = await fetch(`${apiConfig.baseUrl}/api/v1/uploadfile`, {
       method: 'POST',
       headers: {
         'Authorization': authHeader,
       },
-      body: formData,
-      credentials: 'include',
+      body: backendFormData,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     console.log("Backend response status:", response.status);
 
@@ -38,7 +49,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ fileUpload: data.file_upload });
   } catch (error) {
     console.error('Error uploading files:', error);
+    if (error.name === 'AbortError') {
+      return NextResponse.json({ error: 'Request timed out' }, { status: 504 });
+    }
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
-
