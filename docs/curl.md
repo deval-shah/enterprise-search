@@ -7,9 +7,9 @@
 Get firebase credentials and values by following the instructions in [firebase](docs/firebase.md) file.
 
 ```bash
-FIREBASE_API_KEY = "" # Firebase web key
-UID = "" # Firebase User ID
-CRED_PATH = "" # Credentials file
+FIREBASE_CREDENTIALS_PATH= # Path to Firebase Credentials file
+FIREBASE_API_KEY= # Firebase Web API Key
+FIREBASE_TEST_UID= # Firebase Test UID
 ```
 
 Update these values in `.env` file in the root directory.
