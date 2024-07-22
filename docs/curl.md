@@ -7,7 +7,7 @@
 Get firebase credentials and values by following the instructions in [firebase](docs/firebase.md) file.
 
 ```bash
-FIREBASE_CREDENTIALS_PATH= # Path to Firebase Credentials file
+FIREBASE_CREDENTIALS_PATH=keys/firebase.json # Path to Firebase Credentials file
 FIREBASE_API_KEY= # Firebase Web API Key
 FIREBASE_TEST_UID= # Firebase Test UID
 ```
