@@ -55,7 +55,7 @@ This default configuration starts the Redis server accessible on port 6379 on lo
 The pipeline supports open source llms via Ollama and OpenAI models. Update the `config/config.dev.yaml` file to use the desired LLM. Currently, we support open source llms using Ollama server and OpenAI models via API.
 
 
-### 4. Configuration Setup
+### 4. Configuration
 
 Update the `config/config.dev.yaml` file with the necessary paths and configurations. The default config file assumes a localhost setup.
 

@@ -23,14 +23,14 @@ redis_config:
 
 embedding:
   # embed_model: "local:BAAI/bge-small-en-v1.5"
-  # embed_model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
-  embed_model: "dunzhang/stella_en_400M_v5"
+  embed_model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  # model: "local:dunzhang/stella_en_400M_v5"
   use_openai: False
 
 llm:
   llm_model: "llama3"
-  modelfile: "./config/modelfile.yaml"
-  use_openai: True
+  modelfile: "config/modelfile.yaml"
+  use_openai: False
 
 reranker:
   model: "BAAI/bge-reranker-large"

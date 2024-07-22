@@ -87,17 +87,23 @@ async def query_index(
     db: Session = Depends(get_db),
     pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory])
 ):
-    logger.debug(f"Received query: {query}")
+    logger.info(f"Received query: {query}")
     user, _ = user_info
     pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid)
     try: 
         file_upload_response = []
         if files:
-            upload_results = await handle_file_upload([files] if isinstance(files, UploadFile) else files, user.firebase_uid)
+            if isinstance(files, list):
+                logger.info(f"{len(files)} files received")
+                files_list = files
+            else:
+                logger.info("1 file received")
+                files_list = [files]
+            upload_results = await handle_file_upload(files_list, user.firebase_uid)
             file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
             await pipeline.insert_documents(file_paths)
         else:
-            logger.debug("No files received")
+            logger.info("No files received")
         response = await pipeline.perform_query_async(query)
         logger.debug(f"Raw response from query_app: {response}")
         if response is None or not hasattr(response, 'response'):

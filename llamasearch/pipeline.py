@@ -95,7 +95,7 @@ class Pipeline:
         if self.config.llm.use_openai:
             logger.info("Using OpenAI for generation...")
             # TODO :: Pass model settings from config to init the openai llm model
-            # TODO :: Override the openai client with external settings
+            # TODO :: Override the openai client with external
             return
         llm_config = load_yaml_file(self.config.llm.modelfile)
         model_settings = llm_config['model']
@@ -177,12 +177,12 @@ class Pipeline:
         await self.qdrant_search.add_nodes_to_index_async(nodes)
         return nodes
 
-    async def get_ref_info(self):
-        try:
-            all_ref_doc_info = self.qdrant_search.index.ref_doc_info
-            pprint(dict(list(all_ref_doc_info.items())[:5]), width=100, compact=True)
-        except Exception as e:
-            logger.error(f"Error getting ref_doc_info: {e}")
+    # async def get_ref_info(self):
+    #     try:
+    #         all_ref_doc_info = self.qdrant_search.index.ref_doc_info
+    #         pprint(dict(list(all_ref_doc_info.items())[:5]), width=100, compact=True)
+    #     except Exception as e:
+    #         logger.error(f"Error getting ref_doc_info: {e}")
 
     # Delete a document from index and docstore
     # TODO :: Issue with deleting from docstore not fixed yet
@@ -307,6 +307,8 @@ class Pipeline:
     def cleanup(self):
         self.qdrant_search.cleanup()
 
+# TODO :: Background worker to assign pipeline init tasks (celery q?)
+# TODO :: Pipeline pool implementation to keep the pipelines ready upon server start
 class PipelineFactory:
     def __init__(self):
         self.pipelines: Dict[str, Pipeline] = {}
