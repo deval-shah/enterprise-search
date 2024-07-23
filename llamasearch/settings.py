@@ -21,6 +21,7 @@ class VectorStoreConfig(BaseModel):
     alpha: float = 0.5 
     top_k: int = 10
     use_async: bool = False
+    enable_hybrid: bool = True
 
 class QdrantClientConfig(BaseModel):
     url: str = "http://localhost:6333"
@@ -41,6 +42,7 @@ class Llm(BaseModel):
 
 class Reranker(BaseModel):
     model: str = "BAAI/bge-reranker-large"
+    top_n: int = 3
 
 class Eval(BaseModel):
     custom_model_grammar_path: str = "./model_files/json_arr.gbnf"

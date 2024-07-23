@@ -199,75 +199,54 @@ class QdrantHybridSearch:
         alpha: Optional[float] = None,
         top_k: Optional[int] = None,
     ) -> VectorStoreQueryResult:
-        alpha = alpha or self.vectordb_config.alpha
-        top_k = top_k or self.vectordb_config.topk
-        """Fuse dense and sparse search results using relative score fusion."""
-        # sanity check
-        assert dense_result.nodes is not None
-        assert dense_result.similarities is not None
-        assert sparse_result.nodes is not None
-        assert sparse_result.similarities is not None
+        try:
+            alpha = alpha or self.vectordb_config.alpha
+            top_k = top_k or self.vectordb_config.topk
 
-        # deconstruct results
-        sparse_result_tuples = list(
-            zip(sparse_result.similarities, sparse_result.nodes)
-        )
-        sparse_result_tuples.sort(key=lambda x: x[0], reverse=True)
+            # Quick return for empty results
+            if not dense_result.nodes and not sparse_result.nodes:
+                logger.warning("Both dense and sparse results are empty")
+                return VectorStoreQueryResult(nodes=[], similarities=[], ids=[])
 
-        dense_result_tuples = list(
-            zip(dense_result.similarities, dense_result.nodes)
-        )
-        dense_result_tuples.sort(key=lambda x: x[0], reverse=True)
+            # Prepare data structures
+            fused_scores = {}
+            all_nodes = {}
 
-        # track nodes in both results
-        all_nodes_dict = {x.node_id: x for x in dense_result.nodes}
-        for node in sparse_result.nodes:
-            if node.node_id not in all_nodes_dict:
-                all_nodes_dict[node.node_id] = node
+            # Process dense results
+            if dense_result.nodes:
+                dense_max = max(dense_result.similarities)
+                dense_min = min(dense_result.similarities)
+                dense_range = dense_max - dense_min or 1  # Avoid division by zero
 
-        # normalize sparse similarities from 0 to 1
-        sparse_similarities = [x[0] for x in sparse_result_tuples]
-        max_sparse_sim = max(sparse_similarities)
-        min_sparse_sim = min(sparse_similarities)
-        sparse_similarities = [
-            (x - min_sparse_sim) / (max_sparse_sim - min_sparse_sim)
-            for x in sparse_similarities
-        ]
-        sparse_per_node = {
-            sparse_result_tuples[i][1].node_id: x
-            for i, x in enumerate(sparse_similarities)
-        }
+                for node, sim in zip(dense_result.nodes, dense_result.similarities):
+                    normalized_sim = (sim - dense_min) / dense_range
+                    fused_scores[node.node_id] = alpha * normalized_sim
+                    all_nodes[node.node_id] = node
 
-        # normalize dense similarities from 0 to 1
-        dense_similarities = [x[0] for x in dense_result_tuples]
-        max_dense_sim = max(dense_similarities)
-        min_dense_sim = min(dense_similarities)
-        dense_similarities = [
-            (x - min_dense_sim) / (max_dense_sim - min_dense_sim)
-            for x in dense_similarities
-        ]
-        dense_per_node = {
-            dense_result_tuples[i][1].node_id: x
-            for i, x in enumerate(dense_similarities)
-        }
+            # Process sparse results
+            if sparse_result.nodes:
+                sparse_max = max(sparse_result.similarities)
+                sparse_min = min(sparse_result.similarities)
+                sparse_range = sparse_max - sparse_min or 1  # Avoid division by zero
 
-        # fuse the scores
-        fused_similarities = []
-        for node_id in all_nodes_dict:
-            sparse_sim = sparse_per_node.get(node_id, 0)
-            dense_sim = dense_per_node.get(node_id, 0)
-            fused_sim = alpha * (sparse_sim + dense_sim)
-            fused_similarities.append((fused_sim, all_nodes_dict[node_id]))
+                for node, sim in zip(sparse_result.nodes, sparse_result.similarities):
+                    normalized_sim = (sim - sparse_min) / sparse_range
+                    fused_scores[node.node_id] = fused_scores.get(node.node_id, 0) + alpha * normalized_sim
+                    all_nodes[node.node_id] = node
 
-        fused_similarities.sort(key=lambda x: x[0], reverse=True)
-        fused_similarities = fused_similarities[:top_k]
+            # Sort and limit results
+            sorted_results = sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
 
-        # create final response object
-        return VectorStoreQueryResult(
-            nodes=[x[1] for x in fused_similarities],
-            similarities=[x[0] for x in fused_similarities],
-            ids=[x[1].node_id for x in fused_similarities],
-        )
+            # Create final response object
+            return VectorStoreQueryResult(
+                nodes=[all_nodes[node_id] for node_id, _ in sorted_results],
+                similarities=[score for _, score in sorted_results],
+                ids=[node_id for node_id, _ in sorted_results]
+            )
+
+        except Exception as e:
+            logger.error(f"Error in relative_score_fusion: {str(e)}", exc_info=True)
+            return VectorStoreQueryResult(nodes=[], similarities=[], ids=[])
 
     def get_nodes(self, limit=None):
         nodes = self.index.docstore.docs

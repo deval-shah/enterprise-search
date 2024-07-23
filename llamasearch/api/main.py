@@ -45,7 +45,9 @@ async def startup_event():
         redis_client = get_redis()
         session_service.init_redis(redis_client)
         print("Session authentication initialized with Redis")
-    await container.pipeline_factory().initialize_common_resources()
+    pipeline_factory = container.pipeline_factory()
+    pipeline_factory.is_api_server = True
+    await pipeline_factory.initialize_common_resources()
     logger.info("Pipeline factory initialized")
 
 @app.on_event("shutdown")

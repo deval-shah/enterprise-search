@@ -16,7 +16,6 @@ from llamasearch.api.tasks import log_query_task
 from llamasearch.api.services.session import session_service
 # Pipeline imports
 from llamasearch.logger import logger
-from llamasearch.utils import profile_
 from llamasearch.api.core.container import Container
 from llamasearch.pipeline import PipelineFactory, Pipeline
 
