@@ -169,7 +169,7 @@ class Pipeline:
         enable_hybrid = self.config.vector_store_config.enable_hybrid
         query_engine_kwargs = {
             "node_postprocessors": [self.reranker],
-            "similarity_top_k": top_k
+            "similarity_top_k": top_k,
             "response_mode":"compact"
         }
 
