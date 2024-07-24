@@ -169,7 +169,7 @@ class Pipeline:
         enable_hybrid = self.config.vector_store_config.enable_hybrid
         query_engine_kwargs = {
             "node_postprocessors": [self.reranker],
-            "similarity_top_k": top_k,
+            "similarity_top_k": top_k
             "response_mode":"compact"
         }
 
@@ -183,6 +183,7 @@ class Pipeline:
 
     @track_latency
     async def perform_query_async(self, query: str):
+        await self.setup_query_engine()
         if not self.is_setup_complete:
             raise RuntimeError("Pipeline setup is not complete. Call setup() first.")
         response = await self.query_engine.aquery(query)

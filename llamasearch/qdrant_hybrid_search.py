@@ -115,7 +115,7 @@ class QdrantHybridSearch:
 
     @track_latency
     async def add_nodes_to_index_async(self, nodes):
-        print("Adding nodes to index...")
+        logger.info("Adding nodes to index...")
         await self.index._async_add_nodes_to_index(
             self.index.index_struct,
             nodes,

@@ -57,6 +57,12 @@ class ApplicationConfig(BaseModel):
     upload_subdir: str = "uploads"
     enable_prometheus: bool = False
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.config_path = get_path(self.config_path)
+        self.data_path = get_path(self.data_path)
+        self.log_dir = get_path(self.log_dir)
+
     def get_config_path(self):
         return get_path(self.config_path)
 
