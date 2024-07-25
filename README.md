@@ -154,10 +154,6 @@ Please refer to the [Troubleshooting README](docs/troubleshooting.md) for common
 
 ## Release Notes
 
-**Version 1.0.7 - 12/07/2024**
-- Added support async support for faster ingestion
-- Refractored the pipeline code to seperate vector search methods from pipeline code
-- Added support for pipeline factory to manage simulatneous pipeline initializations and caching at user level
-- Added support for OpenAI models (embedding/generation)
-- Added Ollama docker with auto pull of models defined in [config](config/config.dev.yaml)
-- Restructured the code for easier maintainance
+**Version 1.0.8 - 26/07/2024**
+- Added multi tenancy support to isolate data during indexing and filtering during query stage
+- Added tests for multi tenancy
