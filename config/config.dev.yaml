@@ -1,0 +1,38 @@
+application:
+  config_path: "config/config.dev.yaml"
+  data_path: "data/sample-docs/"
+  log_dir: "data/app/logs"
+  upload_subdir: "uploads"
+
+qdrant_client_config:
+  url: "http://localhost:6333"
+  prefer_grpc: False
+
+vector_store_config:
+  collection_name: "test2"
+  vector_size: 1536
+  distance: Cosine
+  batch_size: 30
+  alpha: 0.5 
+  top_k: 10
+  use_async: False
+  enable_hybrid: True
+
+redis_config:
+  host: "localhost"
+  port: 6379
+
+embedding:
+  # embed_model: "local:BAAI/bge-small-en-v1.5"
+  embed_model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  # model: "local:dunzhang/stella_en_400M_v5"
+  use_openai: False
+
+llm:
+  llm_model: "llama3"
+  modelfile: "config/modelfile.yaml"
+  use_openai: False
+
+reranker:
+  model: "BAAI/bge-reranker-large"
+  top_n: 3

@@ -1,20 +1,26 @@
 # app/main.py
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 import uvicorn
 from llamasearch.api.core.middleware import SessionMiddleware
-from llamasearch.api.routes import router as api_router
+from llamasearch.api.routes import router
 from llamasearch.api.core.config import settings
 from llamasearch.api.db.session import init_db
 from llamasearch.api.core.redis import get_redis
 from llamasearch.api.services.session import session_service
-from fastapi.exceptions import RequestValidationError
+from llamasearch.api.core.container import Container
+from llamasearch.logger import logger
+
+container = Container()
+container.wire(modules=[".routes"])
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    debug=True
+    # debug=True,
+    dependencies=[Depends(container.wire)]
 )
 
 if settings.BACKEND_CORS_ORIGINS_LIST:
@@ -30,7 +36,7 @@ if settings.USE_SESSION_AUTH:
     print("Session authentication enabled")
     app.add_middleware(SessionMiddleware)
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 async def startup_event():
@@ -39,6 +45,15 @@ async def startup_event():
         redis_client = get_redis()
         session_service.init_redis(redis_client)
         print("Session authentication initialized with Redis")
+    pipeline_factory = container.pipeline_factory()
+    pipeline_factory.is_api_server = True
+    await pipeline_factory.initialize_common_resources()
+    logger.info("Pipeline factory initialized")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await container.pipeline_factory().cleanup_all()
+    logger.info("Pipeline factory resources cleaned up")
 
 @app.get("/")
 async def root():

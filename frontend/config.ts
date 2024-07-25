@@ -22,3 +22,8 @@ export const serverConfig = {
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
   };
+
+  export const apiConfig = {
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8010',
+    timeout: 60000, // 60 seconds
+  };

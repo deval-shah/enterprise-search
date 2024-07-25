@@ -81,7 +81,7 @@ class CustomLogger:
                 record.dynamic_part = ""
             return True
 
-logger = CustomLogger.setup_logger("app_logger", save_to_disk=True, log_dir=config.application.log_dir, log_name='app.log')
+logger = CustomLogger.setup_logger("app_logger", save_to_disk=True, log_dir=config.application.get_log_dir(), log_name='app.log')
 
 # Example usage
 if __name__ == "__main__":

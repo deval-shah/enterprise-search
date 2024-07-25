@@ -1,9 +1,20 @@
-
-
+import os
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
-import json, requests
+import json
+import requests
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv()
+
+BASE_PATH = Path(os.getenv('APP_BASE_PATH', '.')).resolve()
+FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', 'keys/firebase.json')
+FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY', '')  # Add this to your .env file
+UID = os.getenv('FIREBASE_TEST_UID', '')  # Add this to your .env file
+
+CRED_PATH = BASE_PATH / FIREBASE_CREDENTIALS_PATH
 
 def initialize_firebase(cred_path):
     try:
@@ -19,8 +30,7 @@ def generate_firebase_tokens(uid, cred_path):
     custom_token = auth.create_custom_token(uid).decode('utf-8')
 
     # Exchange custom token for ID token
-    firebase_api_key = ""
-    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={firebase_api_key}"
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={FIREBASE_API_KEY}"
     
     payload = json.dumps({
         "token": custom_token,
@@ -40,12 +50,16 @@ def generate_firebase_tokens(uid, cred_path):
         raise Exception(f"Failed to exchange custom token for ID token: {response.text}")
 
 if __name__ == "__main__":
-    # Path to your service account credentials JSON file
-    cred_path = "firebase.json"
-    # User ID for which you want to generate the token
-    uid = "T0wDP1JGrmdKSZWSRLBPRAT8zvE2"
+    if not FIREBASE_API_KEY:
+        print("ERROR: `FIREBASE_API_KEY` is not set in the .env file.")
+        exit(1)
+
+    if not UID:
+        print("ERROR: `FIREBASE_TEST_UID` is not set in the .env file.")
+        exit(1)
+
     try:
-        custom_token, id_token = generate_firebase_tokens(uid, cred_path)
+        custom_token, id_token = generate_firebase_tokens(UID, CRED_PATH)
         print("Generated Firebase Custom Token:")
         print(custom_token)
         print("\nGenerated Firebase ID Token:")

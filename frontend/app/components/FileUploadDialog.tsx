@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { toast } from 'react-toastify'; // Add this import
 
 interface FileUploadDialogProps {
   onUploadComplete: (files: File[]) => void;
@@ -32,30 +33,43 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
 
     try {
       const headers = await getAuthHeader();
+      // Remove Content-Type header to let the browser set it with the boundary
       delete (headers as Record<string, string>)['Content-Type'];
 
       const formData = new FormData();
       acceptedFiles.forEach((file) => {
-        formData.append('files', file);
+        formData.append('files', file, file.name);
       });
 
-      const response = await fetch('/api/v1/uploadfile', {  // Note: no trailing slash
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
+
+      const response = await fetch('/api/actions/uploadFile', {
         method: 'POST',
         headers: headers,
         body: formData,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       const result = await response.json();
       setUploadStatus('Files uploaded successfully!');
       onUploadComplete(acceptedFiles);
+      toast.success('Files uploaded successfully!');
     } catch (error) {
       console.error('Error uploading files:', error);
-      setUploadStatus(`Error uploading files: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      let errorMessage = 'Failed to upload files. Please try again.';
+      if (error.name === 'AbortError') {
+        errorMessage = 'Upload timed out. Please try again.';
+      }
+      setUploadStatus(`Error uploading files: ${errorMessage}`);
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }

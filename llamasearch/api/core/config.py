@@ -1,20 +1,40 @@
-from pydantic import AnyHttpUrl
+import os
+from pydantic import AnyHttpUrl, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
+from functools import lru_cache
 
 class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1"
-    SERVER_NAME: str = "LlamaSearch"
-    SERVER_HOST: str = "http://localhost:8010"
-    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3002"
-    PROJECT_NAME: str = "LlamaSearch"
-    
-    DATABASE_URL: str = "sqlite:///./test.db"
-    REDIS_URL: str = "redis://localhost:6379/0"
-    USE_SESSION_AUTH: bool = True
-    COOKIE_SECURE: bool = False  # Set to True in production for HTTPS
+    # API Settings
+    API_V1_STR: str = Field(default="/api/v1", env="API_V1_STR")
+    SERVER_NAME: str = Field(default="LlamaSearch", env="SERVER_NAME")
+    SERVER_HOST: str = Field(default="http://localhost:8010", env="SERVER_HOST")
+    PROJECT_NAME: str = Field(default="LlamaSearch", env="PROJECT_NAME")
 
-    FIREBASE_CREDENTIALS_PATH: str = "firebase.json"
+    # CORS Settings
+    BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")
+
+    # Database Settings
+    DATABASE_URL: str = Field(default="sqlite:///./test.db", env="DATABASE_URL")
+
+    # Redis Settings
+    REDIS_URL: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
+
+    # Authentication Settings
+    USE_SESSION_AUTH: bool = Field(default=True, env="USE_SESSION_AUTH")
+    COOKIE_SECURE: bool = Field(default=False, env="COOKIE_SECURE")
+
+    # Firebase Settings
+    FIREBASE_CREDENTIALS_PATH: str = Field(default="/app/keys/firebase.json", env="FIREBASE_CREDENTIALS_PATH")
+
+    # Application Paths
+    APP_BASE_PATH: str = Field(default=".", env="APP_BASE_PATH")
+    CONFIG_PATH: str = Field(default="config/config.dev.yaml", env="CONFIG_PATH")
+    DATA_PATH: str = Field(default="data/sample-docs/", env="DATA_PATH")
+    LOG_DIR: str = Field(default="data/app/logs", env="LOG_DIR")
+
+    # Logging
+    LOGLEVEL: str = Field(default="DEBUG", env="LOGLEVEL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
 
@@ -22,4 +42,8 @@ class Settings(BaseSettings):
     def BACKEND_CORS_ORIGINS_LIST(self) -> List[str]:
         return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()
+
+settings = get_settings()

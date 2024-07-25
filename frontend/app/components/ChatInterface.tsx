@@ -5,6 +5,7 @@ import { FiSend, FiPaperclip } from 'react-icons/fi';
 import MessageItem from './MessageItem';
 import { Message, ContextDetail } from '../types';
 import AnimatedLoadingDots from './AnimatedLoadingDots';
+import { toast } from 'react-toastify';
 
 interface ChatInterfaceProps {
   initialFiles: File[];
@@ -44,12 +45,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ initialFiles }) => {
       const formData = new FormData();
       formData.append('query', input);
       uploadedFiles.forEach(file => formData.append('files', file));
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds timeout
 
       const response = await fetch('/api/actions/handleMessage', {
         method: 'POST',
         headers: headers,
         body: formData,
+        signal: controller.signal, // Add abort signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -68,6 +75,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ initialFiles }) => {
       const errorMessage: Message = { role: 'system', content: 'Sorry, an error occurred. Please try again.' };
       setIsWaitingForResponse(false);
       setMessages(prev => [...prev, errorMessage]);
+      toast.error('Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
       setUploadedFiles([]);

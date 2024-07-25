@@ -1,12 +1,15 @@
 streamlit
 pyyaml
-qdrant_client==1.8.0
+# qdrant_client
 redis
 streamlit
 pathlib
 docx2txt
 dvc[gs]
-llama-index==0.10.13
+onnxruntime
+qdrant-client[fastembed-gpu]
+huggingface-hub
+llama-index
 llama-index-llms-ollama
 llama-index-embeddings-huggingface
 llama-index-vector-stores-qdrant
@@ -31,3 +34,8 @@ python-multipart
 aiofiles
 firebase-admin
 aioredis
+dependency-injector
+python-dotenv
+tabulate
+huggingface-hub==0.23.0
+transformers==4.37.0
