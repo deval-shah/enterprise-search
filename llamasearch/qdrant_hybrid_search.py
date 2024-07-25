@@ -22,13 +22,15 @@ class QdrantHybridSearch:
         self.vectordb_client_config = config.qdrant_client_config
         self._client = None
         self._aclient = None
+        self.multi_tenancy = getattr(self.vectordb_config, 'multi_tenancy', False)
+        logger.info(f"Multi tenancy: {self.multi_tenancy}")
 
-    async def setup_index_async(self):
+    async def setup_index_async(self, tenant_id=None):
         """Set up the Qdrant index for hybrid search asynchronously."""
         try:
             await self.initialize_qdrant_client_async()
             await self.create_collection_async()
-            await self.create_vector_store_async()
+            await self.create_vector_store_async(tenant_id=tenant_id)
         except Exception as e:
             logger.error(f"Error: {e}")
 
@@ -81,25 +83,45 @@ class QdrantHybridSearch:
                         )
                     },
                 )
+                # One downside to this approach is that global requests (without the group_id filter) will be slower
+                # since they will necessitate scanning all groups to identify the nearest neighbors.
+                if self.multi_tenancy:
+                    # Update HNSW configuration for better performance in multitenant scenarios
+                    await self.aclient.update_collection(
+                        collection_name=self.vectordb_config.collection_name,
+                        hnsw_config=models.HnswConfigDiff(payload_m=16, m=0),
+                    )
+
+            if self.multi_tenancy:
+                await self.aclient.create_payload_index(
+                    collection_name=self.vectordb_config.collection_name,
+                    field_name="tenant_id",
+                    field_schema=models.PayloadSchemaType.KEYWORD,
+                )
         except Exception as e:
             logger.error(f"Error creating collection: {e}")
             raise
     
     @track_latency
-    async def create_vector_store_async(self, collection_name=None):
+    async def create_vector_store_async(self, collection_name=None, tenant_id=None):
         try:
             #Assign default name if not specified
             if collection_name is None:
                 collection_name = self.vectordb_config.collection_name
             print(f"Creating vector store for collection {collection_name}")
-            self.vector_store = QdrantVectorStore(
-                collection_name=collection_name,
-                client=self.client,
-                aclient=self.aclient,
-                enable_hybrid=True,
-                batch_size=self.vectordb_config.batch_size,
-                hybrid_fusion_fn=self.relative_score_fusion
-            )
+            vector_store_config = {
+                "collection_name": collection_name,
+                "client": self.client,
+                "aclient": self.aclient,
+                "enable_hybrid": True,
+                "batch_size": self.vectordb_config.batch_size,
+                "hybrid_fusion_fn": self.relative_score_fusion,
+            }
+            if self.multi_tenancy and tenant_id:
+                vector_store_config.update({
+                    "metadata_payload_key": "tenant_id" if tenant_id else None
+                })
+            self.vector_store = QdrantVectorStore(**vector_store_config)
         except Exception as e:
             logger.error(f"Error creating QdrantVectorStore: {e}")
             raise
@@ -114,8 +136,11 @@ class QdrantHybridSearch:
         )
 
     @track_latency
-    async def add_nodes_to_index_async(self, nodes):
-        print("Adding nodes to index...")
+    async def add_nodes_to_index_async(self, nodes, tenant_id=None):
+        logger.info("Adding nodes to index...")
+        if self.multi_tenancy and tenant_id:
+            for node in nodes:
+                node.metadata["tenant_id"] = tenant_id
         await self.index._async_add_nodes_to_index(
             self.index.index_struct,
             nodes,
@@ -276,10 +301,10 @@ class QdrantHybridSearch:
             return limited_nodes.values()
         return nodes.values()
 
-    def cleanup(self):
+    async def cleanup(self):
         if self._client:
             self._client.close()
         if self._aclient:
-            asyncio.create_task(self._aclient.close())
+            await self._aclient.close()
         self._client = None
         self._aclient = None

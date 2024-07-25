@@ -21,6 +21,7 @@ class VectorStoreConfig(BaseModel):
     alpha: float = 0.5 
     top_k: int = 10
     use_async: bool = False
+    multi_tenancy: bool = False
 
 class QdrantClientConfig(BaseModel):
     url: str = "http://localhost:6333"

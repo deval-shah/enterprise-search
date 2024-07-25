@@ -26,6 +26,8 @@ from llama_index.core.ingestion import (
 )
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.core.response.pprint_utils import pprint_response
+from llama_index.core.vector_stores.types import MetadataFilters, ExactMatchFilter
+from qdrant_client import models
 
 ALLOWED_EXTS = [".pdf", ".docx", ".csv"]
 HARD_LIMIT_FILE_UPLOAD = 10
@@ -38,7 +40,7 @@ class Pipeline:
     - Query processing and reranking
     - Context extraction and formatting
     """
-    def __init__(self, config):
+    def __init__(self, config, tenant_id):
         self.config = config
         self.setup_llm()
         self.setup_embed_model()
@@ -49,13 +51,16 @@ class Pipeline:
         self.qdrant_search = QdrantHybridSearch(config)
         self.is_setup_complete = False
         self.documents = None
+        self.tenant_id = tenant_id
+        self.multi_tenancy = getattr(self.config.vector_store_config, 'multi_tenancy', False)
 
     async def setup(self):
         if self.is_setup_complete:
             logger.info("Setup already completed. Skipping.")
             return
         setup_steps: List[tuple[str, callable]] = [
-            ("Qdrant index", self.qdrant_search.setup_index_async),
+            #("Qdrant index", self.qdrant_search.setup_index_async),
+            ("Qdrant index", lambda: self.qdrant_search.setup_index_async(tenant_id=self.tenant_id)),
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
             ("Reranker", self.setup_reranker),
@@ -73,7 +78,7 @@ class Pipeline:
                     await step_func()
                     nodes = await self.ingest_documents(self.documents)
                     logger.info(f"Ingesting {len(nodes)} nodes for {len(self.ingestion.docstore.docs)} chunks")
-                    await self.qdrant_search.add_nodes_to_index_async(nodes)
+                    await self.qdrant_search.add_nodes_to_index_async(nodes, self.tenant_id)
                     logger.info("Ingestion pipeline setup completed.")
                 else:
                     await step_func()
@@ -152,8 +157,17 @@ class Pipeline:
         return await self.ingestion.arun(documents=documents)
 
     async def setup_query_engine(self):
+        # self.query_engine = self.qdrant_search.index.as_query_engine(
+        #     node_postprocessors=[self.reranker]
+        # )
+        qdrant_filters = None
+        if self.tenant_id:
+            qdrant_filters = models.Filter(
+                must=[models.FieldCondition(key="tenant_id", match=models.MatchValue(value=self.tenant_id))]
+            )
         self.query_engine = self.qdrant_search.index.as_query_engine(
-            node_postprocessors=[self.reranker]
+            node_postprocessors=[self.reranker],
+            vector_store_kwargs={"qdrant_filters": qdrant_filters}
         )
 
     @track_latency
@@ -174,7 +188,8 @@ class Pipeline:
             logger.debug(f"Processing Document ID: {doc.id_}")
         nodes = await self.ingest_documents(documents)
         logger.info(f"Insertion :: Ingesting {len(nodes)} nodes for {len(self.ingestion.docstore.docs)} chunks")
-        await self.qdrant_search.add_nodes_to_index_async(nodes)
+        #await self.qdrant_search.add_nodes_to_index_async(nodes)
+        await self.qdrant_search.add_nodes_to_index_async(nodes, self.tenant_id)
         return nodes
 
     # async def get_ref_info(self):
@@ -296,16 +311,17 @@ class Pipeline:
             print(tabulate(table_data, headers=headers, tablefmt="grid"))
         else:
             print("No document information available.")
-        print("\n--- Retrieval Context ---")
-        if retrieval_context:
-            for i, context in enumerate(retrieval_context, 1):
-                print(f"\nContext {i}:")
-                print(context[:500] + "..." if len(context) > 500 else context)
-        else:
-            print("No retrieval context available.")
+        #print("\n--- Retrieval Context ---")
+        # if retrieval_context:
+        #     for i, context in enumerate(retrieval_context, 1):
+        #         print(f"\nContext {i}:")
+        #         print(context[:500] + "..." if len(context) > 500 else context)
+        # else:
+        #     print("No retrieval context available.")
 
-    def cleanup(self):
-        self.qdrant_search.cleanup()
+    async def cleanup(self):
+        if self.qdrant_search:
+            await self.qdrant_search.cleanup()
 
 # TODO :: Background worker to assign pipeline init tasks (celery q?)
 # TODO :: Pipeline pool implementation to keep the pipelines ready upon server start
@@ -318,14 +334,15 @@ class PipelineFactory:
         # TODO :: Initialize any shared resources here
         pass
 
-    async def create_pipeline_async(self, user_id: str) -> Pipeline:
+    async def create_pipeline_async(self, user_id: str, tenant_id: str) -> Pipeline:
         if user_id in self.pipelines:
             logger.info(f"Returning existing pipeline for user {user_id}")
             return self.pipelines[user_id]
 
-        logger.info(f"Creating new pipeline for user {user_id}")
-        pipeline = Pipeline(self.config.copy())
-
+        # logger.info(f"Creating new pipeline for user {user_id}")
+        # pipeline = Pipeline(self.config.copy())
+        logger.info(f"Creating new pipeline for user {user_id} and tenant {tenant_id}")
+        pipeline = Pipeline(self.config.copy(), tenant_id)
         try:
             await pipeline.setup()
             self.pipelines[user_id] = pipeline
@@ -336,11 +353,12 @@ class PipelineFactory:
             await self.cleanup_pipeline(user_id, pipeline)
             raise
 
-    async def get_or_create_pipeline_async(self, user_id: str) -> Pipeline:
+    async def get_or_create_pipeline_async(self, user_id: str, tenant_id: str) -> Pipeline:
         if user_id not in self.pipelines:
-            pipeline = Pipeline(self.config.copy())
+            pipeline = Pipeline(self.config.copy(), tenant_id)
             await pipeline.setup()
             self.pipelines[user_id] = pipeline
+            logger.info(f"Pipeline setup completed successfully for new user {user_id}")
         return self.pipelines[user_id]
 
     async def cleanup_pipeline(self, user_id: str, pipeline: Pipeline = None):
