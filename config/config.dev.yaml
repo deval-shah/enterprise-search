@@ -17,6 +17,7 @@ vector_store_config:
   top_k: 10
   use_async: False
   multi_tenancy: True
+  enable_hybrid: True
 
 redis_config:
   host: "localhost"
@@ -35,3 +36,4 @@ llm:
 
 reranker:
   model: "BAAI/bge-reranker-large"
+  top_n: 3

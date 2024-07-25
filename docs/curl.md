@@ -2,7 +2,7 @@
 
 ## Authentication
 
-### 1. Generate User Token
+### Generate User Token
 
 Get firebase credentials and values by following the instructions in [firebase](docs/firebase.md) file.
 
@@ -19,7 +19,36 @@ python llamasearch/api/tests/generate_token.py
 ```
 This will output a Firebase ID token. Copy this token for use in the login request.
 
-### 2. Login and Generate Cookies
+## API Testing Options
+
+You have two options for testing the LlamaSearch APIs:
+
+1. **Postman**: A collection is available for API testing. To gain access to the Postman collection, please contact the project owner.
+
+2. **cURL Commands**: Alternatively, you can use the cURL commands provided below for command-line testing.
+
+Currently, we do not support `chat` endpoints.
+
+### Option 1: Postman
+
+Download and setup Postman application from [here](https://www.postman.com/downloads/).
+
+[<img src="https://run.pstmn.io/button.svg" alt="Run in Postman" style="width: 128px; height: 32px;">](https://null.postman.co/collection/33701240-3cfdeb70-981a-446d-b4e0-0da98b71e936?source=rip_markdown)
+
+### 1. Setup: Set environment variables in Postman:
+   - `base_url`: Your server URL (e.g., "http://localhost:8010")
+   - `firebase_id_token`: A valid Firebase ID token
+   - `auth_cookie`, `uid`, `chat_id`: Initialize as empty strings (not required for login) 
+
+### 2. Authentication
+- First, send the "Login" POST request to `/api/v1/login`
+- It will create cookies.txt and store it for endpoint calls.
+
+Once login is successful, start testing the endpoints.
+
+### Option 2: cURL Commands
+
+### 1. Login and Generate Cookies
 Use the following curl command to log in and generate the cookies.txt file:
 
 ```bash
@@ -30,12 +59,14 @@ curl -i -X POST http://localhost:8010/api/v1/login \
 
 Replace `YOUR_FIREBASE_ID_TOKEN` with the token you got from step 1.
 
-This command will create a `cookies.txt` file in your current directory and show the response headers and body. Use it to authenticate your requests to the backend api server.
+This command will create a `cookies.txt` file in your current directory.
 
 ### Before testing API using curl commands
-- Replace placeholder text (like "Your query text here" or file paths) with your actual data.
-- Ensure that the `cookies.txt` file is in the same directory as where you're running the curl command, or provide the full path to the file.
-- These commands assume your server is running on `localhost:8010`. Adjust the URL if your server is running on a different host or port.
+1. Replace placeholders (e.g., "Your query text here", file paths) with actual data.
+2. Ensure `cookies.txt` is in your working directory or specify its full path.
+3. Adjust server URL if not using `localhost:8010`.
+
+Note: These steps are important for successful API testing with cURL.
 
 ## Query Endpoints
 

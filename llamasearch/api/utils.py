@@ -10,17 +10,9 @@ from llamasearch.settings import config
 CHUNK_SIZE = 64 * 1024  # 64KB chunks
 PARTIAL_MD5_SIZE = 8 * 1024  # 8KB for partial MD5
 
-async def get_user_upload_dir(user_id: str) -> str:
-    upload_dir = os.path.join(config.application.data_path, config.application.upload_subdir)
-    user_dir = os.path.join(upload_dir, user_id)
-    os.makedirs(user_dir, exist_ok=True)
-    logger.info("User upload directory: " + user_dir)
-    return user_dir
-
-async def handle_file_upload(files: List[UploadFile], user_id: str) -> List[Dict[str, str]]:
-    user_upload_dir = await get_user_upload_dir(user_id)
+async def handle_file_upload(files: List[UploadFile], user_upload_dir: str) -> List[Dict[str, str]]:
+    logger.info("User upload directory: " + user_upload_dir)
     responses = []
-
     async def process_file(file: UploadFile):
         try:
             original_filename = file.filename

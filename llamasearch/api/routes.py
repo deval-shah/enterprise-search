@@ -11,12 +11,11 @@ from llamasearch.api.schemas.user import UserInDB, User
 from llamasearch.api.schemas.chat import ChatCreate, ChatResponse, ChatListResponse, MessageCreate, MessageResponse
 from llamasearch.api.services.user import UserService
 from llamasearch.api.services.chat import ChatService
-from llamasearch.api.utils import handle_file_upload, get_user_upload_dir
+from llamasearch.api.utils import handle_file_upload
 from llamasearch.api.tasks import log_query_task
 from llamasearch.api.services.session import session_service
 # Pipeline imports
 from llamasearch.logger import logger
-from llamasearch.utils import profile_
 from llamasearch.api.core.container import Container
 from llamasearch.pipeline import PipelineFactory, Pipeline
 
@@ -83,24 +82,23 @@ async def optional_auth_route(request: Request, user_info: Optional[Tuple[Option
 async def query_index(
     query: str = Form(...),
     user_info: Tuple[User, bool] = Depends(get_current_user),
-    files: Union[UploadFile, List[UploadFile]] = File(None),
+    files: List[UploadFile] = File(None),
     db: Session = Depends(get_db),
     pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory])
 ):
     logger.info(f"Received query: {query}")
     user, _ = user_info
     pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid)
+    user_upload_dir = pipeline.config.application.data_path
+    logger.debug(f"User Upload Dir: {user_upload_dir}")
     try: 
         file_upload_response = []
+        print(files)
         if files:
-            if isinstance(files, list):
-                logger.info(f"{len(files)} files received")
-                files_list = files
-            else:
-                logger.info("1 file received")
-                files_list = [files]
-            upload_results = await handle_file_upload(files_list, user.firebase_uid)
+            logger.info(f"{len(files)} file(s) received")
+            upload_results = await handle_file_upload(files, user_upload_dir)
             file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
+            logger.info("Inserting file paths : {}".format(file_paths))
             await pipeline.insert_documents(file_paths)
         else:
             logger.info("No files received")
@@ -119,7 +117,6 @@ async def query_index(
             for path, details in document_info.items()
         ]
         logger.debug("Context details: " + str(context_details))
-        # Log query in db
         try:
             await log_query_task(db, user.firebase_uid, query, context_details, response.response)
         except Exception as e:
@@ -144,13 +141,14 @@ async def upload_files(
 ):
     user, _ = current_user
     pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid)
+    user_upload_dir = pipeline.config.application.data_path
+    logger.debug(f"User Upload Dir: {user_upload_dir}")
     try:
         logger.info(f"Uploading {len(files)} files for user {user.firebase_uid}")
-
-        upload_results = await handle_file_upload(files, user.firebase_uid)
+        upload_results = await handle_file_upload(files, user_upload_dir)
         file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
+        logger.info("Inserting file paths : {}".format(file_paths))
         await pipeline.insert_documents(file_paths)
-
         return JSONResponse(content={"file_upload": upload_results}, status_code=200)
     except HTTPException as he:
         raise he

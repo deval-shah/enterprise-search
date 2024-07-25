@@ -6,7 +6,7 @@ import os
 
 from llamasearch.logger import logger
 from llamasearch.latency import track_latency, LatencyTracker
-from llamasearch.utils import load_yaml_file
+from llamasearch.utils import load_yaml_file, ensure_dummy_csv
 from llamasearch.settings import config
 from llamasearch.qdrant_hybrid_search import QdrantHybridSearch
 
@@ -89,9 +89,9 @@ class Pipeline:
         self.is_setup_complete = True
         logger.info("All setup steps completed successfully.")
 
-    async def setup_reranker(self, top_n=3):
+    async def setup_reranker(self):
         self.reranker = FlagEmbeddingReranker(
-            top_n=top_n,
+            top_n=self.config.reranker.top_n,
             model=self.config.reranker.model,
         )
 
@@ -161,24 +161,49 @@ class Pipeline:
         #     node_postprocessors=[self.reranker]
         # )
         qdrant_filters = None
-        if self.tenant_id:
+        if self.multi_tenancy and self.tenant_id:
+            logger.debug("Multi tenancy enabled for query engine...")
             qdrant_filters = models.Filter(
                 must=[models.FieldCondition(key="tenant_id", match=models.MatchValue(value=self.tenant_id))]
             )
-        self.query_engine = self.qdrant_search.index.as_query_engine(
-            node_postprocessors=[self.reranker],
-            vector_store_kwargs={"qdrant_filters": qdrant_filters}
+        # TODO :: Configure qa template from modelfile
+        qa_prompt_tmpl_str = (
+            "Context information is below.\n"
+            "---------------------\n"
+            "{context_str}\n"
+            "---------------------\n"
+            "Given the context information and not prior knowledge, "
+            "answer the query in concise form.\n"
+            "Query: {query_str}\n"
+            "Answer: "
+        )
+        qa_prompt_tmpl = PromptTemplate(qa_prompt_tmpl_str)
+
+        top_k = self.config.vector_store_config.top_k
+        enable_hybrid = self.config.vector_store_config.enable_hybrid
+        query_engine_kwargs = {
+            "node_postprocessors": [self.reranker],
+            "similarity_top_k": top_k,
+            "response_mode":"compact"
+        }
+
+        if enable_hybrid:
+            logger.debug("Hybrid search is enabled...")
+            query_engine_kwargs["vector_store_query_mode"] = "hybrid"
+        
+        if qdrant_filters:
+            query_engine_kwargs["vector_store_kwargs"] = {"qdrant_filters": qdrant_filters}
+
+        self.query_engine = self.qdrant_search.index.as_query_engine(**query_engine_kwargs)
+        self.query_engine.update_prompts(
+            {"response_synthesizer:text_qa_template": qa_prompt_tmpl}
         )
 
     @track_latency
     async def perform_query_async(self, query: str):
+        await self.setup_query_engine()
         if not self.is_setup_complete:
             raise RuntimeError("Pipeline setup is not complete. Call setup() first.")
-        self.update_prompt()
-        if hasattr(self, 'qa_template') and self.qa_template is not None:
-            self.query_engine.update_prompts(
-                {"response_synthesizer:text_qa_template": self.qa_template}
-            )
         response = await self.query_engine.aquery(query)
         return response
 
@@ -242,21 +267,6 @@ class Pipeline:
             raise ValueError("Please provide either data_path or input_files.")
         documents = SimpleDirectoryReader(**reader_kwargs).load_data()
         return documents
-
-    def update_prompt(self):
-        query_context_str = """
-            Query:
-            {query_str}
-
-            Context:
-            {context_str}
-
-            Response:
-        """
-        template = (
-            self.prompt_template+"\n"+query_context_str
-        )
-        self.qa_template = PromptTemplate(template)
 
     @staticmethod
     def get_context_from_response(response_object):
@@ -326,22 +336,34 @@ class Pipeline:
 # TODO :: Background worker to assign pipeline init tasks (celery q?)
 # TODO :: Pipeline pool implementation to keep the pipelines ready upon server start
 class PipelineFactory:
-    def __init__(self):
+    def __init__(self, is_api_server=False):
         self.pipelines: Dict[str, Pipeline] = {}
         self.config = config
+        self.is_api_server = is_api_server
 
     async def initialize_common_resources(self):
         # TODO :: Initialize any shared resources here
         pass
+
+    async def override_user_data_path(self, user_id: str) -> str:
+        upload_dir = os.path.join(self.config.application.data_path, self.config.application.upload_subdir)
+        user_dir = os.path.join(upload_dir, user_id)
+        os.makedirs(user_dir, exist_ok=True)
+        # Hack to ensure we have a file in upload to init the pipeline to init the vector index
+        # without having wait during the first query call (will remove later)
+        ensure_dummy_csv(user_dir)
+        logger.info("User upload directory updated to: " + user_dir)
+        # Overriding the local config path to user specific directory for file uploads
+        self.config.application.data_path = user_dir
 
     async def create_pipeline_async(self, user_id: str, tenant_id: str) -> Pipeline:
         if user_id in self.pipelines:
             logger.info(f"Returning existing pipeline for user {user_id}")
             return self.pipelines[user_id]
 
-        # logger.info(f"Creating new pipeline for user {user_id}")
-        # pipeline = Pipeline(self.config.copy())
         logger.info(f"Creating new pipeline for user {user_id} and tenant {tenant_id}")
+        if self.is_api_server:
+            await self.override_user_data_path(user_id)
         pipeline = Pipeline(self.config.copy(), tenant_id)
         try:
             await pipeline.setup()
@@ -355,6 +377,8 @@ class PipelineFactory:
 
     async def get_or_create_pipeline_async(self, user_id: str, tenant_id: str) -> Pipeline:
         if user_id not in self.pipelines:
+            if self.is_api_server:
+                await self.override_user_data_path(user_id)
             pipeline = Pipeline(self.config.copy(), tenant_id)
             await pipeline.setup()
             self.pipelines[user_id] = pipeline

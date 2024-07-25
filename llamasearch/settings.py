@@ -18,10 +18,11 @@ class VectorStoreConfig(BaseModel):
     vector_size: int = 1536
     distance: str = "Cosine"
     batch_size: int = 30
-    alpha: float = 0.5 
+    alpha: float = 0.5
     top_k: int = 10
     use_async: bool = False
-    multi_tenancy: bool = False
+    multi_tenancy: bool = True
+    enable_hybrid: bool = True
 
 class QdrantClientConfig(BaseModel):
     url: str = "http://localhost:6333"
@@ -42,6 +43,7 @@ class Llm(BaseModel):
 
 class Reranker(BaseModel):
     model: str = "BAAI/bge-reranker-large"
+    top_n: int = 3
 
 class Eval(BaseModel):
     custom_model_grammar_path: str = "./model_files/json_arr.gbnf"
@@ -55,6 +57,12 @@ class ApplicationConfig(BaseModel):
     log_dir: str = Field(default="data/app/logs", env="LOG_DIR")
     upload_subdir: str = "uploads"
     enable_prometheus: bool = False
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.config_path = get_path(self.config_path)
+        self.data_path = get_path(self.data_path)
+        self.log_dir = get_path(self.log_dir)
 
     def get_config_path(self):
         return get_path(self.config_path)

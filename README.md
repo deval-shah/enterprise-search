@@ -120,7 +120,7 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 
 2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Refer to [Firebase README](docs/firebase.md) for instructions.
 
-3. **Setup LLM**: Setup up LLM of your choice. Follow instructions listed in above section.
+3. **Setup LLM**: Setup the LLM service of your choice. Please follow instructions listed in Option 1, Step 2.
 
 4. **Run the docker image:**
    Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
@@ -147,6 +147,10 @@ Follow steps in [Eval README](docs/eval.md) to evaluate the ES pipeline.
 ## Deployment
 
 Follow steps in [Deployment README](k8s/README.md) to deploy Enterprise Search using Kubernetes and Helm.
+
+## Troubleshooting
+
+Please refer to the [Troubleshooting README](docs/troubleshooting.md) for common issues and their resolutions.
 
 ## Release Notes
 
