@@ -31,6 +31,8 @@ Currently, we do not support `chat` endpoints.
 
 ### Option 1: Postman
 
+Download and setup Postman application from [here](https://www.postman.com/downloads/).
+
 [<img src="https://run.pstmn.io/button.svg" alt="Run in Postman" style="width: 128px; height: 32px;">](https://null.postman.co/collection/33701240-3cfdeb70-981a-446d-b4e0-0da98b71e936?source=rip_markdown)
 
 ### 1. Setup: Set environment variables in Postman:
