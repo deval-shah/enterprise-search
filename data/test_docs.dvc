@@ -1,6 +1,6 @@
 outs:
-- md5: d751713988987e9331980363e24189ce.dir
-  size: 0
-  nfiles: 0
+- md5: d2dac1e792c071693f4425b3cb890efb.dir
+  size: 30
+  nfiles: 2
   hash: md5
   path: test_docs
