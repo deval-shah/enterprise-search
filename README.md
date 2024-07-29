@@ -136,9 +136,9 @@ Refer to the [curl.md](docs/curl.md) For detailed instructions on how to test th
 1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2-testing-the-backend-server-api-using-curl-locally)
 2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally.
 
-## Unit Testing
+## Testing
 
-Under maintainance
+Follow steps in [Testing README](docs/testing.md) to test the ES pipeline. We will be adding more test cases for better coverage in upcoming releases.
 
 ## Evaluation
 
@@ -157,3 +157,4 @@ Please refer to the [Troubleshooting README](docs/troubleshooting.md) for common
 **Version 1.0.8 - 26/07/2024**
 - Added multi tenancy support to isolate data during indexing and filtering during query stage
 - Added tests for multi tenancy
+- Added pytest support to integrate more tests later

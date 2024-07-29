@@ -1,23 +1,60 @@
+import pytest
 import asyncio
 from llamasearch.pipeline import PipelineFactory
 from llamasearch.settings import config
 import os
+from typing import List, Dict
+import configparser
+import os
 
-ENABLE_MULTI_TENANCY = True  # Toggle this to switch between multi-tenant and single-tenant modes
+test_config = configparser.ConfigParser()
+test_config.read(os.path.join(os.path.dirname(__file__), 'test_config.ini'))
 
-base_dir  = "data/sample-docs/slim/"
-filenames = ['Llama_Paper.pdf', 'meta-10k-1-5.pdf', 'uber_10k-1-5.pdf',\
-    'Reduce_Hallucinations_RAG_Paper.pdf', 'Resume.pdf', 'Singapore_Krisflyer_Points.pdf']
+base_dir = test_config['paths']['base_dir']
 
-test_config = {
-    "multi_tenant": [
+class TestResultPrinter:
+    @staticmethod
+    def print_test_result(test_name: str, response, pipeline):
+        print(f"\n{'=' * 80}")
+        print(f"Test: {test_name}")
+        print(f"{'-' * 80}")
+        print(f"Response: {response}")
+        print(f"{'-' * 80}")
+        pipeline.pretty_print_context(response)
+        print(f"{'=' * 80}\n")
+
+class BaseTest:
+    @pytest.fixture(autouse=True)
+    async def setup_teardown(self):
+        self.factory = PipelineFactory()
+        yield
+        await self.factory.cleanup_all()
+
+    async def run_query(self, pipeline, query: str, test_name: str):
+        response = await pipeline.perform_query_async(query)
+        TestResultPrinter.print_test_result(test_name, response, pipeline)
+        return response
+
+class TestMultiTenancy(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_multi_tenancy(self):
+        config.vector_store_config.multi_tenancy = True
+
+    def assert_tenant_id(self, response, expected_tenant_id: str):
+        for node in response.source_nodes:
+            print("Tenant ID : {} Expected : {}".format(node.metadata.get('tenant_id'), expected_tenant_id))
+        assert all(node.metadata.get('tenant_id') == expected_tenant_id for node in response.source_nodes)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", [
         {
             "name": "test_multi_tenant_scenario",
             "tenants": [
                 {"user": "user1", "tenant": "tenant1", "docs": ["Llama_Paper.pdf", "meta-10k-1-5.pdf"]},
-                {"user": "user2", "tenant": "tenant2", "docs": ["uber_10k-1-5.pdf", "Reduce_Hallucinations_RAG_Paper.pdf"]}
+                {"user": "user2", "tenant": "tenant2", "docs": ["uber_10k-1-5.pdf", "meta-10k-1-5.pdf"]}
             ],
-            "queries": ["LLaMA-65B is competitive with which models?"]
+            "queries": ["What are key contributins of LLaMA paper?", # Only user1 should be able to answer this query
+                        "Summarise family metrics of Meta?"] # Both users should be able to answer this query
         },
         {
             "name": "test_data_isolation",
@@ -25,139 +62,55 @@ test_config = {
                 {"user": "user3", "tenant": "tenant3", "docs": ["Llama_Paper.pdf"]},
                 {"user": "user4", "tenant": "tenant4", "docs": ["meta-10k-1-5.pdf"]}
             ],
-            "queries": ["LLaMA-65B is competitive with which models?", "Summarise family metrics of Meta?"]
+            "queries": ["Summarise family metrics of Meta?", # Only user4 should be able to answer this query
+                        "List different categories of LLama models"] # Only user3 should be able to answer this query
         }
-    ],
-    "single_tenant": [
+    ])
+    async def test_multi_tenancy(self, scenario: Dict):
+        pipelines = {}
+        # Setup pipelines and insert documents
+        for tenant in scenario["tenants"]:
+            pipeline = await self.factory.get_or_create_pipeline_async(tenant["user"], tenant["tenant"])
+            pipelines[tenant["user"]] = pipeline
+            await pipeline.insert_documents([os.path.join(base_dir, doc) for doc in tenant["docs"]])
+        # Run queries and assert results
+        for query in scenario["queries"]:
+            for tenant in scenario["tenants"]:
+                response = await self.run_query(pipelines[tenant["user"]], query, f"{scenario['name']} - {tenant['user']} - {tenant['tenant']}")
+                self.assert_tenant_id(response, tenant["tenant"])
+
+        print(f"{scenario['name']} passed")
+
+class TestSingleTenant(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_single_tenancy(self):
+        config.vector_store_config.multi_tenancy = False
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", [
         {
             "name": "test_single_tenant_scenario",
-            "docs": ["Llama_Paper.pdf", "meta-10k-1-5.pdf"],
-            "queries": ["What is RAG?"]
+            "user": "user1",
+            "docs": ["uber_10k-1-5.pdf", "meta-10k-1-5.pdf"],
+            "queries": ["List different categories of LLama models"] # Should get an answer from global index
         },
         {
             "name": "test_global_search",
+            "user": "user2",
             "docs": ["Llama_Paper.pdf", "meta-10k-1-5.pdf"],
-            "queries": ["Why did uber acquire Drizly?"]
+            "queries": ["List different categories of LLama models"] # Should get an answer
         }
-    ]
-}
-
-#---------------------------
-# Multi Tentant Test Cases |
-#---------------------------
-async def test_multi_tenant_scenario(factory):
-    print("\n---------------------------TEST MULTI TENANT SCENARIO-------------------------------\n")
-    pipeline1 = await factory.get_or_create_pipeline_async("user1", "tenant1")
-    pipeline2 = await factory.get_or_create_pipeline_async("user2", "tenant2")
-
-    await pipeline1.insert_documents([ os.path.join(base_dir,filenames[0]), os.path.join(base_dir,filenames[1]) ] )
-    await pipeline2.insert_documents([ os.path.join(base_dir,filenames[2]), os.path.join(base_dir,filenames[3]) ])
-
-    query1 = "LLaMA-65B is competitive with which models?" # Should be answered from user1 docs
-    query2 = "Summarise family metrics of Meta?" # Should be answered from user1 docs
-    query3 = "List some important forward-looking statements of Uber?" # Should be answered from user2 docs
-    response1 = await pipeline1.perform_query_async(query1)
-    response2 = await pipeline2.perform_query_async(query1)
-    
-    print(f"Tenant 1 results :: Response: {response1}")
-    pipeline1.pretty_print_context(response1)
-    for node in response1.source_nodes:
-        print(node.metadata)
-    
-    print("\n")
-    
-    print(f"Tenant 2 results :: Response: {response2}")
-    pipeline2.pretty_print_context(response2)
-    for node in response2.source_nodes:
-        print(node.metadata)
-    
-    print("------------------------------------------------------------------------------------\n")
-
-    assert all(node.metadata.get('tenant_id') == "tenant1" for node in response1.source_nodes)
-    assert all(node.metadata.get('tenant_id') == "tenant2" for node in response2.source_nodes)
-
-async def test_data_isolation(factory):
-    print("\n---------------------------TEST DATA ISOLATION SCENARIO-------------------------------\n")
-    pipeline3 = await factory.get_or_create_pipeline_async("user3", "tenant3")
-    pipeline4 = await factory.get_or_create_pipeline_async("user4", "tenant4")
-    
-    await pipeline3.insert_documents([base_dir+filenames[0]]) # LLama paper
-    await pipeline4.insert_documents([base_dir+filenames[1]]) # Meta
-
-    query1 = "LLaMA-65B is competitive with which models?" # Should be answered from user1 docs
-    query2 = "Summarise family metrics of Meta?" # Should be answered from user1 docs
-    response1 = await pipeline3.perform_query_async(query1)
-    response2 = await pipeline4.perform_query_async(query2)
-
-    print(f"Tenant 1 results :: Response: {response1}")
-    pipeline3.pretty_print_context(response1)
-    for node in response1.source_nodes:
-        print(node.metadata)
-
-    print("\n")
-    print(f"Tenant 2 results :: Response: {response2}")
-    pipeline4.pretty_print_context(response2)
-    for node in response2.source_nodes:
-        print(node.metadata)
-
-    assert all(node.metadata.get('tenant_id') == "tenant3" for node in response1.source_nodes)
-    assert all(node.metadata.get('tenant_id') == "tenant4" for node in response2.source_nodes)
-
-    print("Data isolation test passed")
-    print("------------------------------------------------------------------------------------\n")
-
-#----------------------------
-# Single Tentant Test Cases |
-#----------------------------
-async def test_single_tenant_scenario(factory):
-    print("\n---------------------------TEST SINGLE TENANT SCENARIO-------------------------------\n")
-    factory = PipelineFactory()
-    pipeline = await factory.create_pipeline_async("user1", None)
-    
-    await pipeline.insert_documents([base_dir+filenames[0], base_dir+filenames[1]])
-    query = "What is RAG?" # could be answered from both docs
-    response = await pipeline.perform_query_async(query)
-    
-    print(f"Single tenant results :: Response: {response}")
-    pipeline.pretty_print_context(response)
-    print("------------------------------------------------------------------------------------\n")
-
-    assert response is not None
-    assert len(response.source_nodes) > 0
-
-async def test_global_search(factory):
-    print("\n---------------------------TEST GLOBAL SEARCH SCENARIO-------------------------------\n")
-    pipeline = await factory.create_pipeline_async("user1", None)
-    
-    await pipeline.insert_documents([base_dir+filenames[0], base_dir+filenames[1]])
-    
-    query = "Why did uber acquired Drizly?" # The docs does not contain answer to this query
-    response = await pipeline.perform_query_async(query)
-
-    print(f"Single tenant results :: Response: {response}")
-    pipeline.pretty_print_context(response)
-
-    for node in response.source_nodes:
-        print(node.metadata)
-    assert len(response.source_nodes) == 2
-    print("Global search test passed")
-    print("------------------------------------------------------------------------------------\n")
-
-async def run_tests():
-    config.vector_store_config.multi_tenancy = ENABLE_MULTI_TENANCY
-    factory = PipelineFactory()
-    try:
-        if ENABLE_MULTI_TENANCY:
-            print("Running multi-tenant tests...")
-            await test_multi_tenant_scenario(factory)
-            await test_data_isolation(factory)
-        else:
-            print("Running single-tenant tests...")
-            await test_single_tenant_scenario(factory)
-            await test_global_search()
-    finally:
-        await factory.cleanup_all()
-        print("All tests completed and resources cleaned up")
+    ])
+    async def test_single_tenancy(self, scenario: Dict):
+        # Setup pipeline and insert documents
+        pipeline = await self.factory.create_pipeline_async(scenario["user"], None)
+        await pipeline.insert_documents([os.path.join(base_dir, doc) for doc in scenario["docs"]])
+        # Run queries and assert results
+        for query in scenario["queries"]:
+            response = await self.run_query(pipeline, query, f"{scenario['name']} - {scenario['user']}")
+            assert response is not None
+            assert len(response.source_nodes) > 0
+        print(f"{scenario['name']} passed")
 
 if __name__ == "__main__":
-    asyncio.run(run_tests())
+    pytest.main([__file__, "-v"])

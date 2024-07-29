@@ -26,7 +26,6 @@ from llama_index.core.ingestion import (
 )
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.core.response.pprint_utils import pprint_response
-from llama_index.core.vector_stores.types import MetadataFilters, ExactMatchFilter
 from qdrant_client import models
 
 ALLOWED_EXTS = [".pdf", ".docx", ".csv"]
@@ -59,7 +58,6 @@ class Pipeline:
             logger.info("Setup already completed. Skipping.")
             return
         setup_steps: List[tuple[str, callable]] = [
-            #("Qdrant index", self.qdrant_search.setup_index_async),
             ("Qdrant index", lambda: self.qdrant_search.setup_index_async(tenant_id=self.tenant_id)),
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
@@ -161,7 +159,7 @@ class Pipeline:
         #     node_postprocessors=[self.reranker]
         # )
         qdrant_filters = None
-        if self.multi_tenancy and self.tenant_id:
+        if self.multi_tenancy:
             logger.debug("Multi tenancy enabled for query engine...")
             qdrant_filters = models.Filter(
                 must=[models.FieldCondition(key="tenant_id", match=models.MatchValue(value=self.tenant_id))]
@@ -191,7 +189,7 @@ class Pipeline:
             logger.debug("Hybrid search is enabled...")
             query_engine_kwargs["vector_store_query_mode"] = "hybrid"
         
-        if qdrant_filters:
+        if self.multi_tenancy and qdrant_filters:
             query_engine_kwargs["vector_store_kwargs"] = {"qdrant_filters": qdrant_filters}
 
         self.query_engine = self.qdrant_search.index.as_query_engine(**query_engine_kwargs)
@@ -405,7 +403,8 @@ async def main_async():
     try:
         factory = PipelineFactory()
         user_id = "123456"
-        pipeline = await factory.get_or_create_pipeline_async(user_id)
+        tenant_id = "tenant1"
+        pipeline = await factory.get_or_create_pipeline_async(user_id, tenant_id)
         while True:
             query = input("Enter your query (or 'quit' to exit): ").strip()
             if query.lower() == "quit":
