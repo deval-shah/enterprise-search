@@ -18,9 +18,10 @@ class VectorStoreConfig(BaseModel):
     vector_size: int = 1536
     distance: str = "Cosine"
     batch_size: int = 30
-    alpha: float = 0.5 
+    alpha: float = 0.5
     top_k: int = 10
     use_async: bool = False
+    multi_tenancy: bool = True
     enable_hybrid: bool = True
 
 class QdrantClientConfig(BaseModel):

@@ -16,6 +16,7 @@ vector_store_config:
   alpha: 0.5 
   top_k: 10
   use_async: False
+  multi_tenancy: True
   enable_hybrid: True
 
 redis_config:

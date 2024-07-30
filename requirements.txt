@@ -40,3 +40,8 @@ python-dotenv
 tabulate
 huggingface-hub==0.23.0
 transformers==4.37.0
+#Testing dependencies
+pytest==8.2.2
+pytest-asyncio==0.23.8
+pytest-html==4.1.1
+pytest-metadata==3.1.1
