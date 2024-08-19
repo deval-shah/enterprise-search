@@ -10,6 +10,7 @@ services:
       - ../config/config.dev.yaml:/app/config/config.dev.yaml
       - ../keys/firebase.json:/app/keys/firebase.json
       - ../data:/app/data
+      - ../data/models/embeddings:/app/data/models/embeddings
     env_file:
       - ../.env
     environment:

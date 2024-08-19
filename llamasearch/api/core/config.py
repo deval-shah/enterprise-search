@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")
 
     # Database Settings
-    DATABASE_URL: str = Field(default="sqlite:///./test.db", env="DATABASE_URL")
+    DATABASE_URL: str = Field(default='sqlite+aiosqlite:///./test.db', env="DATABASE_URL")
 
     # Redis Settings
     REDIS_URL: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")

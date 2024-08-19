@@ -34,8 +34,9 @@ class RedisConfig(BaseModel):
 
 class Embedding(BaseModel):
     # model: str = "local:BAAI/bge-small-en-v1.5"
-    model: str = "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct" # 13048 MiB memory
+    model: str = "Alibaba-NLP/gte-Qwen2-1.5B-instruct" # 13048 MiB memory
     use_openai: bool = False
+    local_model_path: str = "data/models/embedding/"
 
 class Llm(BaseModel):
     modelfile: str = get_path("config/modelfile.yaml")
@@ -93,6 +94,7 @@ def load_config(config_path: str) -> Config:
     if config_file.is_file():
         with open(config_file, 'r') as file:
             config_data = yaml.safe_load(file)
+            # Add new configurations with default values if not present
             config = Config(**config_data)
             if config.embedding.use_openai or config.llm.use_openai:
                 check_openai_api_key()

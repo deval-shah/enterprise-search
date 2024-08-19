@@ -10,6 +10,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     firebase_uid: str
+    tenant_id: Optional[str] = None
 
 class UserUpdate(UserBase):
     pass
@@ -17,6 +18,7 @@ class UserUpdate(UserBase):
 class User(UserBase):
     id: int
     firebase_uid: str
+    tenant_id: str
     created_at: datetime
     updated_at: datetime
 

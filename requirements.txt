@@ -24,6 +24,7 @@ colorlog
 prometheus_client
 prometheus-fastapi-instrumentator
 IPython
+xformers
 #API dependencies
 fastapi
 uvicorn
@@ -34,6 +35,7 @@ python-multipart
 aiofiles
 firebase-admin
 aioredis
+aiosqlite
 dependency-injector
 python-dotenv
 tabulate
