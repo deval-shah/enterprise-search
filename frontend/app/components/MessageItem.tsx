@@ -1,5 +1,5 @@
 // app/components/MessageItem.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiThumbsUp, FiThumbsDown, FiCopy, FiUser } from 'react-icons/fi';
 import ContextDetails from './ContextDetails';
 import { Message } from '../types';
@@ -7,6 +7,7 @@ import { Message } from '../types';
 const MessageItem: React.FC<{ message: Message }> = ({ message }) => {
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
   const [copied, setCopied] = useState(false);
+  const [displayContent, setDisplayContent] = useState(message.content);
 
   const handleFeedback = (type: 'like' | 'dislike') => {
     setFeedback(type);
@@ -19,17 +20,16 @@ const MessageItem: React.FC<{ message: Message }> = ({ message }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  useEffect(() => {
+    setDisplayContent(message.content);
+  }, [message.content]);
+
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
-      {/* {message.role !== 'user' && (
-        <div className="mr-2 bg-gray-300 rounded-full p-2">
-          <FiUser className="w-5 h-5 text-gray-600" />
-        </div>
-      )} */}
       <div className={`max-w-[70%] rounded-lg p-3 ${
         message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
       }`}>
-        <p>{message.content}</p>
+        <p>{displayContent}</p>
         {message.role === 'assistant' && (
           <>
             <div className="flex items-center mt-2 space-x-2">
