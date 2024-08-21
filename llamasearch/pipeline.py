@@ -28,7 +28,7 @@ from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.core.response.pprint_utils import pprint_response
 from qdrant_client import models
 
-from llamasearch.ragflow.Ragflow import RagflowNodeParser
+from llamasearch.Ragflow import RagflowNodeParser
 
 ALLOWED_EXTS = [".pdf", ".docx", ".csv"]
 HARD_LIMIT_FILE_UPLOAD = 10
