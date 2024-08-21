@@ -1,6 +1,6 @@
 application:
   config_path: "config/config.dev.yaml"
-  data_path: "data/sample-docs/"
+  data_path: "data/test/"
   log_dir: "data/app/logs"
   upload_subdir: "uploads"
 
