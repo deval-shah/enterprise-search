@@ -30,7 +30,7 @@ embedding:
   use_openai: False
 
 llm:
-  llm_model: "llama3"
+  llm_model: "llama3:latest"
   modelfile: "config/modelfile.yaml"
   use_openai: False
 

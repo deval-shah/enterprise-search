@@ -28,6 +28,8 @@ from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.core.response.pprint_utils import pprint_response
 from qdrant_client import models
 
+from llamasearch.ragflow.Ragflow import RagflowNodeParser
+
 ALLOWED_EXTS = [".pdf", ".docx", ".csv"]
 HARD_LIMIT_FILE_UPLOAD = 10
 
@@ -134,7 +136,7 @@ class Pipeline:
         )
 
     async def setup_parser(self):
-        self.parser = SentenceSplitter()
+        self.parser = RagflowNodeParser()
 
     async def setup_ingestion_pipeline(self):
         self.ingestion = IngestionPipeline(
