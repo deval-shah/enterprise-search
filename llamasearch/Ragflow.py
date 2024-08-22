@@ -62,10 +62,17 @@ class RagflowNodeParser(NodeParser):
         def dummy(prog=None, msg=""):
             pass
         all_nodes=[]
-        for path in paths:           
+        for path in paths:  
+            
             docs,chunks_with_meta_data=chunk(path,from_page=0, to_page=10,callback=dummy)
-            for chunks in chunks_with_meta_data:
-                all_nodes.append(TextNode(text=chunks['text']))
+            if path.endswith('pdf'):
+                for chunks in chunks_with_meta_data:
+                    all_nodes.append(TextNode(text=chunks['text']))
+            else :
+                for chunks in docs:
+                   
+                    all_nodes.append(TextNode(text=chunks['content_ltks']))
+
         return all_nodes
     
 if __name__ == "__main__":
