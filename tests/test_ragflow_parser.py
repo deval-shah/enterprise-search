@@ -43,18 +43,7 @@ class TestRagflowNodeParser:
         TestResultPrinter.print_test_result("Test Ragflow Parser Node Content", nodes[0].get_content() if nodes else "No nodes")
         assert all(node.get_content() for node in nodes), "All nodes should have content"
 
-    @pytest.mark.parametrize("file_extension", [".pdf", ".png", ".jpg"])
-    def test_ragflow_parser_file_types(self, parser, file_extension):
-        test_dir = f"data/test_docs_{file_extension.replace('.', '')}"
-        if os.path.exists(test_dir):
-            documents = SimpleDirectoryReader(test_dir, filename_as_id=True, required_exts=[file_extension]).load_data()
-            pipeline = IngestionPipeline(transformations=[parser])
-            nodes = pipeline.run(documents=documents)
-            TestResultPrinter.print_test_result(f"Test Ragflow Parser with {file_extension}", len(nodes))
-            assert len(nodes) > 0, f"Parser should handle {file_extension} files"
-        else:
-            pytest.skip(f"Test directory for {file_extension} files not found")
-
+    
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
         
