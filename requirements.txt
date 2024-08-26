@@ -30,6 +30,7 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
+pydantic[email]
 pydantic-settings
 python-multipart
 aiofiles

@@ -21,7 +21,6 @@ from llamasearch.api.core.config import settings
 from llamasearch.logger import logger
 from llamasearch.api.core.container import Container
 from llamasearch.pipeline import PipelineFactory, Pipeline
-from llamasearch.api.services.state_manager import StateManager, get_state_manager
 from llamasearch.api.websocket_manager import get_websocket_manager
 from llamasearch.api.query_processor import process_query
 
@@ -180,17 +179,16 @@ async def get_recent_queries(
         } for log in recent_queries
     ]
 
-@router.post("/chats/", response_model=ChatResponse)
-@inject
-async def create_chat(
-    chat: ChatCreate,
-    user_info: Tuple[User, bool] = Depends(get_current_user),
-    state_manager: StateManager = Depends(Provide[Container.state_manager])
-):
-    try:
-        return await state_manager.create_chat(user_info.id, chat)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
+# @router.post("/chats/", response_model=ChatResponse)
+# @inject
+# async def create_chat(
+#     chat: ChatCreate,
+#     user_info: Tuple[User, bool] = Depends(get_current_user)
+# ):
+#     try:
+#         return await state_manager.create_chat(user_info.id, chat)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
 
 @router.get("/chats/", response_model=List[ChatListResponse])
 async def read_chats(

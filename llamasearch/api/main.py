@@ -27,8 +27,27 @@ container = Container()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup Logic
     await init_db()
+    if settings.USE_SESSION_AUTH:
+        redis_client = get_redis()
+        session_service.init_redis(redis_client)
+        print(redis_client)
+        print("Session authentication initialized with Redis")
+    pipeline_factory = container.pipeline_factory()
+    pipeline_factory.is_api_server = True
+    await pipeline_factory.initialize_common_resources()
+    logger.info("Pipeline factory initialized")
+    logger.info("WebSocket manager initialized")
+
     yield
+
+    #Shutdown Logic
+    await container.pipeline_factory().cleanup_all()
+    logger.info("Pipeline factory resources cleaned up")
+    for client_id in list(app.state.websocket_manager.active_connections.keys()):
+        await app.state.websocket_manager.disconnect(client_id)
+    logger.info("All WebSocket connections closed")
     await close_db()
 
 app = FastAPI(
@@ -62,28 +81,6 @@ container.wire(modules=[__name__, "llamasearch.api.routes", "llamasearch.api.ws_
 # Include routers
 app.include_router(router, prefix=settings.API_V1_STR)
 app.include_router(ws_router)
-
-@app.on_event("startup")
-async def startup_event():
-    # await init_db()
-    if settings.USE_SESSION_AUTH:
-        redis_client = get_redis()
-        session_service.init_redis(redis_client)
-        print(redis_client)
-        print("Session authentication initialized with Redis")
-    pipeline_factory = container.pipeline_factory()
-    pipeline_factory.is_api_server = True
-    await pipeline_factory.initialize_common_resources()
-    logger.info("Pipeline factory initialized")
-    logger.info("WebSocket manager initialized")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await container.pipeline_factory().cleanup_all()
-    logger.info("Pipeline factory resources cleaned up")
-    for client_id in list(app.state.websocket_manager.active_connections.keys()):
-        await app.state.websocket_manager.disconnect(client_id)
-    logger.info("All WebSocket connections closed")
 
 @app.get("/")
 async def root():
