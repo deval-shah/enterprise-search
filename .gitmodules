@@ -2,3 +2,6 @@
 [submodule "llamasearch/raglfow"]
 	path = llamasearch/raglfow
 	url = git@gitlab.aiml.team:samthomas/es-ragflow.git
+[submodule "llamasearch/es-ragflow"]
+	path = llamasearch/es-ragflow
+	url = git@gitlab.aiml.team:samthomas/es-ragflow.git
