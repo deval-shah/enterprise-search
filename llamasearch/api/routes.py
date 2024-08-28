@@ -21,7 +21,6 @@ from llamasearch.api.core.config import settings
 from llamasearch.logger import logger
 from llamasearch.api.core.container import Container
 from llamasearch.pipeline import PipelineFactory, Pipeline
-from llamasearch.api.services.state_manager import StateManager, get_state_manager
 from llamasearch.api.websocket_manager import get_websocket_manager
 from llamasearch.api.query_processor import process_query
 
@@ -155,8 +154,11 @@ async def upload_files(
         logger.info(f"Uploading {len(files)} files for user {user_info.firebase_uid}")
         upload_results = await handle_file_upload(files, user_upload_dir)
         file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
-        logger.info("Inserting file paths : {}".format(file_paths))
-        await pipeline.insert_documents(file_paths)
+        if file_paths:
+            logger.info("Inserting file paths : {}".format(file_paths))
+            await pipeline.insert_documents(file_paths)
+        else:
+            logger.warning("No valid file paths to insert")
         return JSONResponse(content={"file_upload": upload_results}, status_code=200)
     except HTTPException as he:
         raise he
@@ -180,17 +182,17 @@ async def get_recent_queries(
         } for log in recent_queries
     ]
 
-@router.post("/chats/", response_model=ChatResponse)
-@inject
-async def create_chat(
-    chat: ChatCreate,
-    user_info: Tuple[User, bool] = Depends(get_current_user),
-    state_manager: StateManager = Depends(Provide[Container.state_manager])
-):
-    try:
-        return await state_manager.create_chat(user_info.id, chat)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
+# @router.post("/chats/", response_model=ChatResponse)
+# @inject
+# async def create_chat(
+#     chat: ChatCreate,
+#     user_info: Tuple[User, bool] = Depends(get_current_user),
+#     state_manager: StateManager = Depends(Provide[Container.state_manager])
+# ):
+#     try:
+#         return await state_manager.create_chat(user_info.id, chat)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
 
 @router.get("/chats/", response_model=List[ChatListResponse])
 async def read_chats(

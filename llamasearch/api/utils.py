@@ -3,25 +3,37 @@ import os
 import hashlib
 import aiofiles
 from typing import Dict, List, Union
-from fastapi import UploadFile, HTTPException
+from fastapi import HTTPException
 from llamasearch.logger import logger
 from llamasearch.settings import config
+from starlette.datastructures import UploadFile
 
 CHUNK_SIZE = 64 * 1024  # 64KB chunks
 PARTIAL_MD5_SIZE = 8 * 1024  # 8KB for partial MD5
 
-async def handle_file_upload(files: List[UploadFile], user_upload_dir: str) -> List[Dict[str, str]]:
+async def handle_file_upload(files: List[Union[UploadFile, Dict[str, Union[str, bytes]]]], user_upload_dir: str) -> List[Dict[str, str]]:
     responses = []
-    async def process_file(file: Union[UploadFile, str]):
+    async def process_file(file: Union[UploadFile, Dict[str, Union[str, bytes]]]):
         try:
-            logger.info(f"Received file path, uploadfile: {file}")
-            original_filename = file.filename
+            if isinstance(file, UploadFile):
+                # HTTP upload
+                original_filename = file.filename
+                content = await file.read()
+            elif isinstance(file, dict):
+                # WebSocket upload
+                original_filename = file.get('filename')
+                content = file.get('content')
+            else:
+                raise ValueError(f"Unsupported file type: {type(file)}")
+
+            if not original_filename:
+                raise ValueError("Filename is missing")
+
             file_location = os.path.join(user_upload_dir, original_filename)
             logger.info(f"Uploading file {original_filename} to {file_location}")
             if os.path.exists(file_location):
                 existing_size, existing_md5 = await get_file_size_and_partial_md5(file_location)
                 new_size, new_md5 = await get_upload_file_size_and_partial_md5(file)
-                
                 if existing_size == new_size and existing_md5 == new_md5:
                     logger.info(f"File {original_filename} already exists and content is likely identical")
                     return {
@@ -37,10 +49,10 @@ async def handle_file_upload(files: List[UploadFile], user_upload_dir: str) -> L
                     while os.path.exists(file_location):
                         file_location = os.path.join(user_upload_dir, f"{base}_{counter}{extension}")
                         counter += 1
-            
+
             async with aiofiles.open(file_location, "wb") as file_object:
-                while chunk := await file.read(CHUNK_SIZE):
-                    await file_object.write(chunk)
+                await file_object.write(content)
+
             logger.info(f"File {original_filename} uploaded successfully to {file_location}")
             return {
                 "filename": original_filename,
@@ -49,9 +61,9 @@ async def handle_file_upload(files: List[UploadFile], user_upload_dir: str) -> L
                 "location": file_location
             }
         except Exception as e:
-            logger.error(f"Error uploading file {file.filename}: {str(e)}")
+            logger.error(f"Error uploading file {original_filename if 'original_filename' in locals() else 'unknown'}: {str(e)}")
             return {
-                "filename": file.filename,
+                "filename": original_filename if 'original_filename' in locals() else "unknown",
                 "status": "error",
                 "info": f"Error uploading file: {str(e)}",
                 "location": None
@@ -65,6 +77,13 @@ async def handle_file_upload(files: List[UploadFile], user_upload_dir: str) -> L
         logger.error(f"Error in file upload process: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred during the file upload process: {str(e)}")
 
+async def handle_chunked_file_upload(chunk_generator, filename, user_upload_dir):
+    file_path = os.path.join(user_upload_dir, filename)
+    async with aiofiles.open(file_path, 'wb') as f:
+        async for chunk in chunk_generator:
+            await f.write(chunk)
+    return file_path
+
 async def get_file_size_and_partial_md5(file_path: str) -> tuple:
     file_size = os.path.getsize(file_path)
     async with aiofiles.open(file_path, mode='rb') as f:
@@ -74,20 +93,31 @@ async def get_file_size_and_partial_md5(file_path: str) -> tuple:
     partial_md5 = hashlib.md5(first_chunk + last_chunk).hexdigest()
     return file_size, partial_md5
 
-async def get_upload_file_size_and_partial_md5(file: UploadFile) -> tuple:
+async def get_upload_file_size_and_partial_md5(file: Union[UploadFile, Dict[str, Union[str, bytes]]]) -> tuple:
     file_size = 0
     md5 = hashlib.md5()
-    # Read the first chunk
-    first_chunk = await file.read(PARTIAL_MD5_SIZE)
-    md5.update(first_chunk)
-    file_size += len(first_chunk)
-    # Read the rest of the file
-    while chunk := await file.read(CHUNK_SIZE):
-        file_size += len(chunk)
-    # Read the last chunk
-    await file.seek(file_size - PARTIAL_MD5_SIZE)
-    last_chunk = await file.read()
-    md5.update(last_chunk)
-    # Reset file pointer
-    await file.seek(0)
+
+    if isinstance(file, UploadFile):
+        # Handle UploadFile
+        first_chunk = await file.read(PARTIAL_MD5_SIZE)
+        md5.update(first_chunk)
+        file_size += len(first_chunk)
+        while chunk := await file.read(CHUNK_SIZE):
+            file_size += len(chunk)
+        await file.seek(file_size - PARTIAL_MD5_SIZE)
+        last_chunk = await file.read()
+        md5.update(last_chunk)
+        await file.seek(0)
+    elif isinstance(file, dict):
+        # Handle dictionary (WebSocket upload)
+        content = file.get('content')
+        if isinstance(content, str):
+            content = content.encode()  # Convert to bytes if it's a string
+        file_size = len(content)
+        first_chunk = content[:PARTIAL_MD5_SIZE]
+        last_chunk = content[-PARTIAL_MD5_SIZE:]
+        md5.update(first_chunk + last_chunk)
+    else:
+        raise ValueError(f"Unsupported file type: {type(file)}")
+
     return file_size, md5.hexdigest()

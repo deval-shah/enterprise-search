@@ -27,9 +27,10 @@ IPython
 xformers
 #API dependencies
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
 pydantic
+pydantic[email]
 pydantic-settings
 python-multipart
 aiofiles

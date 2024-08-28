@@ -6,30 +6,35 @@ from llamasearch.pipeline import PipelineFactory
 from sqlalchemy.ext.asyncio import AsyncSession
 from llamasearch.logger import logger
 from llamasearch.api.utils import handle_file_upload
-import json
-from typing import List, Union
+from typing import List, Union, Dict
 from fastapi import File, UploadFile, Form
+from cachetools import TTLCache
+import json
 import os
+
+query_cache = TTLCache(maxsize=100, ttl=3600)
 
 async def process_query(
     query: str,
     user: User,
     db: AsyncSession,
     pipeline_factory: PipelineFactory,
-    files_: List[str] = None
+    file_paths: List[str] = None
 ):
     try:
         pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid, user.tenant_id)
         user_upload_dir = pipeline.config.application.data_path
         logger.debug(f"User Upload Dir: {user_upload_dir}")
-        files = [UploadFile(filename=file, file=open(os.path.join(user_upload_dir, file), 'rb')) for file in files_] if files_ else []
+        cache_key = f"{user.firebase_uid}:{query}"
+        # if cache_key in query_cache:
+        #     logger.info(f"Query cache hit for {cache_key}")
+        #     return query_cache[cache_key]
         file_upload_response = []
-        if files:
-            logger.info(f"{len(files)} file(s) received")
-            upload_results = await handle_file_upload(files, user_upload_dir)
-            file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
+        if file_paths:
+            logger.info(f"{len(file_paths)} file(s) received")
             logger.info("Inserting file paths : {}".format(file_paths))
             await pipeline.insert_documents(file_paths)
+            file_upload_response = [{"filename": os.path.basename(path), "status": "success"} for path in file_paths]
         else:
             logger.info("No files received")
 
@@ -56,13 +61,19 @@ async def process_query(
         except Exception as e:
             logger.error(f"Failed to log query for user {user.firebase_uid}: {str(e)}")
 
-        return {
+        result = {
             "response": response.response,
             "context": context_details,
             "query": query,
             "file_upload": file_upload_response
         }
-
+        # query_cache[cache_key] = result
+        return result
     except Exception as e:
-        logger.error(f"Error processing query: {str(e)}", exc_info=True)
-        raise
+        logger.error(f"Error in process_query: {str(e)}", exc_info=True)
+        return {
+            "response": f"An error occurred: {str(e)}",
+            "context": [],
+            "query": query,
+            "file_upload": []
+        }
