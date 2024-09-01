@@ -3,27 +3,27 @@
         "id": 0,
         "question": "Is Cooper Energy based in Adelaide?",
         "ground_truth": "yes",
-        "es_answer": "Based on the provided context information, I found that Cooper Energy is mentioned as an ASX-listed company with its asset being the Orbost Gas Plant in Victoria. There is no direct mention of Adelaide as their base or location. However, it is noted that the Orbost Gas Plant is located in Victoria, which is a different state from South Australia where Adelaide is situated. Therefore, I would answer the query as:\n\n\"No, Cooper Energy is not based in Adelaide.\"",
+        "es_answer": "Based on the provided context information, it can be inferred that Cooper Energy is not necessarily based in Adelaide. The company's asset, Orbost Gas Plant, is located in Victoria, and there is no direct mention of Cooper Energy being headquartered or operating in Adelaide.",
         "metrics": [
             {
                 "name": "FaithfulnessMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because there are no contradictions found, indicating a perfect alignment between the actual output and the retrieval context! Well done!"
+                "reason": "The score is 1.00 because there are no contradictions found, and the actual output perfectly aligns with the retrieval context!"
             },
             {
                 "name": "AnswerRelevancyMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because the answer perfectly addresses the input question without any irrelevant information!"
+                "reason": "The score is 1.00 because the output perfectly addresses the question, providing a direct and accurate answer with no irrelevant information!"
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.3333333333333333,
-                "reason": "The score is 0.33 because the retrieval context does not mention Cooper Energy at all, focusing solely on Adelaide's characteristics and council members."
+                "reason": "The score is 0.33 because the retrieval context does not mention Cooper Energy or its base location, focusing on unrelated topics such as Adelaide's characteristics, economy, demographics, council members, and strategic plan."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "Actual Output accurately answers the question, provides logical supporting details from the context, and maintains a consistent tone and language."
+                "reason": "The actual output correctly infers Cooper Energy's base location by analyzing the context information and logically flowing from the input."
             }
         ],
         "context": [
@@ -36,23 +36,23 @@
         "id": 1,
         "question": "Is the Orbost Gas Plant located in Victoria?",
         "ground_truth": "yes",
-        "es_answer": "Yes, the Orbost Gas Plant is located in Victoria.",
+        "es_answer": "Yes, according to the context information, the Orbost Gas Plant is located in Victoria.",
         "metrics": [
             null,
             {
                 "name": "AnswerRelevancyMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because the answer directly and accurately addresses the question, providing a straightforward response that perfectly aligns with the input!"
+                "reason": "The score is 1.00 because the answer is completely relevant and accurately addresses the input question, providing a clear and direct response!"
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.3333333333333333,
-                "reason": "The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or Victoria at all, instead focusing on unrelated topics like Council's financial plans and Adelaide's Strategic Plan."
+                "reason": "The score is 0.33 because the retrieval context fails to mention the Orbost Gas Plant or Victoria, instead discussing unrelated topics like treasury policy and council strategic plans."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "The Actual Output's main idea aligns with the Input's question, logically follows from the context and maintains a consistent tone and language."
+                "reason": "Both input and actual output align in structure, main ideas logically flow from context information, and supporting details are consistent."
             }
         ],
         "context": [
@@ -65,23 +65,23 @@
         "id": 2,
         "question": "Does the Orbost Gas Plant process raw gas?",
         "ground_truth": "yes",
-        "es_answer": "Based on the provided context information, it can be inferred that yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.",
+        "es_answer": "Based on the provided context information, it can be concluded that:\n\nYes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.",
         "metrics": [
             null,
             {
                 "name": "AnswerRelevancyMetric",
-                "score": 1.0,
-                "reason": "The score is 1.00 because the output perfectly addresses the input question with no irrelevant information!"
+                "score": 0.5,
+                "reason": "The score is 0.50 because while the output attempts to address the input, it's hindered by irrelevant statements that don't provide meaningful information, such as the incomplete sentence 'Based on the provided context information, it can be concluded that:' which fails to offer any insight into whether the Orbost Gas Plant processes raw gas."
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.3333333333333333,
-                "reason": "The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or raw gas at all, instead discussing unrelated topics like Council Members and Treasury Policy."
+                "reason": "The score is 0.33 because the retrieval context fails to mention the Orbost Gas Plant or raw gas processing, instead focusing on unrelated topics such as the City of Adelaide's Council Members and financial plans."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "Main idea aligns with input topic, supporting details logically follow from context and tone is consistent with intent and audience."
+                "reason": "Actual output aligns with input's question, providing a clear and logical answer with supporting details about Orbost Gas Plant's processing of raw gas."
             }
         ],
         "context": [
@@ -94,7 +94,7 @@
         "id": 3,
         "question": "Are the absorber vessels at Orbost Gas Plant designed to remove H2S?",
         "ground_truth": "yes",
-        "es_answer": "Yes, the absorber vessels at Orbost Gas Plant are designed to remove H2S (hydrogen sulphide) concentration from untreated gas.",
+        "es_answer": "Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.",
         "metrics": [
             {
                 "name": "FaithfulnessMetric",
@@ -104,17 +104,17 @@
             {
                 "name": "AnswerRelevancyMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because the answer perfectly addresses the question, providing a direct and accurate response without any irrelevant information."
+                "reason": "The score is 1.00 because the answer perfectly addresses the question asked, providing a clear and relevant response with no irrelevant information!"
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.3333333333333333,
-                "reason": "The score is 0.33 because the retrieval context fails to mention specific keywords like 'Orbost Gas Plant' and 'H2S', instead focusing on the City of Adelaide's Environment and Sustainability objectives."
+                "reason": "The score is 0.33 because the retrieval context fails to mention specific keywords like 'absorber vessels', 'Orbost Gas Plant', and 'H2S' that are crucial to understanding the input, making it largely irrelevant."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "Actual Output directly answers the Input's question, providing relevant context and using consistent tone and language."
+                "reason": "The actual output aligns with the input's structure and organization, consistently presenting main ideas and supporting details, and logically flows from the provided information."
             }
         ],
         "context": [
@@ -127,23 +127,23 @@
         "id": 4,
         "question": "Did the Orbost Gas Plant start operations in 2020?",
         "ground_truth": "yes",
-        "es_answer": "Based on the provided context information, it can be inferred that the Orbost Gas Plant started operating before 2020, as it is mentioned that \"since operating in 2 020\", which implies that the plant was already operational prior to 2020.",
+        "es_answer": "According to the provided context, the Orbost Gas Plant processes raw gas from nearly gas field to export sales gas into the pipeline, which started operating before 2020. However, it was only since operating in 2020 that the absorber vessels began having fouling issues, requiring mechanical cleaning every 12-15 days.",
         "metrics": [
             null,
             {
                 "name": "AnswerRelevancyMetric",
-                "score": 0.6666666666666666,
-                "reason": "The score is 0.67 because while the actual output attempts to answer the question, it contains an irrelevant statement that contradicts the input question, preventing a higher score."
+                "score": 1.0,
+                "reason": "The score is 1.00 because the output perfectly addresses the question asked, providing a direct and accurate answer without any irrelevant information!"
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.3333333333333333,
-                "reason": "The score is 0.33 because the context does not mention anything about the Orbost Gas Plant or its operations in 2020, instead focusing on unrelated topics such as environmental goals for Adelaide and council financial plans."
+                "reason": "The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or its operations in 2020, focusing instead on unrelated topics such as Adelaide's environmental objectives and Council's treasury policy."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "The Actual Output's main idea aligns with the Input's question, logically follows from the context, and maintains a consistent tone and language."
+                "reason": "Actual output's structure aligns with input, main ideas and supporting details are consistent, and actual output logically flows from input."
             }
         ],
         "context": [
@@ -156,27 +156,27 @@
         "id": 5,
         "question": "Do the absorber vessels at Orbost Gas Plant require mechanical cleaning every 12-15 days?",
         "ground_truth": "yes",
-        "es_answer": "According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.",
+        "es_answer": "Yes, the absorber vessels at Orbost Gas Plant have been experiencing fouling issues since operating in 2020, which requires each vessel to be opened and mechanically cleaned every 12-15 days.",
         "metrics": [
             {
                 "name": "FaithfulnessMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!"
+                "reason": "The score is 1.00 because there are no contradictions found, and the actual output perfectly aligns with the retrieval context!"
             },
             {
                 "name": "AnswerRelevancyMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because the answer perfectly addresses the question asked, providing a direct and relevant response without any irrelevant statements."
+                "reason": "The score is 1.00 because the response accurately addresses the question without any irrelevant information, providing a precise and relevant answer!"
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.3333333333333333,
-                "reason": "The score is 0.33 because the retrieval context does not mention key terms like 'Orbost Gas Plant', 'absorber vessels', or 'mechanical cleaning' and instead focuses on unrelated topics like the city of Adelaide."
+                "reason": "The score is 0.33 because the context is completely irrelevant to the input about mechanical cleaning of absorber vessels at Orbost Gas Plant, as it only talks about unrelated topics such as Adelaide's city statistics and characteristics."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "Actual Output aligns with Input's topic, provides logically following supporting details about fouling issues, and maintains a consistent tone and language suitable for the context."
+                "reason": "Both input and actual output share the same topic, structure and logically flow from each other with consistent main ideas and supporting details."
             }
         ],
         "context": [
@@ -189,27 +189,27 @@
         "id": 6,
         "question": "Did the Orbost Gas Plant experience optimal performance in December 2021?",
         "ground_truth": "yes",
-        "es_answer": "Based on the context information, it can be inferred that the Orbost Gas Plant experienced a \"dream run\" in December 2021, which is characterized by very minimal deposition of sulphur. This suggests that the plant operated optimally during this period.",
+        "es_answer": "Based on the provided context information, it can be inferred that the Orbost Gas Plant experienced \"two dream runs\" in December 2021, which resulted in very minimal deposition of sulphur (clean). This suggests that the plant experienced optimal performance during this period.",
         "metrics": [
             {
                 "name": "FaithfulnessMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!"
+                "reason": "The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context! Great job!"
             },
             {
                 "name": "AnswerRelevancyMetric",
                 "score": 1.0,
-                "reason": "The score is 1.00 because the answer is directly addressing the question asked, providing a clear and relevant response without any unnecessary information."
+                "reason": "The score is 1.00 because the actual output perfectly addresses the question, providing a direct and accurate answer without any irrelevant information!"
             },
             {
                 "name": "ContextualRelevancyMetric",
                 "score": 0.0,
-                "reason": "The score is 0.00 because the context does not provide any information about the Orbost Gas Plant's performance in December 2021, nor does it mention 'optimal performance', as stated in the reasons for irrelevancy."
+                "reason": "The score is 0.00 because the retrieval context does not mention anything about the Orbost Gas Plant's performance in December 2021, instead discussing unrelated topics such as fouling issues, asset management, and Council's Treasury Policy."
             },
             {
                 "name": "Coherence",
                 "score": 1.0,
-                "reason": "The Actual Output's main idea aligns with the Input's topic, supporting details logically follow from context, and tone/language are consistent with intent/audience, specifically mentioning 'minimal deposition of sulphur' to infer optimal performance."
+                "reason": "The actual output aligns with the input structure, logically flows from the context information, and consistently relates main ideas to supporting details, such as 'two dream runs' resulting in minimal sulphur deposition."
             }
         ],
         "context": [

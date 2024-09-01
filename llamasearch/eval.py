@@ -241,19 +241,6 @@ class Eval:
         # Join all metric summaries into a single line and log it
         logger.info(" | ".join(stats_summary))
 
-        
-    async def evaluate_retriever(self,retriever):
-        metrics = ["hit_rate", "mrr", "precision", "recall", "ap", "ndcg"]
-        retriever_evaluator = RetrieverEvaluator.from_metric_names(
-    metrics, retriever=retriever
-        )
-        qa_dataset = EmbeddingQAFinetuneDataset.from_json("data/eval/dataset.json")
-        sample_id, sample_query = list(qa_dataset.queries.items())[0]
-        sample_expected = qa_dataset.relevant_docs[sample_id]
-
-        eval_result = retriever_evaluator.evaluate(sample_query, sample_expected)
-        print(eval_result)
-
 async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
     """
     Main function to run the evaluation process.
