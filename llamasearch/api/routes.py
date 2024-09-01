@@ -1,68 +1,106 @@
 # app/api/routes.py
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, File, UploadFile, Form, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, File, UploadFile, Form, BackgroundTasks, WebSocket, WebSocketDisconnect, status
 from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from typing import List, Optional, Tuple, Union
+from dependency_injector.wiring import inject, Provide
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional, Tuple, Union, Dict, Any
+from functools import wraps
+import json
 # API Imports
-from llamasearch.api.core.security import get_current_user, get_optional_user, logout_user
+from llamasearch.api.core.security import get_current_user, get_current_user_ws, get_optional_user, logout_user
 from llamasearch.api.db.session import get_db
 from llamasearch.api.schemas.user import UserInDB, User
 from llamasearch.api.schemas.chat import ChatCreate, ChatResponse, ChatListResponse, MessageCreate, MessageResponse
 from llamasearch.api.services.user import UserService
 from llamasearch.api.services.chat import ChatService
 from llamasearch.api.utils import handle_file_upload
-from llamasearch.api.tasks import log_query_task
 from llamasearch.api.services.session import session_service
+from llamasearch.api.core.config import settings
 # Pipeline imports
 from llamasearch.logger import logger
 from llamasearch.api.core.container import Container
 from llamasearch.pipeline import PipelineFactory, Pipeline
-
-from dependency_injector.wiring import inject, Provide
+from llamasearch.api.websocket_manager import get_websocket_manager
+from llamasearch.api.query_processor import process_query
 
 router = APIRouter()
 cookie_sec = APIKeyCookie(name="llamasearch_session")
 security = HTTPBearer()
+
+def standard_error_response(status_code: int, detail: str):
+    return JSONResponse(
+        status_code=status_code,
+        content={"error": detail}
+    )
+
+def require_session(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        user = kwargs.get('user')
+        if not user:
+            return standard_error_response(401, "Unauthorized")
+        return await func(*args, **kwargs)
+    return wrapper
 
 @router.post("/login")
 async def login(
     request: Request,
     response: Response,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
-    try:
-        user, is_new_session = await get_current_user(request, response, credentials, db)
-        return {
-            "message": "Logged in successfully" if is_new_session else "Already logged in",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "display_name": user.display_name
-            }
-        }
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+    user = await get_current_user(request, response, credentials, db)
+    if user:
+        if settings.USE_SESSION_AUTH:
+            session_id = await session_service.create_session(db, user.id)
+            response.set_cookie(
+                key="session_id",
+                value=session_id,
+                httponly=True,
+                secure=settings.COOKIE_SECURE,
+                samesite='lax',
+                max_age=3600,
+                domain=None  # Ensure this is set correctly for your domain
+            )
+        return {"message": "Logged in successfully", "user": user}
+    else:
+        return JSONResponse(content={"error": "Login failed"}, status_code=401)
 
 @router.post("/logout")
 async def logout(
     request: Request,
     response: Response,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_info: User = Depends(get_current_user)
 ):
     session_id = request.cookies.get("session_id")
-    user = None
-    if session_id:
-        user = await session_service.get_user_session(db, session_id)
-    await logout_user(request, response, user, db)
-    if user:
-        logger.info(f"User {user.id} logged out successfully")
+    if user_info or session_id:
+        await logout_user(request, response, user_info, db)
+        return {"message": "Logged out successfully"}
     else:
-        logger.info("Logged out (no active user session)")
-    return {"message": "Logged out successfully"}
+        # User is already logged out or session expired
+        return {"message": "No active session found"}
+
+@router.post("/refresh-session")
+async def refresh_session(
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    if user:
+        new_session_id = await session_service.create_session(db, user.id)
+        response.set_cookie(
+            key="session_id",
+            value=new_session_id,
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite='lax',
+            max_age=3600,
+        )
+        return {"message": "Session refreshed successfully"}
+    raise HTTPException(status_code=401, detail="Invalid session")
 
 @router.get("/protected")
 async def protected_route(request: Request, user_info: Tuple[User, bool] = Depends(get_current_user)):
@@ -79,55 +117,25 @@ async def optional_auth_route(request: Request, user_info: Optional[Tuple[Option
 
 @router.post("/query/")
 @inject
-async def query_index(
+async def query_endpoint(
+    request: Request,
+    response: Response,
     query: str = Form(...),
-    user_info: Tuple[User, bool] = Depends(get_current_user),
     files: List[UploadFile] = File(None),
-    db: Session = Depends(get_db),
-    pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory])
+    db: AsyncSession = Depends(get_db),
+    pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory]),
+    current_user: User = Depends(get_current_user)
 ):
-    logger.info(f"Received query: {query}")
-    user, _ = user_info
-    pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid)
-    user_upload_dir = pipeline.config.application.data_path
-    logger.debug(f"User Upload Dir: {user_upload_dir}")
-    try: 
-        file_upload_response = []
-        print(files)
-        if files:
-            logger.info(f"{len(files)} file(s) received")
-            upload_results = await handle_file_upload(files, user_upload_dir)
-            file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
-            logger.info("Inserting file paths : {}".format(file_paths))
-            await pipeline.insert_documents(file_paths)
-        else:
-            logger.info("No files received")
-        response = await pipeline.perform_query_async(query)
-        logger.debug(f"Raw response from query_app: {response}")
-        if response is None or not hasattr(response, 'response'):
-            raise ValueError(f"Invalid response from query processing {response}.")
-        document_info, retrieval_context = Pipeline.get_context_from_response(response)
-        context_details = [
-            {
-                "file_path": path,
-                "file_name": details['file_name'],
-                "last_modified": details['last_modified_date'],
-                "document_id": details['doc_id']
-            }
-            for path, details in document_info.items()
-        ]
-        logger.debug("Context details: " + str(context_details))
-        try:
-            await log_query_task(db, user.firebase_uid, query, context_details, response.response)
-        except Exception as e:
-            logger.error(f"Failed to log query for user {user.firebase_uid}: {str(e)}")
-
-        return JSONResponse(content={
-            "response": response.response,
-            "context": context_details,
-            "query": query,
-            "file_upload": file_upload_response
-        }, status_code=200)
+    logger.info(f"Query endpoint called by user: {current_user.email}")
+    try:
+        result = await process_query(
+            query=query,
+            user=current_user,
+            db=db,
+            pipeline_factory=pipeline_factory,
+            files=files
+        )
+        return JSONResponse(content=result, status_code=200)
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An error occurred during processing the query: {query}")
@@ -136,15 +144,14 @@ async def query_index(
 @inject
 async def upload_files(
     files: List[UploadFile] = File(...),
-    current_user: Tuple[User, bool] = Depends(get_current_user),
+    user_info: Tuple[User, bool] = Depends(get_current_user),
     pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory])
 ):
-    user, _ = current_user
-    pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid)
+    pipeline = await pipeline_factory.get_or_create_pipeline_async(user_info.firebase_uid, user_info.tenant_id)
     user_upload_dir = pipeline.config.application.data_path
     logger.debug(f"User Upload Dir: {user_upload_dir}")
     try:
-        logger.info(f"Uploading {len(files)} files for user {user.firebase_uid}")
+        logger.info(f"Uploading {len(files)} files for user {user_info.firebase_uid}")
         upload_results = await handle_file_upload(files, user_upload_dir)
         file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
         logger.info("Inserting file paths : {}".format(file_paths))
@@ -159,11 +166,10 @@ async def upload_files(
 @router.get("/recent-queries")
 async def get_recent_queries(
     limit: int = 10,
-    current_user: Tuple[User, bool] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    user_info: Tuple[User, bool] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    user, _ = current_user
-    recent_queries = await ChatService.get_recent_queries(db, user.firebase_uid, limit)
+    recent_queries = await ChatService.get_recent_queries(db, user_info.firebase_uid, limit)
     return [
         {
             "query": log.query,
@@ -173,22 +179,21 @@ async def get_recent_queries(
         } for log in recent_queries
     ]
 
-@router.post("/chats/", response_model=ChatResponse)
-async def create_chat(
-    chat: ChatCreate,
-    user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    user, _ = user_info
-    try:
-        return await ChatService.create_chat(db, user.id, chat)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
+# @router.post("/chats/", response_model=ChatResponse)
+# @inject
+# async def create_chat(
+#     chat: ChatCreate,
+#     user_info: Tuple[User, bool] = Depends(get_current_user)
+# ):
+#     try:
+#         return await state_manager.create_chat(user_info.id, chat)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
 
 @router.get("/chats/", response_model=List[ChatListResponse])
 async def read_chats(
     user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     skip: int = 0,
     limit: int = 10
 ):
@@ -199,7 +204,7 @@ async def read_chats(
 async def read_chat(
     chat_id: str,
     user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     try:
         return await ChatService.get_chat(db, chat_id)
@@ -211,7 +216,7 @@ async def add_message_to_chat(
     chat_id: str,
     message: MessageCreate,
     user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     try:
         return await ChatService.add_message_to_chat(db, chat_id, message)
@@ -222,11 +227,10 @@ async def add_message_to_chat(
     
 @router.get("/me", response_model=UserInDB)
 async def read_users_me(user_info: Tuple[UserInDB, bool] = Depends(get_current_user)):
-    user, _ = user_info
-    return user
+    return user_info
 
 @router.get("/user/{uid}", response_model=UserInDB)
-async def read_user(uid: str, user_info: Tuple[User, bool] = Depends(get_current_user), db: Session = Depends(get_db)):
+async def read_user(uid: str, user_info: Tuple[User, bool] = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     user = await UserService.get_user_by_uid(db, uid)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")

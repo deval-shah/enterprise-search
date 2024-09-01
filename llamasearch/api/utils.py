@@ -2,7 +2,7 @@ import asyncio
 import os
 import hashlib
 import aiofiles
-from typing import Dict, List
+from typing import Dict, List, Union
 from fastapi import UploadFile, HTTPException
 from llamasearch.logger import logger
 from llamasearch.settings import config
@@ -11,10 +11,10 @@ CHUNK_SIZE = 64 * 1024  # 64KB chunks
 PARTIAL_MD5_SIZE = 8 * 1024  # 8KB for partial MD5
 
 async def handle_file_upload(files: List[UploadFile], user_upload_dir: str) -> List[Dict[str, str]]:
-    logger.info("User upload directory: " + user_upload_dir)
     responses = []
-    async def process_file(file: UploadFile):
+    async def process_file(file: Union[UploadFile, str]):
         try:
+            logger.info(f"Received file path, uploadfile: {file}")
             original_filename = file.filename
             file_location = os.path.join(user_upload_dir, original_filename)
             logger.info(f"Uploading file {original_filename} to {file_location}")

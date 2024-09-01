@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+#from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession as DBSession
 from llamasearch.api.db.models import Chat, Message, User, QueryLog
 from llamasearch.api.schemas.chat import ChatCreate, ChatResponse, ChatListResponse, MessageCreate, MessageResponse, MessageType
 from llamasearch.logger import logger
@@ -10,15 +11,16 @@ from pydantic import parse_obj_as
 
 class ChatService:
     @staticmethod
-    async def create_chat(db: Session, uid: str, chat_create: ChatCreate) -> ChatResponse:
+    async def create_chat(db: DBSession, uid: str, chat_create: ChatCreate) -> ChatResponse:
         try:
-            user = db.query(User).filter(User.id == uid).first()
+            user = await db.query(User).filter(User.id == uid).first()
+            user = result.scalar_one_or_none()
             if not user:
                 raise ValueError("User not found")
 
             chat = Chat(user_id=user.id)
             db.add(chat)
-            db.flush()  # This assigns an ID to the chat
+            await db.flush()  # This assigns an ID to the chat
 
             for idx, message in enumerate(chat_create.messages):
                 db_message = Message(
@@ -29,11 +31,11 @@ class ChatService:
                 )
                 db.add(db_message)
 
-            db.commit()
-            db.refresh(chat)
+            await db.commit()
+            await db.refresh(chat)
             return parse_obj_as(ChatResponse, chat.__dict__)
         except SQLAlchemyError as e:
-            db.rollback()
+            await db.rollback()
             print(f"Database error occurred: {str(e)}")
             raise HTTPException(status_code=500, detail="An error occurred while creating the chat")
         except ValueError as e:
@@ -43,15 +45,29 @@ class ChatService:
             raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
     @staticmethod
-    async def get_user_chats(db: Session, uid: str, skip: int = 0, limit: int = 10) -> List[ChatListResponse]:
-        user = db.query(User).filter(User.id == uid).first()
+    async def get_user_chats(db: DBSession, uid: str, skip: int = 0, limit: int = 10) -> List[ChatListResponse]:
+        result = await db.execute(select(User).filter(User.id == uid))
+        user = result.scalar_one_or_none()
         if not user:
             raise ValueError("User not found")
 
-        chats = db.query(Chat).filter(Chat.user_id == user.id).order_by(Chat.updated_at.desc()).offset(skip).limit(limit).all()
+        result = await db.execute(
+            select(Chat)
+            .filter(Chat.user_id == user.id)
+            .order_by(desc(Chat.updated_at))
+            .offset(skip)
+            .limit(limit)
+        )
+        chats = result.scalars().all()
         chat_responses = []
         for chat in chats:
-            last_message = max(chat.messages, key=lambda m: m.sequence_number) if chat.messages else None
+            result = await db.execute(
+                select(Message)
+                .filter(Message.chat_id == chat.id)
+                .order_by(desc(Message.sequence_number))
+                .limit(1)
+            )
+            last_message = result.scalar_one_or_none()
             chat_responses.append(ChatListResponse(
                 id=chat.id,
                 user_id=chat.user_id,
@@ -62,15 +78,17 @@ class ChatService:
         return chat_responses
 
     @staticmethod
-    async def get_chat(db: Session, chat_id: str) -> ChatResponse:
-        chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    async def get_chat(db: DBSession, chat_id: str) -> ChatResponse:
+        result = await db.execute(select(Chat).filter(Chat.id == chat_id))
+        chat = result.scalar_one_or_none()
         if not chat:
             raise ValueError("Chat not found")
         return parse_obj_as(ChatResponse, chat.__dict__)
 
     @staticmethod
-    async def add_message_to_chat(db: Session, chat_id: str, message_create: MessageCreate) -> MessageResponse:
-        chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    async def add_message_to_chat(db: DBSession, chat_id: str, message_create: MessageCreate) -> MessageResponse:
+        result = await db.execute(select(Chat).filter(Chat.id == chat_id))
+        chat = result.scalar_one_or_none()
         if not chat:
             raise ValueError("Chat not found")
 
@@ -79,7 +97,10 @@ class ChatService:
         except KeyError:
             raise ValueError(f"Invalid message type: {message_create.message_type}")
 
-        sequence_number = len(chat.messages)
+        result = await db.execute(
+            select(func.count()).select_from(Message).filter(Message.chat_id == chat_id)
+        )
+        sequence_number = result.scalar_one()
         db_message = Message(
             chat_id=chat_id,
             content=message_create.content,
@@ -88,14 +109,20 @@ class ChatService:
         )
         db.add(db_message)
         chat.updated_at = datetime.utcnow()
-        db.commit()
-        db.refresh(db_message)
+        await db.commit()
+        await db.refresh(db_message)
         return parse_obj_as(MessageResponse, db_message.__dict__)
 
     @staticmethod
-    async def get_recent_queries(db: Session, firebase_uid: str, limit: int = 10):
+    async def get_recent_queries(db: DBSession, firebase_uid: str, limit: int = 10):
         try:
-            return db.query(QueryLog).filter(QueryLog.firebase_uid == firebase_uid).order_by(QueryLog.timestamp.desc()).limit(limit).all()
+            result = await db.execute(
+                select(QueryLog)
+                .filter(QueryLog.firebase_uid == firebase_uid)
+                .order_by(desc(QueryLog.timestamp))
+                .limit(limit)
+            )
+            return result.scalars().all()
         except Exception as e:
             logger.error(f"Error retrieving recent queries for user {firebase_uid}: {str(e)}")
             return []

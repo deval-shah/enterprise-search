@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import WebSocketService from '../services/WebSocketService';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_URL) {
@@ -17,6 +18,8 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   getAuthHeader: () => Promise<HeadersInit>;
+  webSocketService: WebSocketService | null;
+  refreshSession: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +27,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      const wsService = new WebSocketService(getAuthHeader);
+      wsService.connect(user).then(() => {
+        setWebSocketService(wsService);
+      }).catch(console.error);
+  
+      return () => {
+        wsService.close();
+      };
+    } else {
+      setWebSocketService(null);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -117,6 +136,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
+
+  const refreshSession = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/refresh-session`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Update any necessary state or tokens
+        return true;
+      }
+    } catch (error) {
+      console.error('Failed to refresh session:', error);
+    }
+    return false;
+  };
+
   const getAuthHeader = async (): Promise<HeadersInit> => {
     const currentUser = auth.currentUser;
 
@@ -133,7 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, getAuthHeader }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, getAuthHeader, webSocketService, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

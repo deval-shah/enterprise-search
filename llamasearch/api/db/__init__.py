@@ -1,4 +1,4 @@
 # app/db/__init__.py
 
 from .models import User, Chat, Message, MessageType, UserInDB, UserCreate, UserBase, UserUpdate
-from .session import SessionLocal, engine, get_db
+from .session import get_db

@@ -2,7 +2,10 @@
 from typing import Any, List, Tuple, Dict, Optional
 from tabulate import tabulate
 import asyncio
+from copy import deepcopy
 import os
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 
 from llamasearch.logger import logger
 from llamasearch.latency import track_latency, LatencyTracker
@@ -15,7 +18,6 @@ from llama_index.postprocessor.flag_embedding_reranker import (
 )
 from llama_index.storage.docstore.redis import RedisDocumentStore
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.embeddings import resolve_embed_model
 from llama_index.core import PromptTemplate
 from llama_index.llms.ollama import Ollama
 from llama_index.core import SimpleDirectoryReader, Settings
@@ -26,10 +28,32 @@ from llama_index.core.ingestion import (
 )
 from llama_index.storage.kvstore.redis import RedisKVStore as RedisCache
 from llama_index.core.response.pprint_utils import pprint_response
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from qdrant_client import models
+
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="huggingface_hub.file_download")
 
 ALLOWED_EXTS = [".pdf", ".docx", ".csv"]
 HARD_LIMIT_FILE_UPLOAD = 10
+
+def setup_global_embed_model(config):
+    if config.embedding.use_openai:
+        logger.info("Using OpenAI for embeddings...")
+        return None  # LlamaIndex will use the default OpenAI embedding
+
+    logger.info(f"Using embedding model: {config.embedding.model}")
+    cache_folder = config.embedding.local_model_path
+    if not cache_folder:
+        raise ValueError("Local model path not specified in config for embedding model")
+
+    embed_model = HuggingFaceEmbedding(
+        model_name=config.embedding.model,
+        cache_folder=cache_folder,
+        trust_remote_code=False
+    )
+    Settings.embed_model = embed_model
+    return embed_model
 
 class Pipeline:
     """
@@ -39,10 +63,10 @@ class Pipeline:
     - Query processing and reranking
     - Context extraction and formatting
     """
-    def __init__(self, config, tenant_id):
-        self.config = config
+    def __init__(self, config, tenant_id, global_embed_model):
+        self.config = deepcopy(config)
         self.setup_llm()
-        self.setup_embed_model()
+        # self.setup_embed_model()
         self.reranker = None
         self.index = None
         self.qa_template = None
@@ -52,6 +76,7 @@ class Pipeline:
         self.documents = None
         self.tenant_id = tenant_id
         self.multi_tenancy = getattr(self.config.vector_store_config, 'multi_tenancy', False)
+        self.global_embed_model = global_embed_model
 
     async def setup(self):
         if self.is_setup_complete:
@@ -61,7 +86,7 @@ class Pipeline:
             ("Qdrant index", lambda: self.qdrant_search.setup_index_async(tenant_id=self.tenant_id)),
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
-            ("Reranker", self.setup_reranker),
+            #("Reranker", self.setup_reranker),
             ("Documents", lambda: self.load_documents_async(data_dir=self.config.application.data_path)),
             ("Index creation", self.qdrant_search.create_index_async),
             ("Ingestion pipeline", self.setup_ingestion_pipeline),
@@ -115,15 +140,15 @@ class Pipeline:
         self.prompt_template = llm_config['prompts'][0]['text']
 
     # TODO :: Embedding model should be shared across users, we should not init embed models for each user (for local model)
-    def setup_embed_model(self):
-        if self.config.embedding.use_openai:
-            logger.info("Using OpenAI for embeddings...")
-            "By default LlamaIndex uses openai:text-embedding-ada-002, which is the default embedding used by OpenAI"
-            # TODO :: Pass embed model settings from config to init the openai embed model
-            return
-        """Initializes the embedding model based on the configuration."""
-        logger.info("Using embedding model : {}".format(self.config.embedding.model))
-        Settings.embed_model = resolve_embed_model(self.config.embedding.model)
+    # def setup_embed_model(self):
+    #     if self.config.embedding.use_openai:
+    #         logger.info("Using OpenAI for embeddings...")
+    #         "By default LlamaIndex uses openai:text-embedding-ada-002, which is the default embedding used by OpenAI"
+    #         # TODO :: Pass embed model settings from config to init the openai embed model
+    #         return
+    #     """Initializes the embedding model based on the configuration."""
+    #     logger.info("Using embedding model : {}".format(self.config.embedding.model))
+    #     Settings.embed_model = resolve_embed_model(self.config.embedding.model)
 
     async def setup_docstore(self):
         """
@@ -153,7 +178,7 @@ class Pipeline:
 
     async def ingest_documents(self, documents):
         return await self.ingestion.arun(documents=documents)
-
+    
     async def setup_query_engine(self):
         # self.query_engine = self.qdrant_search.index.as_query_engine(
         #     node_postprocessors=[self.reranker]
@@ -180,7 +205,7 @@ class Pipeline:
         top_k = self.config.vector_store_config.top_k
         enable_hybrid = self.config.vector_store_config.enable_hybrid
         query_engine_kwargs = {
-            "node_postprocessors": [self.reranker],
+            #"node_postprocessors": [self.reranker],
             "similarity_top_k": top_k,
             "response_mode":"compact"
         }
@@ -199,7 +224,6 @@ class Pipeline:
 
     @track_latency
     async def perform_query_async(self, query: str):
-        await self.setup_query_engine()
         if not self.is_setup_complete:
             raise RuntimeError("Pipeline setup is not complete. Call setup() first.")
         response = await self.query_engine.aquery(query)
@@ -213,6 +237,7 @@ class Pipeline:
         logger.info(f"Insertion :: Ingesting {len(nodes)} nodes for {len(self.ingestion.docstore.docs)} chunks")
         #await self.qdrant_search.add_nodes_to_index_async(nodes)
         await self.qdrant_search.add_nodes_to_index_async(nodes, self.tenant_id)
+        await self.setup_query_engine()
         return nodes
 
     # async def get_ref_info(self):
@@ -334,14 +359,16 @@ class Pipeline:
 # TODO :: Background worker to assign pipeline init tasks (celery q?)
 # TODO :: Pipeline pool implementation to keep the pipelines ready upon server start
 class PipelineFactory:
-    def __init__(self, is_api_server=False):
+    def __init__(self, config, is_api_server=False):
         self.pipelines: Dict[str, Pipeline] = {}
-        self.config = config
+        self.config = deepcopy(config)
         self.is_api_server = is_api_server
+        self.global_embed_model= None
 
     async def initialize_common_resources(self):
-        # TODO :: Initialize any shared resources here
-        pass
+        # # TODO :: Initialize any shared resources here
+        # pass
+        self.global_embed_model = setup_global_embed_model(self.config)
 
     async def override_user_data_path(self, user_id: str) -> str:
         upload_dir = os.path.join(self.config.application.data_path, self.config.application.upload_subdir)
@@ -362,7 +389,7 @@ class PipelineFactory:
         logger.info(f"Creating new pipeline for user {user_id} and tenant {tenant_id}")
         if self.is_api_server:
             await self.override_user_data_path(user_id)
-        pipeline = Pipeline(self.config.copy(), tenant_id)
+        pipeline = Pipeline(deepcopy(self.config), tenant_id, self.global_embed_model)
         try:
             await pipeline.setup()
             self.pipelines[user_id] = pipeline
@@ -377,7 +404,7 @@ class PipelineFactory:
         if user_id not in self.pipelines:
             if self.is_api_server:
                 await self.override_user_data_path(user_id)
-            pipeline = Pipeline(self.config.copy(), tenant_id)
+            pipeline = Pipeline(deepcopy(self.config), tenant_id, self.global_embed_model)
             await pipeline.setup()
             self.pipelines[user_id] = pipeline
             logger.info(f"Pipeline setup completed successfully for new user {user_id}")
@@ -401,20 +428,24 @@ class PipelineFactory:
 # TODO :: Move embed model per user to docker setting to avoid reinitializing same model for every user
 async def main_async():
     try:
-        factory = PipelineFactory()
-        user_id = "123456"
+        factory = PipelineFactory(config)
+        await factory.initialize_common_resources()
+        user_id = "12345"
         tenant_id = "tenant1"
-        pipeline = await factory.get_or_create_pipeline_async(user_id, tenant_id)
+        pipeline1 = await factory.get_or_create_pipeline_async(user_id, tenant_id)
+        user_id = "12346"
+        tenant_id = "tenant2"
+        pipeline2 = await factory.get_or_create_pipeline_async(user_id, tenant_id)
         while True:
             query = input("Enter your query (or 'quit' to exit): ").strip()
             if query.lower() == "quit":
                 break
             try:
-                response = await pipeline.perform_query_async(query)
+                response = await pipeline1.perform_query_async(query)
                 pprint_response(response, show_source=True)
                 print("\n\n")
                 logger.info(f"Response: {response}")
-                pipeline.pretty_print_context(response)
+                pipeline1.pretty_print_context(response)
                 LatencyTracker().print_summary()
             except Exception as e:
                 logger.info(f"An error occurred during query: {e}")

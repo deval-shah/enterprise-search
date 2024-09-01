@@ -18,10 +18,12 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     firebase_uid = Column(String, unique=True, index=True, nullable=False)
+    tenant_id = Column(String, unique=True, nullable=True)
     email = Column(String, unique=True, index=True, nullable=False)
     display_name = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    saved_state = Column(Text)
 
     chats = relationship("Chat", back_populates="user")
     sessions = relationship("Session", back_populates="user")
@@ -30,6 +32,7 @@ class User(Base):
         return {
             "id": self.id,
             "firebase_uid": self.firebase_uid,
+            "tenant_id": self.tenant_id,
             "email": self.email,
             "display_name": self.display_name,
             "created_at": self.created_at,

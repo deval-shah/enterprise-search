@@ -27,6 +27,7 @@ class BaseTest:
     @pytest.fixture(autouse=True)
     async def setup_teardown(self):
         self.factory = PipelineFactory()
+        self.factory.initialize_common_resources()
         yield
         await self.factory.cleanup_all()
 

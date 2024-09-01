@@ -25,16 +25,19 @@ PyMuPDF==1.24.2
 prometheus_client
 prometheus-fastapi-instrumentator
 IPython
+xformers
 #API dependencies
 fastapi
 uvicorn
 sqlalchemy
 pydantic
+pydantic[email]
 pydantic-settings
 python-multipart
 aiofiles
 firebase-admin
 aioredis
+aiosqlite
 dependency-injector
 python-dotenv
 tabulate
