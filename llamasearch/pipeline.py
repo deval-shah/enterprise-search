@@ -54,7 +54,7 @@ class Pipeline:
         self.documents = None
         self.tenant_id = tenant_id
         self.multi_tenancy = getattr(self.config.vector_store_config, 'multi_tenancy', False)
-
+        self.if_eval_mode=False
     async def setup(self):
         if self.is_setup_complete:
             logger.info("Setup already completed. Skipping.")
@@ -64,7 +64,7 @@ class Pipeline:
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
             ("Reranker", self.setup_reranker),
-            ("Documents", lambda: self.load_documents_async(data_dir=self.config.application.data_path)),
+            ("Documents", lambda: self.load_documents_async(data_dir=self.config.application.eval_data_path)),
             ("Index creation", self.qdrant_search.create_index_async),
             ("Ingestion pipeline", self.setup_ingestion_pipeline),
             ("Query engine", self.setup_query_engine)
@@ -208,7 +208,7 @@ class Pipeline:
         return response
 
     async def insert_documents(self, file_paths):
-        documents = await self.load_documents_async(input_files=file_paths)
+        documents = await self.load_documents_async(input_files=file_paths)        
         for doc in documents:
             logger.debug(f"Processing Document ID: {doc.id_}")
         nodes = await self.ingest_documents(documents)
@@ -367,7 +367,7 @@ class PipelineFactory:
         pipeline = Pipeline(self.config.copy(), tenant_id)
         try:
             await pipeline.setup()
-            self.pipelines[user_id] = pipeline
+            self.pipelines[user_id] = pipeline  
             logger.info(f"Pipeline setup completed successfully for user {user_id}")
             return pipeline
         except Exception as e:

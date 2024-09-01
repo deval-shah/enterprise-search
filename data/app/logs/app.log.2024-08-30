@@ -1,0 +1,306 @@
+2024-08-30 09:14:52,554 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 09:14:52,557 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 09:14:52,557 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 09:14:59,724 - [INFO] - Multi tenancy: True
+2024-08-30 09:14:59,724 - [INFO] - Setting up Qdrant index...
+2024-08-30 09:15:01,053 - [INFO] - Qdrant index setup completed.
+2024-08-30 09:15:01,053 - [INFO] - Setting up Docstore...
+2024-08-30 09:15:01,053 - [INFO] - Docstore setup completed.
+2024-08-30 09:15:01,053 - [INFO] - Setting up Parser...
+2024-08-30 09:15:01,134 - [INFO] - Parser setup completed.
+2024-08-30 09:15:01,134 - [INFO] - Setting up Reranker...
+2024-08-30 09:15:02,510 - [INFO] - Reranker setup completed.
+2024-08-30 09:15:02,510 - [INFO] - Setting up Documents...
+2024-08-30 09:15:02,544 - [INFO] - Documents setup completed.
+2024-08-30 09:15:02,544 - [INFO] - Setting up Index creation...
+2024-08-30 09:15:02,545 - [INFO] - Index creation setup completed.
+2024-08-30 09:15:02,545 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 09:15:02,550 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 09:15:02,550 - [INFO] - Adding nodes to index...
+2024-08-30 09:15:02,551 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 09:15:02,551 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 09:15:02,551 - [INFO] - Setting up Query engine...
+2024-08-30 09:15:02,551 - [INFO] - Query engine setup completed.
+2024-08-30 09:15:02,551 - [INFO] - All setup steps completed successfully.
+2024-08-30 09:15:02,551 - [INFO] - RAG pipeline initialization successful.
+2024-08-30 09:15:02,551 - [ERROR] - Error during evaluation: The file at ./data/eval/cooper.cs was not found.
+2024-08-30 09:15:33,262 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 09:15:33,264 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 09:15:33,266 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 09:15:40,194 - [INFO] - Multi tenancy: True
+2024-08-30 09:15:40,194 - [INFO] - Setting up Qdrant index...
+2024-08-30 09:15:42,531 - [INFO] - Qdrant index setup completed.
+2024-08-30 09:15:42,531 - [INFO] - Setting up Docstore...
+2024-08-30 09:15:42,531 - [INFO] - Docstore setup completed.
+2024-08-30 09:15:42,531 - [INFO] - Setting up Parser...
+2024-08-30 09:15:42,602 - [INFO] - Parser setup completed.
+2024-08-30 09:15:42,602 - [INFO] - Setting up Reranker...
+2024-08-30 09:15:43,855 - [INFO] - Reranker setup completed.
+2024-08-30 09:15:43,855 - [INFO] - Setting up Documents...
+2024-08-30 09:15:43,889 - [INFO] - Documents setup completed.
+2024-08-30 09:15:43,889 - [INFO] - Setting up Index creation...
+2024-08-30 09:15:43,889 - [INFO] - Index creation setup completed.
+2024-08-30 09:15:43,890 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 09:15:43,917 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 09:15:43,918 - [INFO] - Adding nodes to index...
+2024-08-30 09:15:43,918 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 09:15:43,918 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 09:15:43,918 - [INFO] - Setting up Query engine...
+2024-08-30 09:15:43,918 - [INFO] - Query engine setup completed.
+2024-08-30 09:15:43,918 - [INFO] - All setup steps completed successfully.
+2024-08-30 09:15:43,918 - [INFO] - RAG pipeline initialization successful.
+2024-08-30 09:15:43,918 - [INFO] - Evaluating: ID 0 | Question: Is Cooper Energy based in Adelaide? | Ground Truth: yes
+2024-08-30 09:15:46,404 - [INFO] - Evaluating ....
+2024-08-30 09:17:46,438 - [INFO] - Metric: FaithfulnessMetric
+2024-08-30 09:17:46,438 - [INFO] - Actual Output: No, Cooper Energy is not based in Adelaide. According to the context information, it is based in Adelaide -based (ASX: COE), which implies that it has a presence or operation in Adelaide but may be headquartered elsewhere.
+2024-08-30 09:17:46,438 - [INFO] - Metric Score: 0.75
+2024-08-30 09:17:46,440 - [INFO] - Metric Reason: The score is 0.75 because the actual output incorrectly claims Cooper Energy's location, which contradicts with the retrieval context stating it's based in Adelaide.
+2024-08-30 09:17:56,485 - [INFO] - Metric: AnswerRelevancyMetric
+2024-08-30 09:17:56,485 - [INFO] - Actual Output: No, Cooper Energy is not based in Adelaide. According to the context information, it is based in Adelaide -based (ASX: COE), which implies that it has a presence or operation in Adelaide but may be headquartered elsewhere.
+2024-08-30 09:17:56,485 - [INFO] - Metric Score: 1.0
+2024-08-30 09:17:56,485 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question, providing a direct and accurate response with no irrelevant information!
+2024-08-30 09:18:06,464 - [INFO] - Metric: ContextualRelevancyMetric
+2024-08-30 09:18:06,464 - [INFO] - Actual Output: No, Cooper Energy is not based in Adelaide. According to the context information, it is based in Adelaide -based (ASX: COE), which implies that it has a presence or operation in Adelaide but may be headquartered elsewhere.
+2024-08-30 09:18:06,464 - [INFO] - Metric Score: 0.3333333333333333
+2024-08-30 09:18:06,464 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention Cooper Energy or the energy industry, and instead focuses on the city of Adelaide and its characteristics.
+2024-08-30 09:18:13,058 - [INFO] - Metric: Coherence
+2024-08-30 09:18:13,058 - [INFO] - Actual Output: No, Cooper Energy is not based in Adelaide. According to the context information, it is based in Adelaide -based (ASX: COE), which implies that it has a presence or operation in Adelaide but may be headquartered elsewhere.
+2024-08-30 09:18:13,058 - [INFO] - Metric Score: 0.9
+2024-08-30 09:18:13,058 - [INFO] - Metric Reason: Actual output shares the topic of Cooper Energy's location with input, logically flows by providing context information, and offers supporting details about its presence in Adelaide.
+2024-08-30 09:18:13,060 - [INFO] - FaithfulnessMetric: Mean=0.75, Median=0.75, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.90, Median=0.90, Std Dev=0.00
+2024-08-30 09:18:13,060 - [INFO] - Evaluating: ID 1 | Question: Is the Orbost Gas Plant located in Victoria? | Ground Truth: yes
+2024-08-30 09:18:14,058 - [INFO] - Evaluating ....
+2024-08-30 09:18:37,252 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-08-30 09:18:43,688 - [INFO] - Metric: AnswerRelevancyMetric
+2024-08-30 09:18:43,688 - [INFO] - Actual Output: Yes, according to the provided context information, the Orbost Gas Plant is located in Victoria.
+2024-08-30 09:18:43,688 - [INFO] - Metric Score: 1.0
+2024-08-30 09:18:43,688 - [INFO] - Metric Reason: The score is 1.00 because the response perfectly addresses the question, providing a direct and accurate answer without any irrelevant information!
+2024-08-30 09:18:56,201 - [INFO] - Metric: ContextualRelevancyMetric
+2024-08-30 09:18:56,201 - [INFO] - Actual Output: Yes, according to the provided context information, the Orbost Gas Plant is located in Victoria.
+2024-08-30 09:18:56,201 - [INFO] - Metric Score: 0.3333333333333333
+2024-08-30 09:18:56,201 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context only discusses council operations, budgeting, and infrastructure, with no mention of the Orbost Gas Plant or Victoria, making it largely irrelevant to the input.
+2024-08-30 09:18:58,673 - [INFO] - Metric: Coherence
+2024-08-30 09:18:58,673 - [INFO] - Actual Output: Yes, according to the provided context information, the Orbost Gas Plant is located in Victoria.
+2024-08-30 09:18:58,673 - [INFO] - Metric Score: 1.0
+2024-08-30 09:18:58,673 - [INFO] - Metric Reason: The actual output directly answers the input question, logically flows from it, and provides context information that supports the answer.
+2024-08-30 09:18:58,673 - [INFO] - FaithfulnessMetric: Mean=0.75, Median=0.75, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.95, Median=0.95, Std Dev=0.05
+2024-08-30 09:18:58,673 - [INFO] - Evaluating: ID 2 | Question: Does the Orbost Gas Plant process raw gas? | Ground Truth: yes
+2024-08-30 09:18:59,871 - [INFO] - Evaluating ....
+2024-08-30 09:19:45,941 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-08-30 09:19:53,454 - [INFO] - Metric: AnswerRelevancyMetric
+2024-08-30 09:19:53,454 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-08-30 09:19:53,454 - [INFO] - Metric Score: 1.0
+2024-08-30 09:19:53,454 - [INFO] - Metric Reason: The score is 1.00 because the output perfectly addresses the question asked, providing a direct and relevant answer with no irrelevant information!
+2024-08-30 09:20:06,780 - [INFO] - Metric: ContextualRelevancyMetric
+2024-08-30 09:20:06,780 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-08-30 09:20:06,780 - [INFO] - Metric Score: 0.3333333333333333
+2024-08-30 09:20:06,780 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or processing raw gas at all, but instead discusses unrelated topics like Council Members, Strategic Plan, treasury policy, and asset management.
+2024-08-30 09:20:09,210 - [INFO] - Metric: Coherence
+2024-08-30 09:20:09,210 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-08-30 09:20:09,210 - [INFO] - Metric Score: 1.0
+2024-08-30 09:20:09,210 - [INFO] - Metric Reason: Shares a common topic of gas processing, logically flows from input, and provides supporting details about raw gas processing.
+2024-08-30 09:20:09,211 - [INFO] - FaithfulnessMetric: Mean=0.75, Median=0.75, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.97, Median=1.00, Std Dev=0.05
+2024-08-30 09:20:09,211 - [INFO] - Evaluating: ID 3 | Question: Are the absorber vessels at Orbost Gas Plant designed to remove H2S? | Ground Truth: yes
+2024-08-30 09:20:10,177 - [INFO] - Evaluating ....
+2024-08-30 09:20:32,743 - [INFO] - Metric: FaithfulnessMetric
+2024-08-30 09:20:32,743 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-08-30 09:20:32,743 - [INFO] - Metric Score: 1.0
+2024-08-30 09:20:32,743 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!
+2024-08-30 09:20:39,300 - [INFO] - Metric: AnswerRelevancyMetric
+2024-08-30 09:20:39,300 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-08-30 09:20:39,300 - [INFO] - Metric Score: 1.0
+2024-08-30 09:20:39,300 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question without any irrelevant information!
+2024-08-30 09:20:52,580 - [INFO] - Metric: ContextualRelevancyMetric
+2024-08-30 09:20:52,581 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-08-30 09:20:52,581 - [INFO] - Metric Score: 0.3333333333333333
+2024-08-30 09:20:52,581 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention 'Orbost Gas Plant' or 'absorber vessels', and instead discusses unrelated topics such as sustainability and park lands in Adelaide.
+2024-08-30 09:20:55,359 - [INFO] - Metric: Coherence
+2024-08-30 09:20:55,360 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-08-30 09:20:55,360 - [INFO] - Metric Score: 1.0
+2024-08-30 09:20:55,360 - [INFO] - Metric Reason: Actual output directly answers the input question, providing specific details about H2S removal at Orbost Gas Plant, and logically flows from the input.
+2024-08-30 09:20:55,360 - [INFO] - FaithfulnessMetric: Mean=0.88, Median=0.88, Std Dev=0.12 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.97, Median=1.00, Std Dev=0.04
+2024-08-30 09:20:55,360 - [INFO] - Evaluating: ID 4 | Question: Did the Orbost Gas Plant start operations in 2020? | Ground Truth: yes
+2024-08-30 09:20:56,957 - [INFO] - Evaluating ....
+2024-08-30 09:21:21,073 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-08-30 09:21:35,705 - [INFO] - Metric: AnswerRelevancyMetric
+2024-08-30 09:21:35,705 - [INFO] - Actual Output: Based on the provided context, it appears that the Orbost Gas Plant started experiencing fouling issues with its absorber vessels since operating in 2020. However, there is no explicit statement indicating that the plant started operations in 2020. The text only mentions that "these vessels have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12 – 15 days" since operating in 2020.
+2024-08-30 09:21:35,705 - [INFO] - Metric Score: 0.75
+2024-08-30 09:21:35,706 - [INFO] - Metric Reason: The score is 0.75 because although the output provides some relevant information, it gets sidetracked by discussing fouling issues and cleaning process of absorber vessels, which isn't directly related to the plant's operation start date.
+2024-08-30 09:21:49,738 - [INFO] - Metric: ContextualRelevancyMetric
+2024-08-30 09:21:49,739 - [INFO] - Actual Output: Based on the provided context, it appears that the Orbost Gas Plant started experiencing fouling issues with its absorber vessels since operating in 2020. However, there is no explicit statement indicating that the plant started operations in 2020. The text only mentions that "these vessels have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12 – 15 days" since operating in 2020.
+2024-08-30 09:21:49,739 - [INFO] - Metric Score: 0.3333333333333333
+2024-08-30 09:21:49,739 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention 'Orbost Gas Plant' or any relevant information about its operations, instead focusing on unrelated topics such as Adelaide's environmental objectives and Council's financial plans.
+2024-08-30 09:21:52,784 - [INFO] - Metric: Coherence
+2024-08-30 09:21:52,784 - [INFO] - Actual Output: Based on the provided context, it appears that the Orbost Gas Plant started experiencing fouling issues with its absorber vessels since operating in 2020. However, there is no explicit statement indicating that the plant started operations in 2020. The text only mentions that "these vessels have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12 – 15 days" since operating in 2020.
+2024-08-30 09:21:52,784 - [INFO] - Metric Score: 0.8
+2024-08-30 09:21:52,784 - [INFO] - Metric Reason: The actual output shares a common topic with the input, logically flows from it, and provides supporting details, but lacks explicit confirmation of the plant's start date.
+2024-08-30 09:21:52,785 - [INFO] - FaithfulnessMetric: Mean=0.88, Median=0.88, Std Dev=0.12 | AnswerRelevancyMetric: Mean=0.95, Median=1.00, Std Dev=0.10 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.94, Median=1.00, Std Dev=0.08
+2024-08-30 09:21:52,785 - [INFO] - Evaluating: ID 5 | Question: Do the absorber vessels at Orbost Gas Plant require mechanical cleaning every 12-15 days? | Ground Truth: yes
+2024-08-30 09:21:53,923 - [INFO] - Evaluating ....
+2024-08-30 09:22:27,410 - [INFO] - Metric: FaithfulnessMetric
+2024-08-30 09:22:27,411 - [INFO] - Actual Output: According to the context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues since operating in 2020, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-08-30 09:22:27,411 - [INFO] - Metric Score: 1.0
+2024-08-30 09:22:27,411 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, the actual output perfectly aligns with the retrieval context!
+2024-08-30 09:22:39,252 - [INFO] - Metric: AnswerRelevancyMetric
+2024-08-30 09:22:39,252 - [INFO] - Actual Output: According to the context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues since operating in 2020, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-08-30 09:22:39,252 - [INFO] - Metric Score: 0.75
+2024-08-30 09:22:39,252 - [INFO] - Metric Reason: The score is 0.75 because although the output provides relevant information, it's held back by vague phrases like 'According to the context information,' that don't directly address the input question, preventing a perfect score.
+2024-08-30 09:22:41,817 - [INFO] - Interrupt signal received. Saving results...
+2024-08-30 10:22:37,262 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 10:22:37,340 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 10:22:44,034 - [INFO] - Multi tenancy: True
+2024-08-30 10:22:44,034 - [INFO] - Setting up Qdrant index...
+2024-08-30 10:22:45,409 - [INFO] - Qdrant index setup completed.
+2024-08-30 10:22:45,409 - [INFO] - Setting up Docstore...
+2024-08-30 10:22:45,409 - [INFO] - Docstore setup completed.
+2024-08-30 10:22:45,409 - [INFO] - Setting up Parser...
+2024-08-30 10:22:45,488 - [INFO] - Parser setup completed.
+2024-08-30 10:22:45,488 - [INFO] - Setting up Reranker...
+2024-08-30 10:22:46,984 - [INFO] - Reranker setup completed.
+2024-08-30 10:22:46,984 - [INFO] - Setting up Documents...
+2024-08-30 10:22:47,018 - [INFO] - Documents setup completed.
+2024-08-30 10:22:47,019 - [INFO] - Setting up Index creation...
+2024-08-30 10:22:47,019 - [INFO] - Index creation setup completed.
+2024-08-30 10:22:47,019 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 10:22:47,025 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 10:22:47,025 - [INFO] - Adding nodes to index...
+2024-08-30 10:22:47,025 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 10:22:47,025 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 10:22:47,025 - [INFO] - Setting up Query engine...
+2024-08-30 10:22:47,025 - [INFO] - Query engine setup completed.
+2024-08-30 10:22:47,025 - [INFO] - All setup steps completed successfully.
+2024-08-30 10:22:47,025 - [INFO] - Pipeline setup completed successfully for new user 123456
+2024-08-30 10:22:54,168 - [INFO] - Response: Dr. Jane Lomax-Smith AM, The Right Honourable Lord Mayor of Adelaide.
+2024-08-30 10:22:54,169 - [INFO] - 
+Latency Summary:
+2024-08-30 10:51:59,190 - [INFO] - 
+Latency Statistics:
+2024-08-30 10:51:59,191 - [INFO] - Pipeline cleaned up for user 123456
+2024-08-30 10:51:59,191 - [INFO] - All pipelines cleaned up
+2024-08-30 11:33:45,675 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 11:33:45,678 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 11:33:45,678 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 11:33:52,330 - [INFO] - Multi tenancy: True
+2024-08-30 11:33:52,330 - [INFO] - Setting up Qdrant index...
+2024-08-30 11:33:54,182 - [INFO] - Qdrant index setup completed.
+2024-08-30 11:33:54,182 - [INFO] - Setting up Docstore...
+2024-08-30 11:33:54,182 - [INFO] - Docstore setup completed.
+2024-08-30 11:33:54,182 - [INFO] - Setting up Parser...
+2024-08-30 11:33:54,257 - [INFO] - Parser setup completed.
+2024-08-30 11:33:54,257 - [INFO] - Setting up Reranker...
+2024-08-30 11:33:55,671 - [INFO] - Reranker setup completed.
+2024-08-30 11:33:55,671 - [INFO] - Setting up Documents...
+2024-08-30 11:33:55,706 - [INFO] - Documents setup completed.
+2024-08-30 11:33:55,706 - [INFO] - Setting up Index creation...
+2024-08-30 11:33:55,706 - [INFO] - Index creation setup completed.
+2024-08-30 11:33:55,706 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 11:33:55,713 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 11:33:55,713 - [INFO] - Adding nodes to index...
+2024-08-30 11:33:55,713 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:33:55,713 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:33:55,713 - [INFO] - Setting up Query engine...
+2024-08-30 11:33:55,713 - [INFO] - Query engine setup completed.
+2024-08-30 11:33:55,713 - [INFO] - All setup steps completed successfully.
+2024-08-30 11:33:55,713 - [INFO] - RAG pipeline initialization successful.
+2024-08-30 11:38:41,214 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 11:38:41,216 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 11:38:41,216 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 11:38:47,595 - [INFO] - Multi tenancy: True
+2024-08-30 11:38:47,596 - [INFO] - Setting up Qdrant index...
+2024-08-30 11:38:48,940 - [INFO] - Qdrant index setup completed.
+2024-08-30 11:38:48,940 - [INFO] - Setting up Docstore...
+2024-08-30 11:38:48,940 - [INFO] - Docstore setup completed.
+2024-08-30 11:38:48,940 - [INFO] - Setting up Parser...
+2024-08-30 11:38:49,016 - [INFO] - Parser setup completed.
+2024-08-30 11:38:49,016 - [INFO] - Setting up Reranker...
+2024-08-30 11:38:50,395 - [INFO] - Reranker setup completed.
+2024-08-30 11:38:50,395 - [INFO] - Setting up Documents...
+2024-08-30 11:38:50,431 - [INFO] - Documents setup completed.
+2024-08-30 11:38:50,431 - [INFO] - Setting up Index creation...
+2024-08-30 11:38:50,432 - [INFO] - Index creation setup completed.
+2024-08-30 11:38:50,432 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 11:38:50,437 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 11:38:50,437 - [INFO] - Adding nodes to index...
+2024-08-30 11:38:50,437 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:38:50,437 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:38:50,438 - [INFO] - Setting up Query engine...
+2024-08-30 11:38:50,438 - [INFO] - Query engine setup completed.
+2024-08-30 11:38:50,438 - [INFO] - All setup steps completed successfully.
+2024-08-30 11:38:50,438 - [INFO] - RAG pipeline initialization successful.
+2024-08-30 11:40:20,483 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 11:40:20,486 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 11:40:20,486 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 11:40:27,706 - [INFO] - Multi tenancy: True
+2024-08-30 11:40:27,706 - [INFO] - Setting up Qdrant index...
+2024-08-30 11:40:29,024 - [INFO] - Qdrant index setup completed.
+2024-08-30 11:40:29,024 - [INFO] - Setting up Docstore...
+2024-08-30 11:40:29,025 - [INFO] - Docstore setup completed.
+2024-08-30 11:40:29,025 - [INFO] - Setting up Parser...
+2024-08-30 11:40:29,099 - [INFO] - Parser setup completed.
+2024-08-30 11:40:29,099 - [INFO] - Setting up Reranker...
+2024-08-30 11:40:30,463 - [INFO] - Reranker setup completed.
+2024-08-30 11:40:30,463 - [INFO] - Setting up Documents...
+2024-08-30 11:40:30,499 - [INFO] - Documents setup completed.
+2024-08-30 11:40:30,499 - [INFO] - Setting up Index creation...
+2024-08-30 11:40:30,499 - [INFO] - Index creation setup completed.
+2024-08-30 11:40:30,500 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 11:40:30,508 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 11:40:30,508 - [INFO] - Adding nodes to index...
+2024-08-30 11:40:30,508 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:40:30,508 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:40:30,508 - [INFO] - Setting up Query engine...
+2024-08-30 11:40:30,508 - [INFO] - Query engine setup completed.
+2024-08-30 11:40:30,508 - [INFO] - All setup steps completed successfully.
+2024-08-30 11:40:30,509 - [INFO] - RAG pipeline initialization successful.
+2024-08-30 11:40:30,509 - [INFO] - Evaluating: ID 0 | Question: Is Cooper Energy based in Adelaide? | Ground Truth: yes
+2024-08-30 11:40:33,649 - [INFO] - Evaluating ....
+2024-08-30 11:54:36,429 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 11:54:36,432 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 11:54:36,432 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 11:54:42,907 - [INFO] - Multi tenancy: True
+2024-08-30 11:54:42,907 - [INFO] - Setting up Qdrant index...
+2024-08-30 11:54:44,310 - [INFO] - Qdrant index setup completed.
+2024-08-30 11:54:44,310 - [INFO] - Setting up Docstore...
+2024-08-30 11:54:44,311 - [INFO] - Docstore setup completed.
+2024-08-30 11:54:44,311 - [INFO] - Setting up Parser...
+2024-08-30 11:54:44,385 - [INFO] - Parser setup completed.
+2024-08-30 11:54:44,385 - [INFO] - Setting up Reranker...
+2024-08-30 11:54:45,811 - [INFO] - Reranker setup completed.
+2024-08-30 11:54:45,811 - [INFO] - Setting up Documents...
+2024-08-30 11:54:45,850 - [INFO] - Documents setup completed.
+2024-08-30 11:54:45,850 - [INFO] - Setting up Index creation...
+2024-08-30 11:54:45,850 - [INFO] - Index creation setup completed.
+2024-08-30 11:54:45,851 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 11:54:45,855 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 11:54:45,856 - [INFO] - Adding nodes to index...
+2024-08-30 11:54:45,856 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:54:45,856 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:54:45,856 - [INFO] - Setting up Query engine...
+2024-08-30 11:54:45,856 - [INFO] - Query engine setup completed.
+2024-08-30 11:54:45,856 - [INFO] - All setup steps completed successfully.
+2024-08-30 11:54:45,856 - [INFO] - RAG pipeline initialization successful.
+2024-08-30 11:57:00,036 - [INFO] - Initialising the pipeline for evaluation....
+2024-08-30 11:57:00,039 - [INFO] - Running model llama3 on http://localhost:11434
+2024-08-30 11:57:00,039 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-08-30 11:57:07,744 - [INFO] - Multi tenancy: True
+2024-08-30 11:57:07,744 - [INFO] - Setting up Qdrant index...
+2024-08-30 11:57:09,063 - [INFO] - Qdrant index setup completed.
+2024-08-30 11:57:09,063 - [INFO] - Setting up Docstore...
+2024-08-30 11:57:09,064 - [INFO] - Docstore setup completed.
+2024-08-30 11:57:09,064 - [INFO] - Setting up Parser...
+2024-08-30 11:57:09,144 - [INFO] - Parser setup completed.
+2024-08-30 11:57:09,144 - [INFO] - Setting up Reranker...
+2024-08-30 11:57:10,545 - [INFO] - Reranker setup completed.
+2024-08-30 11:57:10,545 - [INFO] - Setting up Documents...
+2024-08-30 11:57:10,580 - [INFO] - Documents setup completed.
+2024-08-30 11:57:10,580 - [INFO] - Setting up Index creation...
+2024-08-30 11:57:10,580 - [INFO] - Index creation setup completed.
+2024-08-30 11:57:10,580 - [INFO] - Setting up Ingestion pipeline...
+2024-08-30 11:57:10,586 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-08-30 11:57:10,586 - [INFO] - Adding nodes to index...
+2024-08-30 11:57:10,586 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:57:10,586 - [INFO] - Ingestion pipeline setup completed.
+2024-08-30 11:57:10,586 - [INFO] - Setting up Query engine...
+2024-08-30 11:57:10,587 - [INFO] - Query engine setup completed.
+2024-08-30 11:57:10,587 - [INFO] - All setup steps completed successfully.
+2024-08-30 11:57:10,587 - [INFO] - RAG pipeline initialization successful.

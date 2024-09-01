@@ -7,10 +7,19 @@ import signal
 from datetime import datetime
 import argparse
 import asyncio
-from llamasearch.pipeline import LlamaIndexApp
+from llama_index.core.evaluation import RetrieverEvaluator
+from llama_index.core.evaluation import (
+    generate_question_context_pairs,
+    EmbeddingQAFinetuneDataset,
+)
+
+
+from llamasearch.settings import config
+from llamasearch.pipeline import Pipeline
 from llamasearch.metrics import MetricsEvaluator
 from llamasearch.logger import logger
 import numpy as np
+
 
 metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
 
@@ -32,13 +41,14 @@ class Eval:
         """
         self.data_path = data_path
         self.mobj = MetricsEvaluator()
-        self.rag_pipeline = LlamaIndexApp()
+        self.rag_pipeline = Pipeline(tenant_id = "tenant1", config=config)
         self.results_file_path = results_file_path
         self.results = self.load_existing_results()
         if self.data_path:
             self.rag_pipeline.data_path = self.data_path
         self.metric_scores = {self.mobj.get_metric_name(self.mobj.metrics[metric_name]): [] for metric_name in metrics_to_evaluate}
         # Setup signal handlers to save results on interruption
+        self.config=config
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
 
@@ -50,22 +60,85 @@ class Eval:
             Exception: If any step in initializing the pipeline fails.
         """
         try:
-            await self.rag_pipeline.load_documents()
-            nodes = await self.rag_pipeline.run_pipeline()
-            await self.rag_pipeline.index_documents(nodes)
+            self.config.application.data_path="data/eval/document/"
+            await self.rag_pipeline.setup()
+            # nodes = await self.rag_pipeline.run_pipeline()
+            # await self.rag_pipeline.index_documents(nodes)
             logger.info("RAG pipeline initialization successful.")
         except Exception as e:
             logger.error(f"Failed to initialize RAG pipeline: {e}")
             raise
+    
+    
+    @staticmethod
+    def get_context_from_response(response_object):
+        """
+        Extracts and logs document metadata from a response object, avoiding duplicate entries for the same document.
 
+        Args:
+            response_object: An object containing metadata about documents processed in a pipeline.
+            Expected to have 'metadata' and 'source_nodes' attributes if present.
+        Returns:
+            tuple: A tuple containing:
+                - A dictionary of (file path, details).
+                - List of contents extracted from the 'source_nodes' that contribute to the response
+
+        Iterating over the document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
+        summary of these details and maps it to the response.
+        """
+        document_info = {}
+        retrieval_context = None
+        if response_object:
+            try:
+                if hasattr(response_object, 'source_nodes'):
+                    retrieval_context = [node.get_content() for node in response_object.source_nodes]
+                if hasattr(response_object, 'metadata'):
+                    for doc_id, info in response_object.metadata.items():
+                        # print("\n\n")
+                        # print(info)
+                        # print("\n\n")
+                        file_path = info.get('file_path')
+                        file_name = info.get('file_name')
+                        # Check if this file_path or combination of file_name and doc_id already exists
+                        if (file_path not in document_info and 
+                            not any(d['file_name'] == file_name and d['doc_id'] == doc_id 
+                                    for d in document_info.values())):
+                            
+                            document_info[file_path] = {
+                                'file_name': file_name,
+                                'last_modified_date': info.get('last_modified_date'),
+                                'doc_id': doc_id
+                            }
+            except Exception as e:
+                logger.error("An error occurred while processing the response object: {}".format(e))
+        return document_info, retrieval_context
+
+    def pretty_print_context(self, response):
+        document_info, retrieval_context = self.get_context_from_response(response)
+        print("\n--- Document Information ---")
+        if document_info:
+            headers = ["File Name", "Last Modified", "Doc ID"]
+            table_data = [[info['file_name'], info['last_modified_date'], info['doc_id']] 
+                for info in document_info.values()]
+            print(tabulate(table_data, headers=headers, tablefmt="grid"))
+        else:
+            print("No document information available.")
+        #print("\n--- Retrieval Context ---")
+        # if retrieval_context:
+        #     for i, context in enumerate(retrieval_context, 1):
+        #         print(f"\nContext {i}:")
+        #         print(context[:500] + "..." if len(context) > 500 else context)
+        # else:
+        #     print("No retrieval context available.")
     async def evaluate(self, idx: int, input_query: str, ground_truth: str=None) -> None:
-        response_object = await self.rag_pipeline.query_engine_response(input_query)
+        response_object = await self.rag_pipeline.perform_query_async(input_query)
         if response_object is None:
             logger.error("Failed to retrieve response from query application.")
             return
 
         actual_output = response_object.response
-        retrieval_context = [node.get_content() for node in response_object.source_nodes]
+        document_info, retrieval_context =self.get_context_from_response(response_object)
+        
         logger.info("Evaluating ....")
 
         metrics_results = []
@@ -168,6 +241,19 @@ class Eval:
         # Join all metric summaries into a single line and log it
         logger.info(" | ".join(stats_summary))
 
+        
+    async def evaluate_retriever(self,retriever):
+        metrics = ["hit_rate", "mrr", "precision", "recall", "ap", "ndcg"]
+        retriever_evaluator = RetrieverEvaluator.from_metric_names(
+    metrics, retriever=retriever
+        )
+        qa_dataset = EmbeddingQAFinetuneDataset.from_json("data/eval/dataset.json")
+        sample_id, sample_query = list(qa_dataset.queries.items())[0]
+        sample_expected = qa_dataset.relevant_docs[sample_id]
+
+        eval_result = retriever_evaluator.evaluate(sample_query, sample_expected)
+        print(eval_result)
+
 async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
     """
     Main function to run the evaluation process.
@@ -197,6 +283,13 @@ async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
                 await eval_instance.save_results()
             await eval_instance.display_stats()
             print("-"*120)
+        # query_engine_kwargs = {
+        #     "node_postprocessors": [eval_instance.rag_pipeline.reranker],
+        #     "similarity_top_k": 10,
+        #     "response_mode":"compact"
+        # }
+        # retriever=eval_instance.rag_pipeline.qdrant_search.index.as_retriever()
+        # eval_instance.evaluate_retriever(retriever)
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
         exit(1)
