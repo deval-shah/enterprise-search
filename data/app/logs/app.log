@@ -1,0 +1,658 @@
+2024-09-01 13:31:56,295 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 13:31:56,297 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 13:31:56,297 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 13:32:04,507 - [INFO] - Multi tenancy: True
+2024-09-01 13:32:04,508 - [INFO] - Setting up Qdrant index...
+2024-09-01 13:32:07,189 - [INFO] - Qdrant index setup completed.
+2024-09-01 13:32:07,190 - [INFO] - Setting up Docstore...
+2024-09-01 13:32:07,190 - [INFO] - Docstore setup completed.
+2024-09-01 13:32:07,190 - [INFO] - Setting up Parser...
+2024-09-01 13:32:07,263 - [INFO] - Parser setup completed.
+2024-09-01 13:32:07,263 - [INFO] - Setting up Reranker...
+2024-09-01 13:32:08,528 - [INFO] - Reranker setup completed.
+2024-09-01 13:32:08,528 - [INFO] - Setting up Documents...
+2024-09-01 13:32:08,562 - [INFO] - Documents setup completed.
+2024-09-01 13:32:08,562 - [INFO] - Setting up Index creation...
+2024-09-01 13:32:08,562 - [INFO] - Index creation setup completed.
+2024-09-01 13:32:08,563 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 13:32:08,590 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 13:32:08,590 - [INFO] - Adding nodes to index...
+2024-09-01 13:32:08,590 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:32:08,590 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:32:08,590 - [INFO] - Setting up Query engine...
+2024-09-01 13:32:08,591 - [INFO] - Query engine setup completed.
+2024-09-01 13:32:08,591 - [INFO] - All setup steps completed successfully.
+2024-09-01 13:32:08,591 - [INFO] - RAG pipeline initialization successful.
+2024-09-01 13:32:24,652 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 13:32:24,654 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 13:32:24,655 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 13:32:32,458 - [INFO] - Multi tenancy: True
+2024-09-01 13:32:32,458 - [INFO] - Setting up Qdrant index...
+2024-09-01 13:32:33,771 - [INFO] - Qdrant index setup completed.
+2024-09-01 13:32:33,772 - [INFO] - Setting up Docstore...
+2024-09-01 13:32:33,772 - [INFO] - Docstore setup completed.
+2024-09-01 13:32:33,772 - [INFO] - Setting up Parser...
+2024-09-01 13:32:33,844 - [INFO] - Parser setup completed.
+2024-09-01 13:32:33,844 - [INFO] - Setting up Reranker...
+2024-09-01 13:32:35,159 - [INFO] - Reranker setup completed.
+2024-09-01 13:32:35,159 - [INFO] - Setting up Documents...
+2024-09-01 13:32:35,193 - [INFO] - Documents setup completed.
+2024-09-01 13:32:35,193 - [INFO] - Setting up Index creation...
+2024-09-01 13:32:35,193 - [INFO] - Index creation setup completed.
+2024-09-01 13:32:35,193 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 13:32:35,199 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 13:32:35,199 - [INFO] - Adding nodes to index...
+2024-09-01 13:32:35,199 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:32:35,199 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:32:35,199 - [INFO] - Setting up Query engine...
+2024-09-01 13:32:35,199 - [INFO] - Query engine setup completed.
+2024-09-01 13:32:35,199 - [INFO] - All setup steps completed successfully.
+2024-09-01 13:32:35,199 - [INFO] - RAG pipeline initialization successful.
+2024-09-01 13:33:10,542 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 13:33:10,544 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 13:33:10,544 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 13:33:16,683 - [INFO] - Multi tenancy: True
+2024-09-01 13:33:16,683 - [INFO] - Setting up Qdrant index...
+2024-09-01 13:33:18,395 - [INFO] - Qdrant index setup completed.
+2024-09-01 13:33:18,395 - [INFO] - Setting up Docstore...
+2024-09-01 13:33:18,395 - [INFO] - Docstore setup completed.
+2024-09-01 13:33:18,395 - [INFO] - Setting up Parser...
+2024-09-01 13:33:18,467 - [INFO] - Parser setup completed.
+2024-09-01 13:33:18,467 - [INFO] - Setting up Reranker...
+2024-09-01 13:33:19,787 - [INFO] - Reranker setup completed.
+2024-09-01 13:33:19,787 - [INFO] - Setting up Documents...
+2024-09-01 13:33:19,819 - [INFO] - Documents setup completed.
+2024-09-01 13:33:19,819 - [INFO] - Setting up Index creation...
+2024-09-01 13:33:19,820 - [INFO] - Index creation setup completed.
+2024-09-01 13:33:19,820 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 13:33:19,825 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 13:33:19,825 - [INFO] - Adding nodes to index...
+2024-09-01 13:33:19,825 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:33:19,825 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:33:19,825 - [INFO] - Setting up Query engine...
+2024-09-01 13:33:19,826 - [INFO] - Query engine setup completed.
+2024-09-01 13:33:19,826 - [INFO] - All setup steps completed successfully.
+2024-09-01 13:33:19,826 - [INFO] - RAG pipeline initialization successful.
+2024-09-01 13:33:19,826 - [INFO] - Evaluating: ID 0 | Question: Is Cooper Energy based in Adelaide? | Ground Truth: yes
+2024-09-01 13:33:22,652 - [INFO] - Evaluating ....
+2024-09-01 13:35:25,156 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 13:35:25,156 - [INFO] - Actual Output: Based on the provided context information, I can infer that Cooper Energy is an Adelaide-based company, as mentioned in the text "Company : Cooper Energy (Adelaide -based) (ASX: COE)" from the "Proposed Project title" section. Therefore, my answer to your query would be:
+
+Yes, Cooper Energy is based in Adelaide.
+2024-09-01 13:35:25,156 - [INFO] - Metric Score: 1.0
+2024-09-01 13:35:25,156 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, indicating a perfectly faithful output!
+2024-09-01 13:35:34,231 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:35:34,231 - [INFO] - Actual Output: Based on the provided context information, I can infer that Cooper Energy is an Adelaide-based company, as mentioned in the text "Company : Cooper Energy (Adelaide -based) (ASX: COE)" from the "Proposed Project title" section. Therefore, my answer to your query would be:
+
+Yes, Cooper Energy is based in Adelaide.
+2024-09-01 13:35:34,231 - [INFO] - Metric Score: 1.0
+2024-09-01 13:35:34,231 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question asked!
+2024-09-01 13:35:44,578 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:35:44,579 - [INFO] - Actual Output: Based on the provided context information, I can infer that Cooper Energy is an Adelaide-based company, as mentioned in the text "Company : Cooper Energy (Adelaide -based) (ASX: COE)" from the "Proposed Project title" section. Therefore, my answer to your query would be:
+
+Yes, Cooper Energy is based in Adelaide.
+2024-09-01 13:35:44,579 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:35:44,579 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context only provides information about Adelaide's spirit, statistics, and city plans, but does not mention Cooper Energy or its base.
+2024-09-01 13:35:50,909 - [INFO] - Metric: Coherence
+2024-09-01 13:35:50,910 - [INFO] - Actual Output: Based on the provided context information, I can infer that Cooper Energy is an Adelaide-based company, as mentioned in the text "Company : Cooper Energy (Adelaide -based) (ASX: COE)" from the "Proposed Project title" section. Therefore, my answer to your query would be:
+
+Yes, Cooper Energy is based in Adelaide.
+2024-09-01 13:35:50,910 - [INFO] - Metric Score: 1.0
+2024-09-01 13:35:50,910 - [INFO] - Metric Reason: Actual output logically connects to input, aligns with intent and consistently confirms Cooper Energy is based in Adelaide as mentioned in the context information.
+2024-09-01 13:35:50,910 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:35:50,910 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 13:35:50,910 - [INFO] - Evaluating: ID 1 | Question: Is the Orbost Gas Plant located in Victoria? | Ground Truth: yes
+2024-09-01 13:35:51,782 - [INFO] - Evaluating ....
+2024-09-01 13:36:32,372 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 13:36:38,932 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:36:38,932 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant is located in Victoria.
+2024-09-01 13:36:38,932 - [INFO] - Metric Score: 1.0
+2024-09-01 13:36:38,932 - [INFO] - Metric Reason: The score is 1.00 because the answer directly and correctly addresses the question about the location of the Orbost Gas Plant, with no irrelevant information!
+2024-09-01 13:36:51,315 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:36:51,315 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant is located in Victoria.
+2024-09-01 13:36:51,315 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:36:51,315 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention 'Orbost Gas Plant' or its location in Victoria at all, instead discussing unrelated topics like financial plans and council members.
+2024-09-01 13:36:53,649 - [INFO] - Metric: Coherence
+2024-09-01 13:36:53,649 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant is located in Victoria.
+2024-09-01 13:36:53,649 - [INFO] - Metric Score: 1.0
+2024-09-01 13:36:53,649 - [INFO] - Metric Reason: The actual output directly answers the input question's question, aligning with its intent and maintaining consistency throughout.
+2024-09-01 13:36:53,650 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:36:53,650 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 13:36:53,650 - [INFO] - Evaluating: ID 2 | Question: Does the Orbost Gas Plant process raw gas? | Ground Truth: yes
+2024-09-01 13:36:54,675 - [INFO] - Evaluating ....
+2024-09-01 13:37:25,583 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 13:37:33,238 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:37:33,238 - [INFO] - Actual Output: Yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 13:37:33,238 - [INFO] - Metric Score: 1.0
+2024-09-01 13:37:33,238 - [INFO] - Metric Reason: The score is 1.00 because the output perfectly addresses the question, providing a clear and concise answer with no irrelevant information!
+2024-09-01 13:37:45,660 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:37:45,661 - [INFO] - Actual Output: Yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 13:37:45,661 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:37:45,661 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or raw gas processing at all, instead focusing on unrelated topics such as council members, strategic plans, city development, treasury policy, financial plans, revenue, expenses, and asset management.
+2024-09-01 13:37:48,003 - [INFO] - Metric: Coherence
+2024-09-01 13:37:48,003 - [INFO] - Actual Output: Yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 13:37:48,003 - [INFO] - Metric Score: 1.0
+2024-09-01 13:37:48,003 - [INFO] - Metric Reason: Actual output directly answers the input question and provides additional relevant information, ensuring consistency and alignment with the intent.
+2024-09-01 13:37:48,004 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:37:48,004 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 13:37:48,004 - [INFO] - Evaluating: ID 3 | Question: Are the absorber vessels at Orbost Gas Plant designed to remove H2S? | Ground Truth: yes
+2024-09-01 13:37:49,001 - [INFO] - Evaluating ....
+2024-09-01 13:38:11,877 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 13:38:11,877 - [INFO] - Actual Output: Yes, according to the provided context information, the two absorber vessels installed at Orbost Gas Processing Plant (OGP) are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 13:38:11,877 - [INFO] - Metric Score: 1.0
+2024-09-01 13:38:11,877 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found in the actual output, it perfectly aligns with the retrieval context!
+2024-09-01 13:38:19,483 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:38:19,484 - [INFO] - Actual Output: Yes, according to the provided context information, the two absorber vessels installed at Orbost Gas Processing Plant (OGP) are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 13:38:19,484 - [INFO] - Metric Score: 1.0
+2024-09-01 13:38:19,484 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question asked, providing a direct and relevant response without any irrelevant statements.
+2024-09-01 13:38:32,784 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:38:32,785 - [INFO] - Actual Output: Yes, according to the provided context information, the two absorber vessels installed at Orbost Gas Processing Plant (OGP) are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 13:38:32,785 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:38:32,785 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention specific keywords like 'Orbost Gas Plant', 'absorber vessels', or 'H2S', and instead focuses on unrelated topics such as Adelaide's environmental objectives.
+2024-09-01 13:38:34,962 - [INFO] - Metric: Coherence
+2024-09-01 13:38:34,962 - [INFO] - Actual Output: Yes, according to the provided context information, the two absorber vessels installed at Orbost Gas Processing Plant (OGP) are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 13:38:34,962 - [INFO] - Metric Score: 1.0
+2024-09-01 13:38:34,962 - [INFO] - Metric Reason: Logical connection found between input and actual output, intent aligned, and no contradictions detected.
+2024-09-01 13:38:34,962 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:38:34,963 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 13:38:34,963 - [INFO] - Evaluating: ID 4 | Question: Did the Orbost Gas Plant start operations in 2020? | Ground Truth: yes
+2024-09-01 13:38:35,903 - [INFO] - Evaluating ....
+2024-09-01 13:39:05,591 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 13:39:15,274 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:39:15,274 - [INFO] - Actual Output: According to the provided context, the Orbost Gas Plant started operations before 2020, as it is mentioned that "these vessels have been having fouling issues since operating in 2020".
+2024-09-01 13:39:15,275 - [INFO] - Metric Score: 0.5
+2024-09-01 13:39:15,275 - [INFO] - Metric Reason: The score is 0.50 because while the output partially addresses the question, it gets sidetracked by mentioning fouling issues of vessels, which is unrelated to the start of operations of the Orbost Gas Plant.
+2024-09-01 13:39:29,492 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:39:29,492 - [INFO] - Actual Output: According to the provided context, the Orbost Gas Plant started operations before 2020, as it is mentioned that "these vessels have been having fouling issues since operating in 2020".
+2024-09-01 13:39:29,492 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:39:29,492 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or its operations in 2020, instead focusing on unrelated topics such as Adelaide's strategic plan and council policies.
+2024-09-01 13:39:32,396 - [INFO] - Metric: Coherence
+2024-09-01 13:39:32,397 - [INFO] - Actual Output: According to the provided context, the Orbost Gas Plant started operations before 2020, as it is mentioned that "these vessels have been having fouling issues since operating in 2020".
+2024-09-01 13:39:32,397 - [INFO] - Metric Score: 0.8
+2024-09-01 13:39:32,397 - [INFO] - Metric Reason: The actual output logically connects to the input, aligns with its intent, and is consistent; however, it provides additional information beyond a simple 'no'.
+2024-09-01 13:39:32,397 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:39:32,398 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.90, Median=1.00, Std Dev=0.20 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.96, Median=1.00, Std Dev=0.08
+2024-09-01 13:39:32,398 - [INFO] - Evaluating: ID 5 | Question: Do the absorber vessels at Orbost Gas Plant require mechanical cleaning every 12-15 days? | Ground Truth: yes
+2024-09-01 13:39:33,271 - [INFO] - Evaluating ....
+2024-09-01 13:40:06,732 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 13:40:06,732 - [INFO] - Actual Output: According to the provided context, yes, the absorber vessels at Orbost Gas Plant have been experiencing fouling issues and require mechanical cleaning every 12-15 days.
+2024-09-01 13:40:06,732 - [INFO] - Metric Score: 1.0
+2024-09-01 13:40:06,732 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!
+2024-09-01 13:40:14,641 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:40:14,642 - [INFO] - Actual Output: According to the provided context, yes, the absorber vessels at Orbost Gas Plant have been experiencing fouling issues and require mechanical cleaning every 12-15 days.
+2024-09-01 13:40:14,642 - [INFO] - Metric Score: 1.0
+2024-09-01 13:40:14,642 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question asked, providing a direct and relevant response with no irrelevant information.
+2024-09-01 13:40:26,385 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:40:26,385 - [INFO] - Actual Output: According to the provided context, yes, the absorber vessels at Orbost Gas Plant have been experiencing fouling issues and require mechanical cleaning every 12-15 days.
+2024-09-01 13:40:26,386 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:40:26,386 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context is irrelevant to the input as it focuses on Adelaide's spirit, economy, and demographics, but lacks any mention of Orbost Gas Plant or mechanical cleaning of absorber vessels.
+2024-09-01 13:40:28,527 - [INFO] - Metric: Coherence
+2024-09-01 13:40:28,527 - [INFO] - Actual Output: According to the provided context, yes, the absorber vessels at Orbost Gas Plant have been experiencing fouling issues and require mechanical cleaning every 12-15 days.
+2024-09-01 13:40:28,527 - [INFO] - Metric Score: 1.0
+2024-09-01 13:40:28,527 - [INFO] - Metric Reason: Logical connection exists between input and actual output, aligns with intent, and shows consistency without contradictions.
+2024-09-01 13:40:28,527 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:40:28,528 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.92, Median=1.00, Std Dev=0.19 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=0.97, Median=1.00, Std Dev=0.07
+2024-09-01 13:40:28,528 - [INFO] - Evaluating: ID 6 | Question: Did the Orbost Gas Plant experience optimal performance in December 2021? | Ground Truth: yes
+2024-09-01 13:40:29,759 - [INFO] - Evaluating ....
+2024-09-01 13:40:56,251 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 13:40:56,251 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant experienced "dream runs" in December 2021, which implies that the absorber vessels achieved minimal deposition of sulphur and required a mechanical clean only two times over the 4-year history. This suggests that the plant experienced optimal performance during that period.
+2024-09-01 13:40:56,251 - [INFO] - Metric Score: 1.0
+2024-09-01 13:40:56,251 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, and the actual output perfectly aligns with the retrieval context!
+2024-09-01 13:41:10,140 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:41:10,140 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant experienced "dream runs" in December 2021, which implies that the absorber vessels achieved minimal deposition of sulphur and required a mechanical clean only two times over the 4-year history. This suggests that the plant experienced optimal performance during that period.
+2024-09-01 13:41:10,140 - [INFO] - Metric Score: 0.8
+2024-09-01 13:41:10,140 - [INFO] - Metric Reason: The score is 0.80 because while the output addresses the question, it includes an irrelevant statement that detracts from its overall relevance, preventing a perfect score.
+2024-09-01 13:41:25,547 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:41:25,547 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant experienced "dream runs" in December 2021, which implies that the absorber vessels achieved minimal deposition of sulphur and required a mechanical clean only two times over the 4-year history. This suggests that the plant experienced optimal performance during that period.
+2024-09-01 13:41:25,548 - [INFO] - Metric Score: 0.0
+2024-09-01 13:41:25,548 - [INFO] - Metric Reason: The score is 0.00 because the retrieval context does not mention the Orbost Gas Plant or its performance in December 2021, as stated in all reasons for irrelevancy.
+2024-09-01 13:41:28,660 - [INFO] - Metric: Coherence
+2024-09-01 13:41:28,660 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant experienced "dream runs" in December 2021, which implies that the absorber vessels achieved minimal deposition of sulphur and required a mechanical clean only two times over the 4-year history. This suggests that the plant experienced optimal performance during that period.
+2024-09-01 13:41:28,660 - [INFO] - Metric Score: 1.0
+2024-09-01 13:41:28,660 - [INFO] - Metric Reason: The actual output logically connects with the input, aligns with its intent, and consistently suggests optimal performance based on specific details like 'dream runs' and minimal sulphur deposition.
+2024-09-01 13:41:28,660 - [INFO] - Results saved to ./results/eval_20240901_133310.json
+2024-09-01 13:41:28,661 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.90, Median=1.00, Std Dev=0.18 | ContextualRelevancyMetric: Mean=0.29, Median=0.33, Std Dev=0.12 | Coherence: Mean=0.97, Median=1.00, Std Dev=0.07
+2024-09-01 13:55:15,158 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 13:55:15,159 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 13:55:15,159 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 13:55:22,176 - [INFO] - Multi tenancy: True
+2024-09-01 13:55:22,177 - [INFO] - Setting up Qdrant index...
+2024-09-01 13:55:24,421 - [INFO] - Qdrant index setup completed.
+2024-09-01 13:55:24,421 - [INFO] - Setting up Docstore...
+2024-09-01 13:55:24,421 - [INFO] - Docstore setup completed.
+2024-09-01 13:55:24,421 - [INFO] - Setting up Parser...
+2024-09-01 13:55:24,492 - [INFO] - Parser setup completed.
+2024-09-01 13:55:24,492 - [INFO] - Setting up Reranker...
+2024-09-01 13:55:25,685 - [INFO] - Reranker setup completed.
+2024-09-01 13:55:25,685 - [INFO] - Setting up Documents...
+2024-09-01 13:55:25,717 - [INFO] - Documents setup completed.
+2024-09-01 13:55:25,717 - [INFO] - Setting up Index creation...
+2024-09-01 13:55:25,717 - [INFO] - Index creation setup completed.
+2024-09-01 13:55:25,717 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 13:55:25,745 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 13:55:25,746 - [INFO] - Adding nodes to index...
+2024-09-01 13:55:25,746 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:55:25,746 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 13:55:25,746 - [INFO] - Setting up Query engine...
+2024-09-01 13:55:25,746 - [INFO] - Query engine setup completed.
+2024-09-01 13:55:25,746 - [INFO] - All setup steps completed successfully.
+2024-09-01 13:55:25,746 - [INFO] - RAG pipeline initialization successful.
+2024-09-01 13:55:25,746 - [INFO] - Evaluating: ID 0 | Question: Is Cooper Energy based in Adelaide? | Ground Truth: yes
+2024-09-01 13:55:28,361 - [INFO] - Evaluating ....
+2024-09-01 13:56:03,969 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 13:56:03,969 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that Cooper Energy is not necessarily based in Adelaide. The company's asset, Orbost Gas Plant, is located in Victoria, and there is no direct mention of Cooper Energy being headquartered or having operations in Adelaide. However, it is possible that Cooper Energy has some presence or affiliation with Adelaide, but this information is not explicitly stated in the provided context.
+2024-09-01 13:56:03,969 - [INFO] - Metric Score: 1.0
+2024-09-01 13:56:03,969 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, indicating a perfect alignment between the actual output and the retrieval context!
+2024-09-01 13:56:16,082 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 13:56:16,082 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that Cooper Energy is not necessarily based in Adelaide. The company's asset, Orbost Gas Plant, is located in Victoria, and there is no direct mention of Cooper Energy being headquartered or having operations in Adelaide. However, it is possible that Cooper Energy has some presence or affiliation with Adelaide, but this information is not explicitly stated in the provided context.
+2024-09-01 13:56:16,082 - [INFO] - Metric Score: 1.0
+2024-09-01 13:56:16,082 - [INFO] - Metric Reason: The score is 1.00 because the answer is perfectly relevant and accurately addresses the input question, providing a direct and precise response!
+2024-09-01 13:56:26,327 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 13:56:26,327 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that Cooper Energy is not necessarily based in Adelaide. The company's asset, Orbost Gas Plant, is located in Victoria, and there is no direct mention of Cooper Energy being headquartered or having operations in Adelaide. However, it is possible that Cooper Energy has some presence or affiliation with Adelaide, but this information is not explicitly stated in the provided context.
+2024-09-01 13:56:26,327 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 13:56:26,327 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention Cooper Energy or its base location, providing irrelevant information about Adelaide's spirit, economy, and demographics, as well as Council Members and the Strategic Plan.
+2024-09-01 13:59:31,307 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 13:59:31,393 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 13:59:38,818 - [ERROR] - An error occurred: CUDA out of memory. Tried to allocate 54.00 MiB. GPU 0 has a total capacity of 23.64 GiB of which 61.88 MiB is free. Process 662100 has 5.53 GiB memory in use. Process 5030 has 446.70 MiB memory in use. Process 4077712 has 12.64 GiB memory in use. Including non-PyTorch memory, this process has 4.13 GiB memory in use. Of the allocated memory 3.71 GiB is allocated by PyTorch, and 53.76 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2024-09-01 13:59:38,921 - [INFO] - No latency data available.
+2024-09-01 13:59:38,921 - [INFO] - All pipelines cleaned up
+2024-09-01 14:00:40,638 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 14:00:40,714 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 14:00:47,351 - [INFO] - Multi tenancy: True
+2024-09-01 14:00:47,351 - [INFO] - Setting up Qdrant index...
+2024-09-01 14:00:48,642 - [INFO] - Qdrant index setup completed.
+2024-09-01 14:00:48,642 - [INFO] - Setting up Docstore...
+2024-09-01 14:00:48,642 - [INFO] - Docstore setup completed.
+2024-09-01 14:00:48,642 - [INFO] - Setting up Parser...
+2024-09-01 14:00:48,716 - [INFO] - Parser setup completed.
+2024-09-01 14:00:48,716 - [INFO] - Setting up Reranker...
+2024-09-01 14:00:50,149 - [INFO] - Reranker setup completed.
+2024-09-01 14:00:50,149 - [INFO] - Setting up Documents...
+2024-09-01 14:00:50,182 - [INFO] - Documents setup completed.
+2024-09-01 14:00:50,183 - [INFO] - Setting up Index creation...
+2024-09-01 14:00:50,183 - [INFO] - Index creation setup completed.
+2024-09-01 14:00:50,183 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 14:00:50,188 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 14:00:50,188 - [INFO] - Adding nodes to index...
+2024-09-01 14:00:50,188 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:00:50,188 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:00:50,188 - [INFO] - Setting up Query engine...
+2024-09-01 14:00:50,188 - [INFO] - Query engine setup completed.
+2024-09-01 14:00:50,188 - [INFO] - All setup steps completed successfully.
+2024-09-01 14:00:50,188 - [INFO] - Pipeline setup completed successfully for new user 123456
+2024-09-01 14:01:02,768 - [INFO] - Response: Based on the provided context information, Cooper Energy (ASX: COE) is an Adelaide-based company that operates the Orbost Gas Plant in Victoria. The plant processes raw gas from nearby gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 14:01:02,768 - [INFO] - 
+Latency Summary:
+2024-09-01 14:01:18,845 - [INFO] - 
+Latency Statistics:
+2024-09-01 14:01:18,845 - [INFO] - Pipeline cleaned up for user 123456
+2024-09-01 14:01:18,845 - [INFO] - All pipelines cleaned up
+2024-09-01 14:01:29,300 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 14:01:29,375 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 14:01:37,584 - [INFO] - Multi tenancy: True
+2024-09-01 14:01:37,584 - [INFO] - Setting up Qdrant index...
+2024-09-01 14:01:38,914 - [INFO] - Qdrant index setup completed.
+2024-09-01 14:01:38,914 - [INFO] - Setting up Docstore...
+2024-09-01 14:01:38,914 - [INFO] - Docstore setup completed.
+2024-09-01 14:01:38,914 - [INFO] - Setting up Parser...
+2024-09-01 14:01:38,993 - [INFO] - Parser setup completed.
+2024-09-01 14:01:38,993 - [INFO] - Setting up Reranker...
+2024-09-01 14:01:40,415 - [INFO] - Reranker setup completed.
+2024-09-01 14:01:40,415 - [INFO] - Setting up Documents...
+2024-09-01 14:01:40,447 - [INFO] - Documents setup completed.
+2024-09-01 14:01:40,447 - [INFO] - Setting up Index creation...
+2024-09-01 14:01:40,447 - [INFO] - Index creation setup completed.
+2024-09-01 14:01:40,448 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 14:01:40,453 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 14:01:40,453 - [INFO] - Adding nodes to index...
+2024-09-01 14:01:40,453 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:01:40,454 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:01:40,454 - [INFO] - Setting up Query engine...
+2024-09-01 14:01:40,454 - [INFO] - Query engine setup completed.
+2024-09-01 14:01:40,454 - [INFO] - All setup steps completed successfully.
+2024-09-01 14:01:40,454 - [INFO] - Pipeline setup completed successfully for new user 123456
+2024-09-01 14:02:09,809 - [INFO] - Response: Based on the provided context information, it can be inferred that Cooper Energy (ASX: COE) is an Adelaide-based company, as mentioned in the document "Cooper Energy ML Project on Absorber Fouling - Summary.pdf". Therefore, the answer to the query is:
+
+Yes, Cooper Energy is based in Adelaide.
+2024-09-01 14:02:09,810 - [INFO] - 
+Latency Summary:
+2024-09-01 14:04:41,787 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 14:04:41,790 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 14:04:41,790 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 14:04:48,614 - [ERROR] - Error during evaluation: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 0 has a total capacity of 23.64 GiB of which 122.31 MiB is free. Process 662100 has 5.56 GiB memory in use. Process 5030 has 446.70 MiB memory in use. Process 4096427 has 12.64 GiB memory in use. Including non-PyTorch memory, this process has 4.07 GiB memory in use. Of the allocated memory 3.64 GiB is allocated by PyTorch, and 53.76 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2024-09-01 14:05:30,889 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 14:05:30,891 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 14:05:30,892 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 14:05:37,683 - [INFO] - Multi tenancy: True
+2024-09-01 14:05:37,683 - [INFO] - Setting up Qdrant index...
+2024-09-01 14:05:39,424 - [INFO] - Qdrant index setup completed.
+2024-09-01 14:05:39,424 - [INFO] - Setting up Docstore...
+2024-09-01 14:05:39,424 - [INFO] - Docstore setup completed.
+2024-09-01 14:05:39,424 - [INFO] - Setting up Parser...
+2024-09-01 14:05:39,496 - [INFO] - Parser setup completed.
+2024-09-01 14:05:39,496 - [INFO] - Setting up Reranker...
+2024-09-01 14:05:40,873 - [INFO] - Reranker setup completed.
+2024-09-01 14:05:40,873 - [INFO] - Setting up Documents...
+2024-09-01 14:05:40,907 - [INFO] - Documents setup completed.
+2024-09-01 14:05:40,907 - [INFO] - Setting up Index creation...
+2024-09-01 14:05:40,908 - [INFO] - Index creation setup completed.
+2024-09-01 14:05:40,908 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 14:05:40,913 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 14:05:40,913 - [INFO] - Adding nodes to index...
+2024-09-01 14:05:40,913 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:05:40,913 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:05:40,913 - [INFO] - Setting up Query engine...
+2024-09-01 14:05:40,913 - [INFO] - Query engine setup completed.
+2024-09-01 14:05:40,914 - [INFO] - All setup steps completed successfully.
+2024-09-01 14:05:40,914 - [INFO] - RAG pipeline initialization successful.
+2024-09-01 14:05:40,914 - [INFO] - Evaluating: ID 0 | Question: Is Cooper Energy based in Adelaide? | Ground Truth: yes
+2024-09-01 14:05:42,177 - [INFO] - Evaluating ....
+2024-09-01 14:06:17,591 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:06:17,591 - [INFO] - Actual Output: Based on the provided context information, I can answer your query as follows:
+
+The company mentioned is "Cooper Energy" (ASX: COE), which operates the Orbost Gas Plant in Victoria, not Adelaide. Therefore, the answer to your query is:
+
+No, Cooper Energy is not based in Adelaide.
+2024-09-01 14:06:17,591 - [INFO] - Metric Score: 0.6666666666666666
+2024-09-01 14:06:17,591 - [INFO] - Metric Reason: The score is 0.67 because the actual output incorrectly claimed a detail about Cooper Energy's location, contradicting the retrieval context.
+2024-09-01 14:06:27,495 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:06:27,495 - [INFO] - Actual Output: Based on the provided context information, I can answer your query as follows:
+
+The company mentioned is "Cooper Energy" (ASX: COE), which operates the Orbost Gas Plant in Victoria, not Adelaide. Therefore, the answer to your query is:
+
+No, Cooper Energy is not based in Adelaide.
+2024-09-01 14:06:27,495 - [INFO] - Metric Score: 1.0
+2024-09-01 14:06:27,495 - [INFO] - Metric Reason: The score is 1.00 because the answer directly addresses the question asked, providing a clear and concise response with no irrelevant information.
+2024-09-01 14:06:37,223 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:06:37,223 - [INFO] - Actual Output: Based on the provided context information, I can answer your query as follows:
+
+The company mentioned is "Cooper Energy" (ASX: COE), which operates the Orbost Gas Plant in Victoria, not Adelaide. Therefore, the answer to your query is:
+
+No, Cooper Energy is not based in Adelaide.
+2024-09-01 14:06:37,223 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:06:37,223 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context fails to mention Cooper Energy or its location, instead focusing on unrelated information about Adelaide's characteristics and council members.
+2024-09-01 14:06:44,225 - [INFO] - Metric: Coherence
+2024-09-01 14:06:44,225 - [INFO] - Actual Output: Based on the provided context information, I can answer your query as follows:
+
+The company mentioned is "Cooper Energy" (ASX: COE), which operates the Orbost Gas Plant in Victoria, not Adelaide. Therefore, the answer to your query is:
+
+No, Cooper Energy is not based in Adelaide.
+2024-09-01 14:06:44,226 - [INFO] - Metric Score: 1.0
+2024-09-01 14:06:44,226 - [INFO] - Metric Reason: The Actual Output's structure and language align with the Input's context, addressing the key point of Cooper Energy's location, clearly stating it is not based in Adelaide.
+2024-09-01 14:06:44,226 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:06:44,226 - [INFO] - FaithfulnessMetric: Mean=0.67, Median=0.67, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:06:44,226 - [INFO] - Evaluating: ID 1 | Question: Is the Orbost Gas Plant located in Victoria? | Ground Truth: yes
+2024-09-01 14:06:45,083 - [INFO] - Evaluating ....
+2024-09-01 14:07:43,101 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 14:07:49,413 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:07:49,413 - [INFO] - Actual Output: Yes, according to the context information, the Orbost Gas Plant is located in Victoria.
+2024-09-01 14:07:49,413 - [INFO] - Metric Score: 1.0
+2024-09-01 14:07:49,413 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question, providing a direct and accurate response with no irrelevant information!
+2024-09-01 14:08:01,733 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:08:01,734 - [INFO] - Actual Output: Yes, according to the context information, the Orbost Gas Plant is located in Victoria.
+2024-09-01 14:08:01,734 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:08:01,734 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context is entirely about Council's financial plans, operations, and infrastructure in a different city (Adelaide), with no mention of the Orbost Gas Plant or its location in Victoria.
+2024-09-01 14:08:04,270 - [INFO] - Metric: Coherence
+2024-09-01 14:08:04,270 - [INFO] - Actual Output: Yes, according to the context information, the Orbost Gas Plant is located in Victoria.
+2024-09-01 14:08:04,270 - [INFO] - Metric Score: 1.0
+2024-09-01 14:08:04,270 - [INFO] - Metric Reason: Actual Output's structure and language align with Input's context, addressing key point of Orbost Gas Plant's location in Victoria.
+2024-09-01 14:08:04,270 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:08:04,271 - [INFO] - FaithfulnessMetric: Mean=0.67, Median=0.67, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:08:04,271 - [INFO] - Evaluating: ID 2 | Question: Does the Orbost Gas Plant process raw gas? | Ground Truth: yes
+2024-09-01 14:08:05,220 - [INFO] - Evaluating ....
+2024-09-01 14:08:45,177 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 14:08:56,464 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:08:56,465 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline.
+2024-09-01 14:08:56,465 - [INFO] - Metric Score: 0.75
+2024-09-01 14:08:56,465 - [INFO] - Metric Reason: The score is 0.75 because while the output addresses the main question, it includes some irrelevant information like 'to export sales gas into the pipeline', which prevents it from being a perfect match.
+2024-09-01 14:09:10,655 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:09:10,655 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline.
+2024-09-01 14:09:10,655 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:09:10,655 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or raw gas processing, instead discussing unrelated topics like council members, strategic plans, and city development, as well as Treasury Policy and financial data.
+2024-09-01 14:09:13,301 - [INFO] - Metric: Coherence
+2024-09-01 14:09:13,302 - [INFO] - Actual Output: Yes, according to the provided context, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline.
+2024-09-01 14:09:13,302 - [INFO] - Metric Score: 1.0
+2024-09-01 14:09:13,302 - [INFO] - Metric Reason: The Actual Output's structure and language align with the Input's context, addressing the key point of gas processing at Orbost Gas Plant.
+2024-09-01 14:09:13,302 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:09:13,302 - [INFO] - FaithfulnessMetric: Mean=0.67, Median=0.67, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.92, Median=1.00, Std Dev=0.12 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:09:13,302 - [INFO] - Evaluating: ID 3 | Question: Are the absorber vessels at Orbost Gas Plant designed to remove H2S? | Ground Truth: yes
+2024-09-01 14:09:14,165 - [INFO] - Evaluating ....
+2024-09-01 14:09:34,696 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:09:34,696 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 14:09:34,696 - [INFO] - Metric Score: 1.0
+2024-09-01 14:09:34,696 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!
+2024-09-01 14:09:41,570 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:09:41,570 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 14:09:41,570 - [INFO] - Metric Score: 1.0
+2024-09-01 14:09:41,570 - [INFO] - Metric Reason: The score is 1.00 because the output perfectly addresses the question asked, providing a direct and relevant response without any irrelevant statements!
+2024-09-01 14:09:54,897 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:09:54,897 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 14:09:54,897 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:09:54,897 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention Orbost Gas Plant or H2S, and instead discusses unrelated topics such as the City of Adelaide's environmental objectives.
+2024-09-01 14:09:57,491 - [INFO] - Metric: Coherence
+2024-09-01 14:09:57,491 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove hydrogen sulphide (H2S) concentration from untreated gas.
+2024-09-01 14:09:57,491 - [INFO] - Metric Score: 1.0
+2024-09-01 14:09:57,491 - [INFO] - Metric Reason: Actual Output's structure and language align with Input's context, addressing key point of removing H2S at Orbost Gas Plant.
+2024-09-01 14:09:57,491 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:09:57,492 - [INFO] - FaithfulnessMetric: Mean=0.83, Median=0.83, Std Dev=0.17 | AnswerRelevancyMetric: Mean=0.94, Median=1.00, Std Dev=0.11 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:09:57,492 - [INFO] - Evaluating: ID 4 | Question: Did the Orbost Gas Plant start operations in 2020? | Ground Truth: yes
+2024-09-01 14:09:58,693 - [INFO] - Evaluating ....
+2024-09-01 14:10:46,165 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 14:10:57,694 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:10:57,694 - [INFO] - Actual Output: No, according to the background section of the Cooper Energy ML Project on Absorber Fouling - Summary.pdf, the Orbost Gas Plant processes raw gas from nearly gas field to export sales gas into the pipeline since operating in 2 020, which implies that the plant started operations before 2020.
+2024-09-01 14:10:57,694 - [INFO] - Metric Score: 0.6666666666666666
+2024-09-01 14:10:57,694 - [INFO] - Metric Reason: The score is 0.67 because while the output partially addresses the question, it includes an irrelevant statement that doesn't provide any useful information, preventing a higher score.
+2024-09-01 14:11:12,006 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:11:12,006 - [INFO] - Actual Output: No, according to the background section of the Cooper Energy ML Project on Absorber Fouling - Summary.pdf, the Orbost Gas Plant processes raw gas from nearly gas field to export sales gas into the pipeline since operating in 2 020, which implies that the plant started operations before 2020.
+2024-09-01 14:11:12,006 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:11:12,006 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or its operations in 2020, instead focusing on unrelated topics such as the City of Adelaide's environmental objectives and Council's financial plans.
+2024-09-01 14:11:14,749 - [INFO] - Metric: Coherence
+2024-09-01 14:11:14,749 - [INFO] - Actual Output: No, according to the background section of the Cooper Energy ML Project on Absorber Fouling - Summary.pdf, the Orbost Gas Plant processes raw gas from nearly gas field to export sales gas into the pipeline since operating in 2 020, which implies that the plant started operations before 2020.
+2024-09-01 14:11:14,749 - [INFO] - Metric Score: 1.0
+2024-09-01 14:11:14,749 - [INFO] - Metric Reason: The Actual Output's structure and language align with the Input's context, addressing the key point of when the Orbost Gas Plant started operations.
+2024-09-01 14:11:14,750 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:11:14,750 - [INFO] - FaithfulnessMetric: Mean=0.83, Median=0.83, Std Dev=0.17 | AnswerRelevancyMetric: Mean=0.88, Median=1.00, Std Dev=0.15 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:11:14,750 - [INFO] - Evaluating: ID 5 | Question: Do the absorber vessels at Orbost Gas Plant require mechanical cleaning every 12-15 days? | Ground Truth: yes
+2024-09-01 14:11:15,791 - [INFO] - Evaluating ....
+2024-09-01 14:11:50,121 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:11:50,121 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues since operating in 2020 and require each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:11:50,121 - [INFO] - Metric Score: 1.0
+2024-09-01 14:11:50,121 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, indicating a perfect alignment between the actual output and the retrieval context! Well done!
+2024-09-01 14:11:58,795 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:11:58,795 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues since operating in 2020 and require each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:11:58,795 - [INFO] - Metric Score: 1.0
+2024-09-01 14:11:58,795 - [INFO] - Metric Reason: The score is 1.00 because the response perfectly addressed the question without any irrelevant information, providing a direct and accurate answer!
+2024-09-01 14:12:11,073 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:12:11,073 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues since operating in 2020 and require each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:12:11,073 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:12:11,073 - [INFO] - Metric Reason: The score is 0.33 because the context talks about unrelated topics such as Adelaide's spirit, city planning, demographics, and strategic plans, without mentioning Orbost Gas Plant or mechanical cleaning of absorber vessels.
+2024-09-01 14:12:13,355 - [INFO] - Metric: Coherence
+2024-09-01 14:12:13,355 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues since operating in 2020 and require each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:12:13,355 - [INFO] - Metric Score: 1.0
+2024-09-01 14:12:13,355 - [INFO] - Metric Reason: The Actual Output aligns with Input's requirements, addressing fouling issues and mechanical cleaning frequency.
+2024-09-01 14:12:13,355 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:12:13,356 - [INFO] - FaithfulnessMetric: Mean=0.89, Median=1.00, Std Dev=0.16 | AnswerRelevancyMetric: Mean=0.90, Median=1.00, Std Dev=0.14 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:12:13,356 - [INFO] - Evaluating: ID 6 | Question: Did the Orbost Gas Plant experience optimal performance in December 2021? | Ground Truth: yes
+2024-09-01 14:12:14,522 - [INFO] - Evaluating ....
+2024-09-01 14:12:54,981 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:12:54,982 - [INFO] - Actual Output: Based on the provided context, it is mentioned that "Two dream runs in Dec 20 21" had a very minimal deposition of sulphur, which is how the plant and vessel are designed to look like. This suggests that the Orbost Gas Plant experienced optimal performance in December 2021.
+2024-09-01 14:12:54,982 - [INFO] - Metric Score: 1.0
+2024-09-01 14:12:54,982 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context! Well done!
+2024-09-01 14:13:06,944 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:13:06,944 - [INFO] - Actual Output: Based on the provided context, it is mentioned that "Two dream runs in Dec 20 21" had a very minimal deposition of sulphur, which is how the plant and vessel are designed to look like. This suggests that the Orbost Gas Plant experienced optimal performance in December 2021.
+2024-09-01 14:13:06,944 - [INFO] - Metric Score: 0.6666666666666666
+2024-09-01 14:13:06,944 - [INFO] - Metric Reason: The score is 0.67 because while the output addresses the Orbost Gas Plant, it includes an irrelevant statement about its design, which detracts from its overall relevance to the input question.
+2024-09-01 14:13:25,117 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:13:25,117 - [INFO] - Actual Output: Based on the provided context, it is mentioned that "Two dream runs in Dec 20 21" had a very minimal deposition of sulphur, which is how the plant and vessel are designed to look like. This suggests that the Orbost Gas Plant experienced optimal performance in December 2021.
+2024-09-01 14:13:25,117 - [INFO] - Metric Score: 0.0
+2024-09-01 14:13:25,117 - [INFO] - Metric Reason: The score is 0.00 because the context does not mention the Orbost Gas Plant's performance in December 2021, and instead focuses on unrelated topics such as fouling issues, machine learning, Council's asset management, Treasury Policy, and property portfolio.
+2024-09-01 14:13:28,072 - [INFO] - Metric: Coherence
+2024-09-01 14:13:28,072 - [INFO] - Actual Output: Based on the provided context, it is mentioned that "Two dream runs in Dec 20 21" had a very minimal deposition of sulphur, which is how the plant and vessel are designed to look like. This suggests that the Orbost Gas Plant experienced optimal performance in December 2021.
+2024-09-01 14:13:28,072 - [INFO] - Metric Score: 1.0
+2024-09-01 14:13:28,072 - [INFO] - Metric Reason: The Actual Output logically flows from the Input, aligns with the context of plant performance, and addresses the key point of optimal performance in December 2021.
+2024-09-01 14:13:28,073 - [INFO] - Results saved to ./results/eval_20240901_140530.json
+2024-09-01 14:13:28,073 - [INFO] - FaithfulnessMetric: Mean=0.92, Median=1.00, Std Dev=0.14 | AnswerRelevancyMetric: Mean=0.87, Median=1.00, Std Dev=0.15 | ContextualRelevancyMetric: Mean=0.29, Median=0.33, Std Dev=0.12 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:26:10,010 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-01 14:26:10,013 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-01 14:26:10,013 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-01 14:26:17,440 - [INFO] - Multi tenancy: True
+2024-09-01 14:26:17,440 - [INFO] - Setting up Qdrant index...
+2024-09-01 14:26:19,291 - [INFO] - Qdrant index setup completed.
+2024-09-01 14:26:19,291 - [INFO] - Setting up Docstore...
+2024-09-01 14:26:19,291 - [INFO] - Docstore setup completed.
+2024-09-01 14:26:19,291 - [INFO] - Setting up Parser...
+2024-09-01 14:26:19,361 - [INFO] - Parser setup completed.
+2024-09-01 14:26:19,361 - [INFO] - Setting up Reranker...
+2024-09-01 14:26:21,119 - [INFO] - Reranker setup completed.
+2024-09-01 14:26:21,119 - [INFO] - Setting up Documents...
+2024-09-01 14:26:21,152 - [INFO] - Documents setup completed.
+2024-09-01 14:26:21,152 - [INFO] - Setting up Index creation...
+2024-09-01 14:26:21,152 - [INFO] - Index creation setup completed.
+2024-09-01 14:26:21,152 - [INFO] - Setting up Ingestion pipeline...
+2024-09-01 14:26:21,158 - [INFO] - Ingesting 0 nodes for 123 chunks
+2024-09-01 14:26:21,158 - [INFO] - Adding nodes to index...
+2024-09-01 14:26:21,158 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:26:21,158 - [INFO] - Ingestion pipeline setup completed.
+2024-09-01 14:26:21,158 - [INFO] - Setting up Query engine...
+2024-09-01 14:26:21,158 - [INFO] - Query engine setup completed.
+2024-09-01 14:26:21,158 - [INFO] - All setup steps completed successfully.
+2024-09-01 14:26:21,158 - [INFO] - RAG pipeline initialization successful.
+2024-09-01 14:26:21,158 - [INFO] - Evaluating: ID 0 | Question: Is Cooper Energy based in Adelaide? | Ground Truth: yes
+2024-09-01 14:26:24,233 - [INFO] - Evaluating ....
+2024-09-01 14:27:00,422 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:27:00,422 - [INFO] - Actual Output: Based on the provided context information, I found that Cooper Energy is mentioned as an ASX-listed company with its asset being the Orbost Gas Plant in Victoria. There is no direct mention of Adelaide as their base or location. However, it is noted that the Orbost Gas Plant is located in Victoria, which is a different state from South Australia where Adelaide is situated. Therefore, I would answer the query as:
+
+"No, Cooper Energy is not based in Adelaide."
+2024-09-01 14:27:00,422 - [INFO] - Metric Score: 1.0
+2024-09-01 14:27:00,422 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, indicating a perfect alignment between the actual output and the retrieval context! Well done!
+2024-09-01 14:27:12,349 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:27:12,349 - [INFO] - Actual Output: Based on the provided context information, I found that Cooper Energy is mentioned as an ASX-listed company with its asset being the Orbost Gas Plant in Victoria. There is no direct mention of Adelaide as their base or location. However, it is noted that the Orbost Gas Plant is located in Victoria, which is a different state from South Australia where Adelaide is situated. Therefore, I would answer the query as:
+
+"No, Cooper Energy is not based in Adelaide."
+2024-09-01 14:27:12,349 - [INFO] - Metric Score: 1.0
+2024-09-01 14:27:12,350 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the input question without any irrelevant information!
+2024-09-01 14:27:21,829 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:27:21,830 - [INFO] - Actual Output: Based on the provided context information, I found that Cooper Energy is mentioned as an ASX-listed company with its asset being the Orbost Gas Plant in Victoria. There is no direct mention of Adelaide as their base or location. However, it is noted that the Orbost Gas Plant is located in Victoria, which is a different state from South Australia where Adelaide is situated. Therefore, I would answer the query as:
+
+"No, Cooper Energy is not based in Adelaide."
+2024-09-01 14:27:21,830 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:27:21,830 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention Cooper Energy at all, focusing solely on Adelaide's characteristics and council members.
+2024-09-01 14:27:28,147 - [INFO] - Metric: Coherence
+2024-09-01 14:27:28,148 - [INFO] - Actual Output: Based on the provided context information, I found that Cooper Energy is mentioned as an ASX-listed company with its asset being the Orbost Gas Plant in Victoria. There is no direct mention of Adelaide as their base or location. However, it is noted that the Orbost Gas Plant is located in Victoria, which is a different state from South Australia where Adelaide is situated. Therefore, I would answer the query as:
+
+"No, Cooper Energy is not based in Adelaide."
+2024-09-01 14:27:28,148 - [INFO] - Metric Score: 1.0
+2024-09-01 14:27:28,148 - [INFO] - Metric Reason: Actual Output accurately answers the question, provides logical supporting details from the context, and maintains a consistent tone and language.
+2024-09-01 14:27:28,148 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:27:28,148 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:27:28,148 - [INFO] - Evaluating: ID 1 | Question: Is the Orbost Gas Plant located in Victoria? | Ground Truth: yes
+2024-09-01 14:27:28,976 - [INFO] - Evaluating ....
+2024-09-01 14:27:57,188 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 14:28:03,328 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:28:03,328 - [INFO] - Actual Output: Yes, the Orbost Gas Plant is located in Victoria.
+2024-09-01 14:28:03,328 - [INFO] - Metric Score: 1.0
+2024-09-01 14:28:03,328 - [INFO] - Metric Reason: The score is 1.00 because the answer directly and accurately addresses the question, providing a straightforward response that perfectly aligns with the input!
+2024-09-01 14:28:15,284 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:28:15,284 - [INFO] - Actual Output: Yes, the Orbost Gas Plant is located in Victoria.
+2024-09-01 14:28:15,284 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:28:15,284 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or Victoria at all, instead focusing on unrelated topics like Council's financial plans and Adelaide's Strategic Plan.
+2024-09-01 14:28:17,847 - [INFO] - Metric: Coherence
+2024-09-01 14:28:17,847 - [INFO] - Actual Output: Yes, the Orbost Gas Plant is located in Victoria.
+2024-09-01 14:28:17,847 - [INFO] - Metric Score: 1.0
+2024-09-01 14:28:17,847 - [INFO] - Metric Reason: The Actual Output's main idea aligns with the Input's question, logically follows from the context and maintains a consistent tone and language.
+2024-09-01 14:28:17,848 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:28:17,848 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:28:17,848 - [INFO] - Evaluating: ID 2 | Question: Does the Orbost Gas Plant process raw gas? | Ground Truth: yes
+2024-09-01 14:28:18,946 - [INFO] - Evaluating ....
+2024-09-01 14:28:54,069 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 14:29:00,735 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:29:00,735 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 14:29:00,735 - [INFO] - Metric Score: 1.0
+2024-09-01 14:29:00,735 - [INFO] - Metric Reason: The score is 1.00 because the output perfectly addresses the input question with no irrelevant information!
+2024-09-01 14:29:12,717 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:29:12,718 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 14:29:12,718 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:29:12,718 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention the Orbost Gas Plant or raw gas at all, instead discussing unrelated topics like Council Members and Treasury Policy.
+2024-09-01 14:29:15,166 - [INFO] - Metric: Coherence
+2024-09-01 14:29:15,167 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that yes, the Orbost Gas Plant processes raw gas from nearly gas fields to export sales gas into the pipeline for commercial, industrial, and power generation purposes.
+2024-09-01 14:29:15,167 - [INFO] - Metric Score: 1.0
+2024-09-01 14:29:15,167 - [INFO] - Metric Reason: Main idea aligns with input topic, supporting details logically follow from context and tone is consistent with intent and audience.
+2024-09-01 14:29:15,167 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:29:15,167 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:29:15,167 - [INFO] - Evaluating: ID 3 | Question: Are the absorber vessels at Orbost Gas Plant designed to remove H2S? | Ground Truth: yes
+2024-09-01 14:29:16,044 - [INFO] - Evaluating ....
+2024-09-01 14:29:38,364 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:29:38,365 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove H2S (hydrogen sulphide) concentration from untreated gas.
+2024-09-01 14:29:38,365 - [INFO] - Metric Score: 1.0
+2024-09-01 14:29:38,365 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!
+2024-09-01 14:29:45,253 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:29:45,253 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove H2S (hydrogen sulphide) concentration from untreated gas.
+2024-09-01 14:29:45,253 - [INFO] - Metric Score: 1.0
+2024-09-01 14:29:45,253 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question, providing a direct and accurate response without any irrelevant information.
+2024-09-01 14:29:57,264 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:29:57,264 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove H2S (hydrogen sulphide) concentration from untreated gas.
+2024-09-01 14:29:57,264 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:29:57,264 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context fails to mention specific keywords like 'Orbost Gas Plant' and 'H2S', instead focusing on the City of Adelaide's Environment and Sustainability objectives.
+2024-09-01 14:29:59,511 - [INFO] - Metric: Coherence
+2024-09-01 14:29:59,511 - [INFO] - Actual Output: Yes, the absorber vessels at Orbost Gas Plant are designed to remove H2S (hydrogen sulphide) concentration from untreated gas.
+2024-09-01 14:29:59,511 - [INFO] - Metric Score: 1.0
+2024-09-01 14:29:59,511 - [INFO] - Metric Reason: Actual Output directly answers the Input's question, providing relevant context and using consistent tone and language.
+2024-09-01 14:29:59,512 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:29:59,512 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:29:59,512 - [INFO] - Evaluating: ID 4 | Question: Did the Orbost Gas Plant start operations in 2020? | Ground Truth: yes
+2024-09-01 14:30:00,604 - [INFO] - Evaluating ....
+2024-09-01 14:30:43,841 - [ERROR] - Error evaluating metric FaithfulnessMetric: 'truths'
+2024-09-01 14:30:55,033 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:30:55,033 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant started operating before 2020, as it is mentioned that "since operating in 2 020", which implies that the plant was already operational prior to 2020.
+2024-09-01 14:30:55,033 - [INFO] - Metric Score: 0.6666666666666666
+2024-09-01 14:30:55,034 - [INFO] - Metric Reason: The score is 0.67 because while the actual output attempts to answer the question, it contains an irrelevant statement that contradicts the input question, preventing a higher score.
+2024-09-01 14:31:08,317 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:31:08,317 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant started operating before 2020, as it is mentioned that "since operating in 2 020", which implies that the plant was already operational prior to 2020.
+2024-09-01 14:31:08,317 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:31:08,317 - [INFO] - Metric Reason: The score is 0.33 because the context does not mention anything about the Orbost Gas Plant or its operations in 2020, instead focusing on unrelated topics such as environmental goals for Adelaide and council financial plans.
+2024-09-01 14:31:11,062 - [INFO] - Metric: Coherence
+2024-09-01 14:31:11,062 - [INFO] - Actual Output: Based on the provided context information, it can be inferred that the Orbost Gas Plant started operating before 2020, as it is mentioned that "since operating in 2 020", which implies that the plant was already operational prior to 2020.
+2024-09-01 14:31:11,062 - [INFO] - Metric Score: 1.0
+2024-09-01 14:31:11,062 - [INFO] - Metric Reason: The Actual Output's main idea aligns with the Input's question, logically follows from the context, and maintains a consistent tone and language.
+2024-09-01 14:31:11,063 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:31:11,063 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.93, Median=1.00, Std Dev=0.13 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:31:11,063 - [INFO] - Evaluating: ID 5 | Question: Do the absorber vessels at Orbost Gas Plant require mechanical cleaning every 12-15 days? | Ground Truth: yes
+2024-09-01 14:31:12,028 - [INFO] - Evaluating ....
+2024-09-01 14:31:43,776 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:31:43,776 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:31:43,776 - [INFO] - Metric Score: 1.0
+2024-09-01 14:31:43,776 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!
+2024-09-01 14:31:52,182 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:31:52,182 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:31:52,182 - [INFO] - Metric Score: 1.0
+2024-09-01 14:31:52,182 - [INFO] - Metric Reason: The score is 1.00 because the answer perfectly addresses the question asked, providing a direct and relevant response without any irrelevant statements.
+2024-09-01 14:32:04,312 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:32:04,312 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:32:04,312 - [INFO] - Metric Score: 0.3333333333333333
+2024-09-01 14:32:04,312 - [INFO] - Metric Reason: The score is 0.33 because the retrieval context does not mention key terms like 'Orbost Gas Plant', 'absorber vessels', or 'mechanical cleaning' and instead focuses on unrelated topics like the city of Adelaide.
+2024-09-01 14:32:07,210 - [INFO] - Metric: Coherence
+2024-09-01 14:32:07,211 - [INFO] - Actual Output: According to the provided context information, yes, the absorber vessels at Orbost Gas Plant have been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12-15 days.
+2024-09-01 14:32:07,211 - [INFO] - Metric Score: 1.0
+2024-09-01 14:32:07,211 - [INFO] - Metric Reason: Actual Output aligns with Input's topic, provides logically following supporting details about fouling issues, and maintains a consistent tone and language suitable for the context.
+2024-09-01 14:32:07,211 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:32:07,212 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.94, Median=1.00, Std Dev=0.12 | ContextualRelevancyMetric: Mean=0.33, Median=0.33, Std Dev=0.00 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
+2024-09-01 14:32:07,212 - [INFO] - Evaluating: ID 6 | Question: Did the Orbost Gas Plant experience optimal performance in December 2021? | Ground Truth: yes
+2024-09-01 14:32:08,328 - [INFO] - Evaluating ....
+2024-09-01 14:32:32,875 - [INFO] - Metric: FaithfulnessMetric
+2024-09-01 14:32:32,875 - [INFO] - Actual Output: Based on the context information, it can be inferred that the Orbost Gas Plant experienced a "dream run" in December 2021, which is characterized by very minimal deposition of sulphur. This suggests that the plant operated optimally during this period.
+2024-09-01 14:32:32,875 - [INFO] - Metric Score: 1.0
+2024-09-01 14:32:32,875 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions found, which means the actual output perfectly aligns with the retrieval context!
+2024-09-01 14:32:41,038 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-01 14:32:41,038 - [INFO] - Actual Output: Based on the context information, it can be inferred that the Orbost Gas Plant experienced a "dream run" in December 2021, which is characterized by very minimal deposition of sulphur. This suggests that the plant operated optimally during this period.
+2024-09-01 14:32:41,038 - [INFO] - Metric Score: 1.0
+2024-09-01 14:32:41,038 - [INFO] - Metric Reason: The score is 1.00 because the answer is directly addressing the question asked, providing a clear and relevant response without any unnecessary information.
+2024-09-01 14:32:58,124 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-01 14:32:58,124 - [INFO] - Actual Output: Based on the context information, it can be inferred that the Orbost Gas Plant experienced a "dream run" in December 2021, which is characterized by very minimal deposition of sulphur. This suggests that the plant operated optimally during this period.
+2024-09-01 14:32:58,124 - [INFO] - Metric Score: 0.0
+2024-09-01 14:32:58,124 - [INFO] - Metric Reason: The score is 0.00 because the context does not provide any information about the Orbost Gas Plant's performance in December 2021, nor does it mention 'optimal performance', as stated in the reasons for irrelevancy.
+2024-09-01 14:33:01,802 - [INFO] - Metric: Coherence
+2024-09-01 14:33:01,802 - [INFO] - Actual Output: Based on the context information, it can be inferred that the Orbost Gas Plant experienced a "dream run" in December 2021, which is characterized by very minimal deposition of sulphur. This suggests that the plant operated optimally during this period.
+2024-09-01 14:33:01,802 - [INFO] - Metric Score: 1.0
+2024-09-01 14:33:01,802 - [INFO] - Metric Reason: The Actual Output's main idea aligns with the Input's topic, supporting details logically follow from context, and tone/language are consistent with intent/audience, specifically mentioning 'minimal deposition of sulphur' to infer optimal performance.
+2024-09-01 14:33:01,803 - [INFO] - Results saved to ./results/eval_20240901_142610.json
+2024-09-01 14:33:01,803 - [INFO] - FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=0.95, Median=1.00, Std Dev=0.12 | ContextualRelevancyMetric: Mean=0.29, Median=0.33, Std Dev=0.12 | Coherence: Mean=1.00, Median=1.00, Std Dev=0.00
