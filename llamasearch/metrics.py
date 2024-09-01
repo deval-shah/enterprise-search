@@ -13,7 +13,7 @@ from llamasearch.config import ConfigLoader
 class MetricsEvaluator:
     """Class to initialize and manage evaluation metrics based on configuration."""
     
-    def __init__(self, config_path: str = 'eval_metrics_config.yaml'):
+    def __init__(self, config_path: str = 'config/eval.yaml'):
         """
         Initializes the MetricsEvaluator instance.
 
