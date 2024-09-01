@@ -57,6 +57,7 @@ class ApplicationConfig(BaseModel):
     log_dir: str = Field(default="data/app/logs", env="LOG_DIR")
     upload_subdir: str = "uploads"
     enable_prometheus: bool = False
+    eval_data_path: str = Field(default="data/eval/document/", env="DATA_PATH")
 
     def __init__(self, **data):
         super().__init__(**data)
