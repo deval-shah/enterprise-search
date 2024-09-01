@@ -21,6 +21,7 @@ deepeval
 pytest
 datasets
 colorlog
+PyMuPDF==1.24.2
 prometheus_client
 prometheus-fastapi-instrumentator
 IPython
