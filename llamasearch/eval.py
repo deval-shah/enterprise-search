@@ -21,7 +21,7 @@ from llamasearch.logger import logger
 import numpy as np
 
 
-metrics_to_evaluate = ['faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
+metrics_to_evaluate = ['contextual_precision','contextual_recall','faithfulness', 'answer_relevancy', 'contextual_relevancy', 'coherence']
 
 class Eval:
     """
@@ -204,7 +204,18 @@ class Eval:
             raise FileNotFoundError(f"The file at {csv_path} was not found.")
         except Exception as e:
             raise Exception(f"An error occurred while processing the file at {csv_path}: {e}")
-    
+    def load_json(self,json_path:str):
+            """
+            Load JSON content from a given path
+            
+            """
+            with open(json_path) as json_data:
+                data = json.load(json_data)
+            return data
+
+
+
+
     def load_existing_results(self) -> List[Dict[str, Any]]:
         """Loads existing results from the results file if it exists."""
         if os.path.isfile(self.results_file_path):
@@ -241,13 +252,13 @@ class Eval:
         # Join all metric summaries into a single line and log it
         logger.info(" | ".join(stats_summary))
 
-async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
+async def main(data_path: str, qa_json_path: str, save_results_flag: bool):
     """
     Main function to run the evaluation process.
     
     Args:
         data_path: Path to the data directory.
-        qa_csv_path: Path to the QA CSV file.
+        qa_json_path: Path to the QA CSV file.
         save_results_flag: Flag indicating whether to save results to a file.
     """
     results_dir = "./results"
@@ -260,23 +271,17 @@ async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
         eval_instance = Eval(data_path, results_file_path)
         await eval_instance.init_rag_pipeline()
         print("-"*120)
-        csv_content = eval_instance.load_csv_to_dict(qa_csv_path)
-        for idx, qa_pair in enumerate(csv_content):
-            input_query = qa_pair['question']
-            ground_truth = qa_pair.get('ground_truth', None)
+        json_content = eval_instance.load_json(qa_json_path)
+        for idx, query in json_content['queries'].items():
+            input_query = query
+            ground_truth = json_content['responses'][idx]
             logger.info(f"Evaluating: ID {idx} | Question: {input_query} | Ground Truth: {ground_truth}")
             await eval_instance.evaluate(idx, input_query, ground_truth)
             if save_results_flag:
                 await eval_instance.save_results()
             await eval_instance.display_stats()
             print("-"*120)
-        # query_engine_kwargs = {
-        #     "node_postprocessors": [eval_instance.rag_pipeline.reranker],
-        #     "similarity_top_k": 10,
-        #     "response_mode":"compact"
-        # }
-        # retriever=eval_instance.rag_pipeline.qdrant_search.index.as_retriever()
-        # eval_instance.evaluate_retriever(retriever)
+       
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
         exit(1)
@@ -284,7 +289,7 @@ async def main(data_path: str, qa_csv_path: str, save_results_flag: bool):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate LLaMA Index Questions and Answers.")
     parser.add_argument("--data_path", required=True, help="Path to the data directory.")
-    parser.add_argument("--qa_csv_path", required=True, help="Path to the QA CSV file.")
+    parser.add_argument("--qa_json_path", required=True, help="Path to the QA CSV file.")
     parser.add_argument("--save", action="store_true", help="Flag to save the evaluation results.")
     args = parser.parse_args()
-    asyncio.run(main(args.data_path, args.qa_csv_path, args.save))
+    asyncio.run(main(args.data_path, args.qa_json_path, args.save))
