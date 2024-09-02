@@ -59,12 +59,15 @@ class Pipeline:
         if self.is_setup_complete:
             logger.info("Setup already completed. Skipping.")
             return
+        if self.is_eval_mode:
+            data_dir=self.config.application.eval_data_path
+        data_dir=self.config.application.data_path
         setup_steps: List[tuple[str, callable]] = [
             ("Qdrant index", lambda: self.qdrant_search.setup_index_async(tenant_id=self.tenant_id)),
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
             ("Reranker", self.setup_reranker),
-            ("Documents", lambda: self.load_documents_async(data_dir=self.config.application.eval_data_path)),
+            ("Documents", lambda: self.load_documents_async(data_dir=data_dir)),
             ("Index creation", self.qdrant_search.create_index_async),
             ("Ingestion pipeline", self.setup_ingestion_pipeline),
             ("Query engine", self.setup_query_engine)

@@ -60,7 +60,7 @@ class Eval:
             Exception: If any step in initializing the pipeline fails.
         """
         try:
-            self.config.application.data_path="data/eval/document/"
+            self.rag_pipeline.is_eval_mode=True
             await self.rag_pipeline.setup()
             # nodes = await self.rag_pipeline.run_pipeline()
             # await self.rag_pipeline.index_documents(nodes)
@@ -204,6 +204,7 @@ class Eval:
             raise FileNotFoundError(f"The file at {csv_path} was not found.")
         except Exception as e:
             raise Exception(f"An error occurred while processing the file at {csv_path}: {e}")
+   
     def load_json(self,json_path:str):
             """
             Load JSON content from a given path
@@ -212,9 +213,6 @@ class Eval:
             with open(json_path) as json_data:
                 data = json.load(json_data)
             return data
-
-
-
 
     def load_existing_results(self) -> List[Dict[str, Any]]:
         """Loads existing results from the results file if it exists."""

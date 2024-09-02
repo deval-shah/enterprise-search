@@ -38,3 +38,9 @@ llm:
 reranker:
   model: "BAAI/bge-reranker-large"
   top_n: 3
+
+
+dataset_generator:
+    model_type: "custom"
+    model_name: "gpt-4"
+    use_openai: True

@@ -73,7 +73,13 @@ class ApplicationConfig(BaseModel):
 
     def get_log_dir(self):
         return get_path(self.log_dir)
+class DatasetGeneration(BaseModel):
+    model_type: str = "custom"
+    model_name :str = "llama3:latest"
+    use_openai: bool =False
 
+
+    
 class Config(BaseModel):
     application: ApplicationConfig = ApplicationConfig()
     qdrant_client_config: QdrantClientConfig = QdrantClientConfig()
@@ -83,6 +89,7 @@ class Config(BaseModel):
     reranker: Reranker = Reranker()
     llm: Llm = Llm()
     eval: Eval = Eval()
+    dataset_generator: DatasetGeneration=DatasetGeneration()
 
 def check_openai_api_key():
     if not os.getenv('OPENAI_API_KEY'):

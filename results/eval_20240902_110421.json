@@ -1,0 +1,45 @@
+[
+    {
+        "id": 0,
+        "question": "Is Cooper Energy based in Adelaide?",
+        "ground_truth": "yes",
+        "es_answer": "Based on the provided context information, it can be inferred that Cooper Energy is not directly mentioned as being based in Adelaide. However, according to the Strategic Plan 20-28 document, the Orbost Gas Plant, which is related to Cooper Energy's ML project, is located in Victoria. Therefore, a direct answer would be \"No\", but it is indirectly associated with Adelaide through its involvement in a gas processing plant near Adelaide.",
+        "metrics": [
+            {
+                "name": "ContextualPrecisionMetric",
+                "score": 1.0,
+                "reason": "The score is 1.00 because all nodes in the retrieval context with a 'yes' verdict are ranked higher than those with a 'no' verdict, such as the first node which clearly states that Cooper Energy is Adelaide-based."
+            },
+            {
+                "name": "ContextualRecallMetric",
+                "score": 0.6666666666666666,
+                "reason": "The score is 0.67 because the model successfully attributed sentences 1 and 2 to node 1, sentence 3 to node 2, and sentence 4 to node 3 in the retrieval context, but failed to attribute two sentences."
+            },
+            {
+                "name": "FaithfulnessMetric",
+                "score": 0.75,
+                "reason": "The score is 0.75 because the actual output incorrectly implies Cooper Energy's location, which is explicitly stated to be Adelaide in the retrieval context."
+            },
+            {
+                "name": "AnswerRelevancyMetric",
+                "score": 1.0,
+                "reason": "The score is 1.00 because the answer perfectly addresses the question with no irrelevant information!"
+            },
+            {
+                "name": "ContextualRelevancyMetric",
+                "score": 0.3333333333333333,
+                "reason": "The score is 0.33 because the retrieval context doesn't mention Cooper Energy or its base location, and instead focuses on unrelated topics like Adelaide's spirit, economy, demographics, statistics, and the Council Members and Strategic Plan of the City of Adelaide."
+            },
+            {
+                "name": "Coherence",
+                "score": 0.8,
+                "reason": "Actual output's main idea aligns with input, and supporting details provide relevant information, but tone is slightly unclear due to indirect answer."
+            }
+        ],
+        "context": [
+            "‘Fouling’ – significant deposition of sulphur (Photos in  Nov  2021)\nThis is how the absorber vessel normally looks like after 12+ days of \noperations => require 2 -day mechanical clean. \n‘Clean’  – very minimal deposition of sulphur (Two dream runs in Dec 2021)\nThis is how the plant & vessel are  designed to look like, and  have been \nachieved only two times over  the 4-year  history.  • Company : Cooper Energy (Adelaide -based) (ASX: COE) \n• Asset : Orbost Gas Plant in Victoria\n•Proposed Project title: “ The Application of Machine Learning to Reduce the Fouling of Absorber Vessels at Orbost Gas Processing Plant”\n• Background : Orbost Gas Plant (OGP) processes raw gas from nearly gas field to export sales gas into the pipeline (which is then used fo r \ncommercial, industrial and power generation purposes). The export sales gas must meet several strict specifications such as t he concentrations of \nsolids particle, water, mercury, oxygen and hydrogen sulphide (H2S).   Two absorber vessels were installed at OGP to remove the H2S concentration of \nuntreated gas. These absorber vessels are designed to run for months/years without any fouling. However, since operating in 2 020 , these vessels \nhave been having fouling issues, which requires each absorber vessel to be opened and mechanically cleaned every 12 – 15 days. \n• Key  questions: What were the differences in operational data that resulted in the two dream runs in Dec 2021? And how do we replicate it for\nthe going -forward operation? This could potentially be answered by the application of ML based on the time series data of pressure, temperature, \nflowrate, injection rate… of the related equipment in the process at OGP. \n• Note: The real -time data at OGP are measured by the local device/gauges then transmitted to the AVEVA PI system for data storage, visualisation and \nsimple analysis. The  AVEVA PI system is very commonly used in industrial operations in Australia and over the world. Therefore, the  quality, format \nand structure of the data are expected to be good quality for machine learning purposes.",
+            "Adelaide is known for being progressive, resilient, \nbold, trailblazing and enterprising. This strong \nAdelaide spirit has seen us withstand the times of \nglobal social and economic disruption, and emerge \nwith a reputation for being a leading commercial, \nknowledge sharing and ideas exchange city. \nWe aspire to strengthen what we know makes \nAdelaide one of the world’s most liveable cities. We \nare leveraging our past and looking to the future to \ngrow an exceptional Capital City that all South \nAustralians can be proud of.Our City\n760ha\nPark Lands  including 29 parks and six squares\n15.6km2\ntotal land area\n14,660\nprivate dwellings\n12,265\nlocal businesses\n$21.9 Billion \nCity of Adelaide Gross Regional Product.  \n17.6% of Gross State Product\n157,498\njobs\nOur Community\n26,120\nresidents\n47%\naged between 18 and 34\n20% \naged 60 and over\n45%\nborn overseas\n36%\nspeak a language other than English\n26%\nstudy at Tafe or University\n50%\nrenting\n9 8\nCity of Adelaide | Strategic Plan 2024 –2028",
+            "Council Members\nFrom left to right:\nCouncillor Mary Couros (North Ward), Councillor Arman Abrahimzadeh OAM (Area), Deputy Lord Mayor Keiran \nSnape (South Ward), Councillor Simon Hou (Central Ward), The Right Honourable Lord Mayor of Adelaide Dr Jane \nLomax-Smith AM, Councillor David Elliott (Central Ward), Councillor Carmel Noon (Central Ward), Councillor \nHenry Davis (South Ward), Councillor Phillip Martin (North Ward), Councillor Janet Giles (Area), Councillor Dr Mark \nSiebentritt (South Ward), Councillor Jing Li (Central Ward)Our Council Members for the 2022–2026 term of Council:Lord Mayor Introduction\nShaping the future of a city requires bold thinking \nand long-term planning.\nThe capital city council is custodian of the heart of \nour state and it’s up to us to be both aspirational and \naudacious in our vision for Adelaide’s CBD.\nBut we also need to deliver on the core business of \ncouncil – roads, rates, and rubbish – if we want to be \nbold in other areas and live in a city of which we can \nbe proud.\nThe City of Adelaide’s Strategic Plan 2024–2028 \ncharts a course for our Council to achieve its long-\nterm goals across the economy, the environment and \nthroughout our community.\nThis Strategic Plan aspires to improve our \nstreetscapes, deliver economic viability for \nbusinesses, help property owners to better utilise and \nprofit from their investment and boost residential \naccess, affordability and amenity.\nThe Plan also maps out how Council can maintain its \nassets, reduce kerbside waste, achieve zero functional \nhomelessness, and sensibly increase our population \nto 50,000 people by 2036.\nIt’s also about providing certainty for business \nowners, potential investors, and residents – matched \nby a commitment to deliver on our promises.\nOur residents, workers, and visitors are also an \nimportant part of our Strategic Plan, and we valued \nyour feedback during the consultation period.\nThe Strategic Plan gives us an opportunity to choose \na different trajectory for Adelaide, and its future over \nthe next four years.\nBut importantly, it will be our promise to deliver on \nour commitments.\nDr Jane Lomax-Smith AM  \nLord Mayor City of Adelaide\n7 6\nCity of Adelaide | Strategic Plan 2024 –2028"
+        ]
+    }
+]
