@@ -45,6 +45,7 @@ class Eval:
         self.results_file_path = results_file_path
         self.results = self.load_existing_results()
         if self.data_path:
+            self.rag_pipeline.if_eval_mode=True
             self.rag_pipeline.data_path = self.data_path
         self.metric_scores = {self.mobj.get_metric_name(self.mobj.metrics[metric_name]): [] for metric_name in metrics_to_evaluate}
         # Setup signal handlers to save results on interruption

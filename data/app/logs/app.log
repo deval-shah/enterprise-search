@@ -1,0 +1,150 @@
+2024-09-02 20:04:57,267 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-02 20:04:57,316 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-02 20:04:57,316 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-02 20:05:02,986 - [INFO] - Multi tenancy: True
+2024-09-02 20:05:02,986 - [INFO] - Setting up Qdrant index...
+2024-09-02 20:05:04,331 - [INFO] - Qdrant index setup completed.
+2024-09-02 20:05:04,331 - [INFO] - Setting up Docstore...
+2024-09-02 20:05:04,331 - [INFO] - Docstore setup completed.
+2024-09-02 20:05:04,331 - [INFO] - Setting up Parser...
+2024-09-02 20:05:04,331 - [INFO] - Parser setup completed.
+2024-09-02 20:05:04,332 - [INFO] - Setting up Reranker...
+2024-09-02 20:05:05,761 - [INFO] - Reranker setup completed.
+2024-09-02 20:05:05,761 - [INFO] - Setting up Documents...
+2024-09-02 20:05:06,402 - [INFO] - -------------10
+2024-09-02 20:05:06,402 - [INFO] - Documents setup completed.
+2024-09-02 20:05:06,402 - [INFO] - Setting up Index creation...
+2024-09-02 20:05:06,403 - [INFO] - Index creation setup completed.
+2024-09-02 20:05:06,403 - [INFO] - Setting up Ingestion pipeline...
+2024-09-02 20:05:06,410 - [INFO] - Ingesting 0 nodes for 170 chunks
+2024-09-02 20:05:06,410 - [INFO] - Adding nodes to index...
+2024-09-02 20:05:06,410 - [INFO] - Ingestion pipeline setup completed.
+2024-09-02 20:05:06,410 - [INFO] - Ingestion pipeline setup completed.
+2024-09-02 20:05:06,410 - [INFO] - Setting up Query engine...
+2024-09-02 20:05:06,411 - [INFO] - Query engine setup completed.
+2024-09-02 20:05:06,411 - [INFO] - All setup steps completed successfully.
+2024-09-02 20:05:06,411 - [INFO] - RAG pipeline initialization successful.
+2024-09-02 20:05:06,412 - [INFO] - Evaluating: ID 32ef6672-1ec0-4c10-8b27-4007f4f32a16 | Question: What is the primary objective of the proposed framework in the paper? | Ground Truth: The primary objective of the proposed framework is to enable counting of human actions of interest using sensor data from wearable devices by allowing users to provide exemplars through vocalized sounds, facilitating accurate identification and counting of actions in real-world scenarios.
+2024-09-02 20:05:08,143 - [INFO] - Evaluating ....
+2024-09-02 20:05:12,743 - [INFO] - Metric: ContextualPrecisionMetric
+2024-09-02 20:05:12,743 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework appears to be "Interesting, purposeful and safe" with a focus on managing assets to meet community needs, encouraging bold and interesting development, and facilitating activation of places in a safe and accessible way.
+2024-09-02 20:05:12,743 - [INFO] - Metric Score: 0
+2024-09-02 20:05:12,743 - [INFO] - Metric Reason: The score is 0.00 because all nodes in the retrieval context are irrelevant to the input. The first node discusses strategic planning for the City of Adelaide, the second node mentions strategic actions and key performance indicators, and the third node talks about managing community assets and infrastructure, all of which do not address the objective of the proposed framework in the paper.
+2024-09-02 20:05:16,486 - [INFO] - Metric: ContextualRecallMetric
+2024-09-02 20:05:16,486 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework appears to be "Interesting, purposeful and safe" with a focus on managing assets to meet community needs, encouraging bold and interesting development, and facilitating activation of places in a safe and accessible way.
+2024-09-02 20:05:16,487 - [INFO] - Metric Score: 0.0
+2024-09-02 20:05:16,487 - [INFO] - Metric Reason: The score is 0.00 because the sentence discusses a framework for counting human actions using sensor data and vocalized sounds, which is not mentioned in any part of the nodes in retrieval context.
+2024-09-02 20:05:33,972 - [INFO] - Metric: FaithfulnessMetric
+2024-09-02 20:05:33,972 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework appears to be "Interesting, purposeful and safe" with a focus on managing assets to meet community needs, encouraging bold and interesting development, and facilitating activation of places in a safe and accessible way.
+2024-09-02 20:05:33,972 - [INFO] - Metric Score: 1.0
+2024-09-02 20:05:33,972 - [INFO] - Metric Reason: The score is 1.00 because there are no contradictions. Great job on aligning the actual output perfectly with the retrieval context!
+2024-09-02 20:05:37,648 - [INFO] - Metric: AnswerRelevancyMetric
+2024-09-02 20:05:37,648 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework appears to be "Interesting, purposeful and safe" with a focus on managing assets to meet community needs, encouraging bold and interesting development, and facilitating activation of places in a safe and accessible way.
+2024-09-02 20:05:37,648 - [INFO] - Metric Score: 1.0
+2024-09-02 20:05:37,648 - [INFO] - Metric Reason: The score is 1.00 because the answer directly addresses the primary objective of the proposed framework in the paper with no irrelevant statements.
+2024-09-02 20:05:40,504 - [INFO] - Metric: ContextualRelevancyMetric
+2024-09-02 20:05:40,504 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework appears to be "Interesting, purposeful and safe" with a focus on managing assets to meet community needs, encouraging bold and interesting development, and facilitating activation of places in a safe and accessible way.
+2024-09-02 20:05:40,504 - [INFO] - Metric Score: 0.0
+2024-09-02 20:05:40,504 - [INFO] - Metric Reason: The score is 0.00 because the context is about the City of Adelaide's Strategic Plan, including plans like the 'Dog and Cat Management Plan', which is not related to the primary objective of the proposed framework in the paper.
+2024-09-02 20:05:44,503 - [INFO] - Metric: Coherence
+2024-09-02 20:05:44,503 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework appears to be "Interesting, purposeful and safe" with a focus on managing assets to meet community needs, encouraging bold and interesting development, and facilitating activation of places in a safe and accessible way.
+2024-09-02 20:05:44,503 - [INFO] - Metric Score: 0.5219811807423831
+2024-09-02 20:05:44,503 - [INFO] - Metric Reason: The main topic of the input is preserved in identifying the primary objective of the framework. However, the actual output is vague and lacks clear and logical key points. There are no clear contradictions but the logical flow and clarity are weak.
+2024-09-02 20:05:44,504 - [INFO] - Results saved to ./results/eval_20240902_200457.json
+2024-09-02 20:05:44,504 - [INFO] - ContextualPrecisionMetric: Mean=0.00, Median=0.00, Std Dev=0.00 | ContextualRecallMetric: Mean=0.00, Median=0.00, Std Dev=0.00 | FaithfulnessMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | AnswerRelevancyMetric: Mean=1.00, Median=1.00, Std Dev=0.00 | ContextualRelevancyMetric: Mean=0.00, Median=0.00, Std Dev=0.00 | Coherence: Mean=0.52, Median=0.52, Std Dev=0.00
+2024-09-02 20:05:44,504 - [INFO] - Evaluating: ID d4756049-0274-41a6-8de3-259c35d78d4f | Question: How do users provide exemplars of the actions they want to count? | Ground Truth: Users provide exemplars of the actions they want to count by vocalizing predefined sounds such as "one," "two," and "three." These vocalizations are then localized in the audio sequence to identify the corresponding action exemplars.
+2024-09-02 20:05:46,460 - [INFO] - Evaluating ....
+2024-09-02 20:05:50,141 - [INFO] - Metric: ContextualPrecisionMetric
+2024-09-02 20:05:50,141 - [INFO] - Actual Output: Based on the provided context information, it appears that users are expected to provide exemplars of the actions they want to count through specific "Outcome Key Actions" and related "Indicator of Success/Measures/Targets". These exemplars seem to be in the form of concrete actions or initiatives that support achieving a particular objective.
+2024-09-02 20:05:50,141 - [INFO] - Metric Score: 0
+2024-09-02 20:05:50,141 - [INFO] - Metric Reason: The score is 0.00 because all the nodes in the retrieval context discuss topics unrelated to the input question. For example, the first node focuses on community asset management and development projects, which is not relevant to how users provide exemplars of actions they want to count.
+2024-09-02 20:05:53,059 - [INFO] - Metric: ContextualRecallMetric
+2024-09-02 20:05:53,060 - [INFO] - Actual Output: Based on the provided context information, it appears that users are expected to provide exemplars of the actions they want to count through specific "Outcome Key Actions" and related "Indicator of Success/Measures/Targets". These exemplars seem to be in the form of concrete actions or initiatives that support achieving a particular objective.
+2024-09-02 20:05:53,060 - [INFO] - Metric Score: 0.0
+2024-09-02 20:05:53,060 - [INFO] - Metric Reason: The score is 0.00 because the retrieval context does not mention users providing exemplars of actions, vocalizing predefined sounds, or localizing these vocalizations in the audio sequence to identify action exemplars.
+2024-09-02 20:06:23,920 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-02 20:06:23,999 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-02 20:06:30,728 - [ERROR] - An error occurred: CUDA out of memory. Tried to allocate 54.00 MiB. GPU 0 has a total capacity of 23.64 GiB of which 91.25 MiB is free. Process 662100 has 5.60 GiB memory in use. Process 217388 has 12.65 GiB memory in use. Including non-PyTorch memory, this process has 4.49 GiB memory in use. Of the allocated memory 4.06 GiB is allocated by PyTorch, and 58.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2024-09-02 20:06:30,839 - [INFO] - No latency data available.
+2024-09-02 20:06:30,840 - [INFO] - All pipelines cleaned up
+2024-09-02 20:06:48,783 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-02 20:06:48,861 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-02 20:06:55,603 - [INFO] - Multi tenancy: True
+2024-09-02 20:06:55,604 - [ERROR] - An error occurred: 'Pipeline' object has no attribute 'is_eval_mode'
+2024-09-02 20:06:55,604 - [INFO] - No latency data available.
+2024-09-02 20:06:55,604 - [INFO] - All pipelines cleaned up
+2024-09-02 20:08:19,043 - [INFO] - Initialising the pipeline for evaluation....
+2024-09-02 20:08:19,091 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-02 20:08:19,091 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-02 20:08:25,651 - [INFO] - Multi tenancy: True
+2024-09-02 20:08:25,651 - [INFO] - Setting up Qdrant index...
+2024-09-02 20:08:26,966 - [INFO] - Qdrant index setup completed.
+2024-09-02 20:08:26,966 - [INFO] - Setting up Docstore...
+2024-09-02 20:08:26,966 - [INFO] - Docstore setup completed.
+2024-09-02 20:08:26,966 - [INFO] - Setting up Parser...
+2024-09-02 20:08:26,967 - [INFO] - Parser setup completed.
+2024-09-02 20:08:26,967 - [INFO] - Setting up Reranker...
+2024-09-02 20:08:28,406 - [INFO] - Reranker setup completed.
+2024-09-02 20:08:28,406 - [INFO] - Setting up Documents...
+2024-09-02 20:08:29,058 - [INFO] - -------------10
+2024-09-02 20:08:29,058 - [INFO] - Documents setup completed.
+2024-09-02 20:08:29,058 - [INFO] - Setting up Index creation...
+2024-09-02 20:08:29,059 - [INFO] - Index creation setup completed.
+2024-09-02 20:08:29,059 - [INFO] - Setting up Ingestion pipeline...
+2024-09-02 20:08:29,065 - [INFO] - Ingesting 0 nodes for 170 chunks
+2024-09-02 20:08:29,065 - [INFO] - Adding nodes to index...
+2024-09-02 20:08:29,065 - [INFO] - Ingestion pipeline setup completed.
+2024-09-02 20:08:29,065 - [INFO] - Ingestion pipeline setup completed.
+2024-09-02 20:08:29,065 - [INFO] - Setting up Query engine...
+2024-09-02 20:08:29,066 - [INFO] - Query engine setup completed.
+2024-09-02 20:08:29,066 - [INFO] - All setup steps completed successfully.
+2024-09-02 20:08:29,066 - [INFO] - RAG pipeline initialization successful.
+2024-09-02 20:08:29,067 - [INFO] - Evaluating: ID 32ef6672-1ec0-4c10-8b27-4007f4f32a16 | Question: What is the primary objective of the proposed framework in the paper? | Ground Truth: The primary objective of the proposed framework is to enable counting of human actions of interest using sensor data from wearable devices by allowing users to provide exemplars through vocalized sounds, facilitating accurate identification and counting of actions in real-world scenarios.
+2024-09-02 20:08:30,724 - [INFO] - Evaluating ....
+2024-09-02 20:08:39,384 - [INFO] - Metric: ContextualPrecisionMetric
+2024-09-02 20:08:39,384 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework in the paper appears to be the development and implementation of a Strategic Plan for the City of Adelaide, focusing on long-term planning, sustainability, and community engagement.
+2024-09-02 20:08:39,384 - [INFO] - Metric Score: 0
+2024-09-02 20:08:39,384 - [INFO] - Metric Reason: The score is 0.00 because all nodes in the retrieval context are irrelevant to the query. The first node discusses 'financial plans, asset management, and development,' which do not relate to the primary objective of the proposed framework. The second node focuses on 'strategic planning and efficiency measures for the City of Adelaide,' which also does not address the query. The third node is about 'managing community assets and urban development,' and is unrelated to the question asked.
+2024-09-02 20:08:42,257 - [INFO] - Metric: ContextualRecallMetric
+2024-09-02 20:08:42,257 - [INFO] - Actual Output: Based on the provided context information, the primary objective of the proposed framework in the paper appears to be the development and implementation of a Strategic Plan for the City of Adelaide, focusing on long-term planning, sustainability, and community engagement.
+2024-09-02 20:08:42,257 - [INFO] - Metric Score: 0.0
+2024-09-02 20:08:42,257 - [INFO] - Metric Reason: The score is 0.00 because the sentence in the expected output discusses a framework for counting human actions using sensor data from wearable devices and vocalized sounds, which is not mentioned in any parts of the nodes in the retrieval context.
+2024-09-02 20:08:42,990 - [INFO] - Interrupt signal received. Saving results...
+2024-09-02 20:09:24,344 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-02 20:09:24,424 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-02 20:09:32,781 - [INFO] - Multi tenancy: True
+2024-09-02 20:09:32,782 - [ERROR] - An error occurred: 'Pipeline' object has no attribute 'is_eval_mode'
+2024-09-02 20:09:32,782 - [INFO] - No latency data available.
+2024-09-02 20:09:32,782 - [INFO] - All pipelines cleaned up
+2024-09-02 20:09:48,609 - [INFO] - Running model llama3 on http://localhost:11434
+2024-09-02 20:09:48,687 - [INFO] - Using embedding model : local:Alibaba-NLP/gte-Qwen2-1.5B-instruct
+2024-09-02 20:09:56,598 - [INFO] - Multi tenancy: True
+2024-09-02 20:09:56,598 - [INFO] - Setting up Qdrant index...
+2024-09-02 20:09:58,144 - [INFO] - Qdrant index setup completed.
+2024-09-02 20:09:58,144 - [INFO] - Setting up Docstore...
+2024-09-02 20:09:58,145 - [INFO] - Docstore setup completed.
+2024-09-02 20:09:58,145 - [INFO] - Setting up Parser...
+2024-09-02 20:09:58,145 - [INFO] - Parser setup completed.
+2024-09-02 20:09:58,145 - [INFO] - Setting up Reranker...
+2024-09-02 20:09:59,580 - [INFO] - Reranker setup completed.
+2024-09-02 20:09:59,580 - [INFO] - Setting up Documents...
+2024-09-02 20:10:00,372 - [INFO] - -------------10
+2024-09-02 20:10:00,373 - [INFO] - Documents setup completed.
+2024-09-02 20:10:00,373 - [INFO] - Setting up Index creation...
+2024-09-02 20:10:00,373 - [INFO] - Index creation setup completed.
+2024-09-02 20:10:00,373 - [INFO] - Setting up Ingestion pipeline...
+2024-09-02 20:10:00,381 - [INFO] - Ingesting 0 nodes for 170 chunks
+2024-09-02 20:10:00,381 - [INFO] - Adding nodes to index...
+2024-09-02 20:10:00,381 - [INFO] - Ingestion pipeline setup completed.
+2024-09-02 20:10:00,381 - [INFO] - Ingestion pipeline setup completed.
+2024-09-02 20:10:00,382 - [INFO] - Setting up Query engine...
+2024-09-02 20:10:00,382 - [INFO] - Query engine setup completed.
+2024-09-02 20:10:00,382 - [INFO] - All setup steps completed successfully.
+2024-09-02 20:10:00,382 - [INFO] - Pipeline setup completed successfully for new user 123456
+2024-09-02 20:10:25,322 - [INFO] - Response: There is no mention of "Cooper Energy" or "absed" in the provided text. The context appears to be a strategic plan for the City of Adelaide, discussing its environment, economy, and community. If you meant something else by "absed", please clarify and I'll do my best to help.
+2024-09-02 20:10:25,322 - [INFO] - 
+Latency Summary:
+2024-09-02 20:12:25,830 - [INFO] - 
+Latency Statistics:
+2024-09-02 20:12:25,831 - [INFO] - Pipeline cleaned up for user 123456
+2024-09-02 20:12:25,831 - [INFO] - All pipelines cleaned up

@@ -59,9 +59,10 @@ class Pipeline:
         if self.is_setup_complete:
             logger.info("Setup already completed. Skipping.")
             return
-        if self.is_eval_mode:
-            data_dir=self.config.application.eval_data_path
         data_dir=self.config.application.data_path
+        if self.if_eval_mode:
+            data_dir=self.config.application.eval_data_path
+        
         setup_steps: List[tuple[str, callable]] = [
             ("Qdrant index", lambda: self.qdrant_search.setup_index_async(tenant_id=self.tenant_id)),
             ("Docstore", self.setup_docstore),
@@ -268,7 +269,9 @@ class Pipeline:
             reader_kwargs["input_files"] = [input_files] if isinstance(input_files, str) else input_files
         else:
             raise ValueError("Please provide either data_path or input_files.")
+        
         documents = SimpleDirectoryReader(**reader_kwargs).load_data()
+        logger.info(f"-------------{len(documents)}")
         return documents
 
     @staticmethod
