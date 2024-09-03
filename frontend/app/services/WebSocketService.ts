@@ -11,7 +11,7 @@ class WebSocketService {
     private user: User | null = null;
     private sessionId: string | null = null;
 
-    constructor(private getAuthHeader: () => Promise<HeadersInit>) {}
+    //constructor(private getAuthHeader: () => Promise<HeadersInit>) {}
 
     private reconnect = () => {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
