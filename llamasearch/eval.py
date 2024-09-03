@@ -115,22 +115,22 @@ class Eval:
         return document_info, retrieval_context
 
     def pretty_print_context(self, response):
-        document_info, retrieval_context = self.get_context_from_response(response)
+        retrieval_context = [node.get_content() for node in response.source_nodes]
         print("\n--- Document Information ---")
-        if document_info:
-            headers = ["File Name", "Last Modified", "Doc ID"]
-            table_data = [[info['file_name'], info['last_modified_date'], info['doc_id']] 
-                for info in document_info.values()]
-            print(tabulate(table_data, headers=headers, tablefmt="grid"))
-        else:
-            print("No document information available.")
-        #print("\n--- Retrieval Context ---")
-        # if retrieval_context:
-        #     for i, context in enumerate(retrieval_context, 1):
-        #         print(f"\nContext {i}:")
-        #         print(context[:500] + "..." if len(context) > 500 else context)
+        # if document_info:
+        #     headers = ["File Name", "Last Modified", "Doc ID"]
+        #     table_data = [[info['file_name'], info['last_modified_date'], info['doc_id']] 
+        #         for info in document_info.values()]
+        #     print(tabulate(table_data, headers=headers, tablefmt="grid"))
         # else:
-        #     print("No retrieval context available.")
+        #     print("No document information available.")
+        print("\n--- Retrieval Context ---")
+        if retrieval_context:
+            for i, context in enumerate(retrieval_context, 1):
+                print(f"\nContext {i}:")
+                print(context[:500] + "..." if len(context) > 500 else context)
+        else:
+            print("No retrieval context available.")
     async def evaluate(self, idx: int, input_query: str, ground_truth: str=None) -> None:
         response_object = await self.rag_pipeline.perform_query_async(input_query)
         if response_object is None:
@@ -138,7 +138,7 @@ class Eval:
             return
 
         actual_output = response_object.response
-        document_info, retrieval_context =self.get_context_from_response(response_object)
+        retrieval_context = [node.get_content() for node in response_object.source_nodes]
         
         logger.info("Evaluating ....")
 

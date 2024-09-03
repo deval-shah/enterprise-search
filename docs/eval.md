@@ -22,9 +22,22 @@ Ensure the system is set up as per the setup instructions above, with all depend
 
 ### Preparing the Dataset
 
-1. Prepare a CSV file containing the questions and their corresponding ground truth answers. The CSV file should have at least two columns: `question` and `ground_truth`. There is a sample data in `./data/eval` folder that can be used for testing.
+1. Prepare a json file containing the questions and their corresponding ground truth answers. The json file should have at least four keys: `queries` and `response`{ground truth} `relevant_docs` {} and `corpus` {node of origin for the query}. There is a sample data in `./data/eval` folder that can be used for testing.
 
 2. Place your dataset in an accessible directory and note the path to this CSV file for the evaluation process.
+
+
+### Generating Synthetic Dataset
+To evaluate the pipeline, a synthetic dataset based on the nodes(chunks) in the pipeline can be generated. This dataset will consist of question-answer pairs derived from the nodes, allowing for both end-to-end and component-wise evaluation of the pipeline.
+
+
+```bash
+python dataset_generator.py --data_path /path/to/text/files --qa_json_path /path/to/save/results
+```
+
+- `--data_path`: Indicates the directory where your documents for indexing are stored.
+- `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
+- `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
 
 ### Evaluation Metrics Configuration
 
@@ -58,14 +71,14 @@ The evaluation process involves executing the main script with appropriate argum
 2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
 
 ```bash
-python -m llamasearch.eval --data_path ./data/eval/document/ --qa_csv_path ./data/eval/wiki-00001-qa.csv --save
+python -m llamasearch.eval --data_path ./data/eval/document/ --qa_json_path ./data/eval/qn_a_data.json --save
 ```
 
 - `--data_path`: Indicates the directory where your documents for indexing are stored.
-- `--qa_csv_path`: The path to the QA CSV file containing your evaluation dataset.
+- `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
 - `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
 
-The script will process each question in the CSV file, perform a query against the indexed documents, and evaluate the responses using the specified metrics.
+The script will process each question in the json file, perform a query against the indexed documents, and evaluate the responses using the specified metrics.
 
 You can replace the dataset with your documents and relevant Q/A pairs.
 
