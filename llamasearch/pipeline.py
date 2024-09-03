@@ -119,7 +119,7 @@ class Pipeline:
             **model_settings
         )
         self.prompt_template = llm_config['prompts'][0]['text']
-
+     
     # TODO :: Embedding model should be shared across users, we should not init embed models for each user (for local model)
     def setup_embed_model(self):
         if self.config.embedding.use_openai:
@@ -140,7 +140,7 @@ class Pipeline:
         )
 
     async def setup_parser(self):
-        self.parser = RagflowNodeParser()
+        self.parser = SentenceSplitter()
 
     async def setup_ingestion_pipeline(self):
         self.ingestion = IngestionPipeline(
