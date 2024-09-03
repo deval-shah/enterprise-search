@@ -44,7 +44,7 @@ class DatasetGenerator:
         self.config=config
         self.result_file_path=result_file_path
         self.parser=SentenceSplitter()
-        self.num_questions_per_chunk=2
+        self.num_questions_per_chunk=1
         self.llm=self.setup_model()
         self.QUESTION_PROMPT_TEMPLATE = """\
                 Given a text, generate {n_questions} questions that could be asked about that topic.
