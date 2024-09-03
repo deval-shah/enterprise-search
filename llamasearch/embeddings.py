@@ -56,9 +56,9 @@ Context information is below.
 
 Given the context information and not prior knowledge.
 generate only {num_questions_per_chunk} questions.\
-Please generate a clear and concise question \
-that requires understanding of the content provided in the document chunk. \
-Ensure that the question is specific, relevant, and not too broad"
+Please generate a clear and concise question. \
+It requires understanding of the content provided in the document chunk. \
+Ensure that the question is specific, relevant, and not too broad."
 """
 RESPONSE_PROMPT_TEMPLATE= """\
             Given a question and context, generate a responses that could be the ground truth. The response should be precise.

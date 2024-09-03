@@ -31,9 +31,9 @@ class DatasetGenerator:
         self.data_path=data_path
         self.config=config
         self.result_file_path=result_file_path
-        self.parser=SentenceSplitter(chunk_size=512)
+        self.parser=SentenceSplitter()
         self.congfig_file_path="./all_config_log.csv"
-        self.num_questions_per_chunk=1
+        self.num_questions_per_chunk=2
         self.llm=self.setup_model()
         self.QUESTION_PROMPT_TEMPLATE = """\
                 Given a text, generate {n_questions} questions that could be asked about that topic.
@@ -89,8 +89,6 @@ class DatasetGenerator:
     def generate_dataset(self):
         documents = SimpleDirectoryReader(self.data_path).load_data()
         nodes = self.parser.get_nodes_from_documents(documents)
-        nodes=nodes[:10]
-        print(len(nodes))
         for idx, node in enumerate(nodes):
             node.id_ = f"node_{idx}"
         self.results = generate_qa_embedding_pairs(

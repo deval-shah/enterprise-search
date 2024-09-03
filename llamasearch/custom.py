@@ -40,13 +40,13 @@ class CustomModel(DeepEvalBaseLLM):
     providing functionalities to load the model, generate responses, and manage model settings.
     """
 
-    def __init__(self, model: str = "llama3:70b", base_url: str = 'http://localhost:11435') -> None:
+    def __init__(self, model: str = "llama3:70b", base_url: str = 'http://localhost:11434') -> None:
         """
         Initializes the CustomModel with a specific LLM model and API base URL.
 
         Args:
             model (str): The model identifier, default is "llama3:70b".
-            base_url (str): The base URL for the API endpoint, default is 'http://localhost:11435'.
+            base_url (str): The base URL for the API endpoint, default is 'http://localhost:11434'.
         """
         self.base_url = base_url
         self.model = model
