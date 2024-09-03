@@ -1,6 +1,6 @@
 application:
   config_path: "config/config.dev.yaml"
-  data_path: "data/sample-docs"
+  data_path: "data/sample-docs/"
   log_dir: "data/app/logs"
   upload_subdir: "uploads"
   eval_data_path: "data/eval/document/"
@@ -11,7 +11,8 @@ qdrant_client_config:
 
 vector_store_config:
   collection_name: "test2"
-  vector_size: 1536
+  # vector_size: 1536
+  vector_size: 384
   distance: Cosine
   batch_size: 30
   alpha: 0.5 
@@ -25,13 +26,13 @@ redis_config:
   port: 6379
 
 embedding:
-  # embed_model: "local:BAAI/bge-small-en-v1.5"
-  embed_model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  model: "local:BAAI/bge-small-en-v1.5"
+  # model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
   # model: "local:dunzhang/stella_en_400M_v5"
   use_openai: False
 
 llm:
-  llm_model: "llama3"
+  llm_model: "llama3:8b"
   modelfile: "config/modelfile.yaml"
   use_openai: False
 
