@@ -40,10 +40,12 @@ async def websocket_endpoint(
         session_id = None
         query_data = None
         file_contents = []
+        file_metadata = None
+        received_files = []
 
         while True:
             message = await websocket.receive()
-            logger.debug(f"Received message: {message['type']}")
+            logger.debug(f"Received {received_files} files")
 
             if message["type"] == "websocket.disconnect":
                 break
@@ -54,23 +56,25 @@ async def websocket_endpoint(
                     if data['type'] == 'auth':
                         user, session_id = await handle_auth(websocket, db, data)
                         client_id = await websocket_manager.connect(websocket, user)
+                    if data['type'] == 'file_metadata':
+                        received_files.append({'metadata': data, 'content': None})
                     elif data['type'] == 'query':
                         if not user or not session_id:
                             await websocket.send_json({"type": "error", "content": "Not authenticated"})
                             continue
                         query_data = WSQueryRequest(**data)
                         query_data.session_id = session_id  # Add session_id to the query data
-                        result = await process_query_request(websocket, user, query_data, file_contents, db, pipeline_factory)
+                        result = await process_query_request(websocket, user, query_data, received_files, db, pipeline_factory)
                         metadata = result.get("metadata", {})
                         response = result.get("response", "")
+                        received_files = []
                         # Send metadata as a single JSON
                         await websocket.send_json(metadata)
-
                         # Stream the response
                         await websocket_manager.stream_response(response, user.firebase_uid)
                 elif "bytes" in message:
-                    logger.debug("Received binary data")
-                    file_contents.append(message["bytes"])
+                    if received_files and received_files[-1]['content'] is None:
+                        received_files[-1]['content'] = message["bytes"]
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for client: {user.firebase_uid if user else 'Unknown'}")
     except Exception as e:
@@ -82,28 +86,27 @@ async def handle_auth(websocket, db, data):
     await websocket.send_json({"type": "authentication_success", "session_id": session_id})
     return user, session_id
 
-async def process_query_request(websocket, user, query_data: WSQueryRequest, file_contents, db, pipeline_factory):
+async def process_query_request(websocket, user, query_data: WSQueryRequest, received_files, db, pipeline_factory):
     logger.info(f"Processing query request: {query_data.query}")
     try:
         pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid, user.tenant_id)
         user_upload_dir = pipeline.config.application.data_path
 
         file_data = []
-        files_received = query_data.files or []
-
-        for i, file_info in enumerate(files_received):
-            if i < len(file_contents):
+        for file in received_files:
+            if file['metadata'] and file['content']:
                 file_data.append({
-                    'filename': file_info['name'],
-                    'content': file_contents[i]
+                    'filename': file['metadata']['name'],
+                    'content': file['content']
                 })
+                logger.debug(f"Received file: {file['metadata']['name']}, size: {len(file['content'])} bytes")
 
         file_upload_results = []
         if file_data:
             upload_results = await handle_file_upload(file_data, user_upload_dir)
             file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
             file_upload_results = upload_results
-            logger.info(f"Files uploaded: {file_paths}")
+            logger.debug(f"Files uploaded: {file_paths}")
 
         result = await process_query(
             query=query_data.query,

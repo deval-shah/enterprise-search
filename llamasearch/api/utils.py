@@ -12,43 +12,46 @@ CHUNK_SIZE = 64 * 1024  # 64KB chunks
 PARTIAL_MD5_SIZE = 8 * 1024  # 8KB for partial MD5
 
 async def handle_file_upload(files: List[Union[UploadFile, Dict[str, Union[str, bytes]]]], user_upload_dir: str) -> List[Dict[str, str]]:
-    responses = []
     async def process_file(file: Union[UploadFile, Dict[str, Union[str, bytes]]]):
         try:
             if isinstance(file, UploadFile):
-                # HTTP upload
                 original_filename = file.filename
-                content = await file.read()
             elif isinstance(file, dict):
-                # WebSocket upload
-                original_filename = file.get('filename')
-                content = file.get('content')
+                original_filename = file['filename']
             else:
                 raise ValueError(f"Unsupported file type: {type(file)}")
 
-            if not original_filename:
-                raise ValueError("Filename is missing")
-
             file_location = os.path.join(user_upload_dir, original_filename)
             logger.info(f"Uploading file {original_filename} to {file_location}")
+
             if os.path.exists(file_location):
                 existing_size, existing_md5 = await get_file_size_and_partial_md5(file_location)
                 new_size, new_md5 = await get_upload_file_size_and_partial_md5(file)
+                logger.debug(f"Existing file: size={existing_size}, md5={existing_md5}")
+                logger.debug(f"New file: size={new_size}, md5={new_md5}")
                 if existing_size == new_size and existing_md5 == new_md5:
-                    logger.info(f"File {original_filename} already exists and content is likely identical")
+                    logger.info(f"File {original_filename} already exists and content is identical")
                     return {
                         "filename": original_filename,
                         "status": "success",
-                        "info": "File already exists and content is likely identical",
+                        "info": "File already exists and content is identical",
                         "location": file_location
                     }
                 else:
-                    logger.info(f"File {original_filename} already exists but content is different")
+                    logger.debug(f"File {original_filename} already exists but content is different. "
+                                f"Existing size: {existing_size}, New size: {new_size}, "
+                                f"Existing MD5: {existing_md5}, New MD5: {new_md5}")
                     base, extension = os.path.splitext(original_filename)
                     counter = 1
                     while os.path.exists(file_location):
                         file_location = os.path.join(user_upload_dir, f"{base}_{counter}{extension}")
                         counter += 1
+
+            if isinstance(file, UploadFile):
+                content = await file.read()
+                await file.seek(0)
+            else:
+                content = file['content']
 
             async with aiofiles.open(file_location, "wb") as file_object:
                 await file_object.write(content)
@@ -84,40 +87,48 @@ async def handle_chunked_file_upload(chunk_generator, filename, user_upload_dir)
             await f.write(chunk)
     return file_path
 
-async def get_file_size_and_partial_md5(file_path: str) -> tuple:
-    file_size = os.path.getsize(file_path)
-    async with aiofiles.open(file_path, mode='rb') as f:
-        first_chunk = await f.read(PARTIAL_MD5_SIZE)
-        await f.seek(-PARTIAL_MD5_SIZE, 2)  # Seek from the end
-        last_chunk = await f.read()
-    partial_md5 = hashlib.md5(first_chunk + last_chunk).hexdigest()
-    return file_size, partial_md5
-
-async def get_upload_file_size_and_partial_md5(file: Union[UploadFile, Dict[str, Union[str, bytes]]]) -> tuple:
-    file_size = 0
-    md5 = hashlib.md5()
-
-    if isinstance(file, UploadFile):
-        # Handle UploadFile
-        first_chunk = await file.read(PARTIAL_MD5_SIZE)
-        md5.update(first_chunk)
-        file_size += len(first_chunk)
-        while chunk := await file.read(CHUNK_SIZE):
-            file_size += len(chunk)
-        await file.seek(file_size - PARTIAL_MD5_SIZE)
-        last_chunk = await file.read()
-        md5.update(last_chunk)
+async def get_file_size_and_partial_md5(file: Union[str, UploadFile, Dict[str, Union[str, bytes]]]) -> tuple:
+    if isinstance(file, str):
+        file_size = os.path.getsize(file)
+        async with aiofiles.open(file, mode='rb') as f:
+            content = await f.read()
+    elif isinstance(file, UploadFile):
+        content = await file.read()
+        file_size = len(content)
         await file.seek(0)
     elif isinstance(file, dict):
-        # Handle dictionary (WebSocket upload)
-        content = file.get('content')
-        if isinstance(content, str):
-            content = content.encode()  # Convert to bytes if it's a string
+        content = file['content']
         file_size = len(content)
-        first_chunk = content[:PARTIAL_MD5_SIZE]
-        last_chunk = content[-PARTIAL_MD5_SIZE:]
-        md5.update(first_chunk + last_chunk)
     else:
         raise ValueError(f"Unsupported file type: {type(file)}")
+
+    md5 = hashlib.md5()
+    if file_size <= 2 * PARTIAL_MD5_SIZE:
+        md5.update(content)
+    else:
+        md5.update(content[:PARTIAL_MD5_SIZE])
+        md5.update(content[-PARTIAL_MD5_SIZE:])
+
+    return file_size, md5.hexdigest()
+
+async def get_upload_file_size_and_partial_md5(file: Union[UploadFile, Dict[str, Union[str, bytes]]]) -> tuple:
+    if isinstance(file, UploadFile):
+        content = await file.read()
+        await file.seek(0)
+    elif isinstance(file, dict):
+        content = file['content']
+        if isinstance(content, str):
+            content = content.encode()
+    else:
+        raise ValueError(f"Unsupported file type: {type(file)}")
+
+    file_size = len(content)
+    md5 = hashlib.md5()
+
+    if file_size <= 2 * PARTIAL_MD5_SIZE:
+        md5.update(content)
+    else:
+        md5.update(content[:PARTIAL_MD5_SIZE])
+        md5.update(content[-PARTIAL_MD5_SIZE:])
 
     return file_size, md5.hexdigest()

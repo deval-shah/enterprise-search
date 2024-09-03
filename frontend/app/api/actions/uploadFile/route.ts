@@ -49,8 +49,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ fileUpload: data.file_upload });
   } catch (error) {
     console.error('Error uploading files:', error);
-    if (error.name === 'AbortError') {
-      return NextResponse.json({ error: 'Request timed out' }, { status: 504 });
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return NextResponse.json({ error: 'Request timed out' }, { status: 504 });
+      }
     }
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
