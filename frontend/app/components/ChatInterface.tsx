@@ -1,153 +1,107 @@
 // app/components/ChatInterface.tsx
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, {  useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FiSend, FiPaperclip } from 'react-icons/fi';
 import MessageItem from './MessageItem';
-import { Message, ContextDetail } from '../types';
 import AnimatedLoadingDots from './AnimatedLoadingDots';
 import { toast } from 'react-toastify';
+import { Message, ContextDetail } from '../types';
+import { useChatStore, useFileUploadStore } from '../store';
+import ContextDetails from './ContextDetails';
 
 interface ChatInterfaceProps {
   initialFiles: File[];
 }
-
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ initialFiles }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>(initialFiles);
-  const { getAuthHeader } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const { webSocketService } = useAuth();
-  const scrollToBottom = () => {
+
+  // Stores
+  const {
+    messages, input, isLoading, isWaitingForResponse, metadata, isTyping, fileUploadProgress,
+    setInput, addMessage, setIsLoading, setIsWaitingForResponse, setMetadata, setIsTyping, updateFileUploadProgress
+  } = useChatStore();
+
+  const { uploadedFiles, setUploadedFiles, clearUploadedFiles } = useFileUploadStore();
+
+   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-  useEffect(() => {
-    if (webSocketService) {
-      webSocketService.onMessage(handleIncomingMessage);
-    }
-  }, [webSocketService]);
+  }, []);
 
-  const handleIncomingMessage = (data: any) => {
-    if (data.type === 'chunk') {
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage && lastMessage.role === 'assistant') {
-          return [...prev.slice(0, -1), { ...lastMessage, content: lastMessage.content + data.content }];
-        } else {
-          return [...prev, { role: 'assistant', content: data.content }];
-        }
-      });
-    } else if (data.type === 'metadata') {
-      // Handle metadata (context, file upload info, etc.)
-    }
-  };
-
-  useEffect(() => {
-      scrollToBottom();
-  }, [messages, scrollToBottom]);
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!input.trim() && uploadedFiles.length === 0) return;
-
-  //   const newMessage: Message = { role: 'user', content: input };
-  //   setMessages(prev => [...prev, newMessage]);
-  //   setInput('');
-  //   setIsLoading(true);
-  //   setIsWaitingForResponse(true);
-
-  //   try {
-  //     const headers = await getAuthHeader();
-  //     delete (headers as Record<string, string>)['Content-Type'];
-  //     const formData = new FormData();
-  //     formData.append('query', input);
-  //     uploadedFiles.forEach(file => formData.append('files', file));
-      
-  //     const controller = new AbortController();
-  //     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds timeout
-
-  //     const response = await fetch('/api/actions/handleMessage', {
-  //       method: 'POST',
-  //       headers: headers,
-  //       body: formData,
-  //       signal: controller.signal, // Add abort signal
-  //     });
-      
-  //     clearTimeout(timeoutId);
-
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     }
-
-  //     const data = await response.json();
-  //     const assistantMessage: Message = { 
-  //       role: 'assistant', 
-  //       content: data.response,
-  //       context: data.context as ContextDetail[]
-  //     };
-  //     setIsWaitingForResponse(false);
-  //     setMessages(prev => [...prev, assistantMessage]);
-  //   } catch (error) {
-  //     console.error('Error sending message:', error);
-  //     const errorMessage: Message = { role: 'system', content: 'Sorry, an error occurred. Please try again.' };
-  //     setIsWaitingForResponse(false);
-  //     setMessages(prev => [...prev, errorMessage]);
-  //     toast.error('Failed to send message. Please try again.');
-  //   } finally {
-  //     setIsLoading(false);
-  //     setUploadedFiles([]);
-  //   }
-  // };
-
+  // Handles form submission, sends the query and files to the WebSocket service
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && uploadedFiles.length === 0) return;
-  
-    const newMessage: Message = { role: 'user', content: input };
-    setMessages(prev => [...prev, newMessage]);
-  
-    const queryMessage = {
-      type: 'query',
-      query: input,
-      files: uploadedFiles.map(file => file.name),
-      stream: true
-    };
-  
+    if (!input.trim()) return;
     if (webSocketService) {
-      webSocketService.sendMessage(queryMessage);
-    } else {
-      console.error('WebSocket service is not available');
+      setIsTyping(true);
+      await webSocketService.sendMessage({ 
+        query: input, 
+        files: uploadedFiles.map(file => ({ name: file.name, file }))
+      });
     }
-  
     setInput('');
-    setUploadedFiles([]);
+    clearUploadedFiles();
   };
 
+  useEffect(() => {
+    return () => {
+      clearUploadedFiles();
+    };
+  }, [clearUploadedFiles]);
+
+  
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.files) {
-          const newFiles = Array.from(event.target.files);
-          setUploadedFiles(prevFiles => [...prevFiles, ...newFiles]);
-      }
+    if (event.target.files) {
+      setUploadedFiles(Array.from(event.target.files));
+      console.log('Files selected:', Array.from(event.target.files).map(f => ({name: f.name, size: f.size})));
+    }
   };
 
-  const loadingMessage: Message = { role: 'system', content: '...' };
+  useEffect(() => {
+    if (webSocketService) {
+      webSocketService.onMessage((data) => {
+        switch (data.type) {
+          case 'chunk':
+            setIsTyping(false);
+            break;
+          case 'metadata':
+            setMetadata(data);
+            break;
+          case 'end_stream':
+            setIsWaitingForResponse(false);
+            setIsTyping(false);
+            break;
+        }
+      });
+    }
+  }, [webSocketService, setIsWaitingForResponse, setIsTyping, setMetadata]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
   return (
-      <div className="flex flex-col h-full bg-white">
+      <div className="flex flex-col h-full bg-white dark:bg-gray-800">
           <div className="flex-1 overflow-y-auto p-4">
               <div className="max-w-2xl mx-auto">
                   {messages.map((message, index) => (
                     <MessageItem key={index} message={message} />
                   ))}
-                  {isWaitingForResponse && (
-                    <div className="flex justify-center my-4">
-                      <div className="rounded-full px-4 py-2">
+                  {isTyping && (
+                    <div className="flex justify-start my-2">
+                      <div className="bg-gray-200 rounded-lg p-2">
                         <AnimatedLoadingDots />
                       </div>
                     </div>
                   )}
+                  {metadata && <ContextDetails context={metadata.context} />}
+                  
+                  {/* {Object.entries(fileUploadProgress).map(([filename, progress]) => (
+                    <div key={filename} className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 my-2">
+                      <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${progress}%`}}></div>
+                    </div>
+                  ))} */}
                   <div ref={messagesEndRef} />
               </div>
           </div>
@@ -173,7 +127,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ initialFiles }) => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="flex-1 p-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 p-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Type your message..."
                   disabled={isLoading}
                 />

@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { FiArrowLeft } from 'react-icons/fi';
 import Link from 'next/link';
+import { useAuthStore } from '../store';
 
 const UserPage = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {

@@ -1,10 +1,12 @@
 // app/login/LoginForm.tsx
+
 'use client';
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
+import { useAuthStore } from '../store';
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -12,14 +14,20 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
+  const { setUser } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
-      await login(email, password);
-      router.push('/chat');
+      const success = await login(email, password);
+      if (success) {
+        router.push('/chat');
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } catch (err) {
-      setError('Failed to log in');
+      setError('An error occurred. Please try again.');
       console.error(err);
     }
   };
@@ -33,6 +41,7 @@ export default function LoginForm() {
         onSubmit={handleSubmit}
         className="space-y-4 md:space-y-6"
         action="#"
+        method="POST"
       >
         <div>
               <label

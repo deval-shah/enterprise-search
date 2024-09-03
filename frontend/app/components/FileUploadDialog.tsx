@@ -1,18 +1,18 @@
 // FileUploadDialog.tsx
-import React, { useState, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify'; // Add this import
+import { useAuthStore } from '../store';
+import { useFileUploadStore } from '../store';
 
 interface FileUploadDialogProps {
   onUploadComplete: (files: File[]) => void;
 }
 
 const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const { getAuthHeader } = useAuth();
+  const { isUploading, uploadStatus, setIsUploading, setUploadStatus, setUploadedFiles, clearUploadedFiles } = useFileUploadStore();
+  const { getAuthHeader } = useAuthStore.getState();
 
   const allowedExtensions = ['.pdf', '.txt', '.docx', '.csv'];
 
@@ -28,7 +28,11 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
       return;
     }
 
+    clearUploadedFiles();
     setIsUploading(true);
+    setUploadedFiles(acceptedFiles);
+    onUploadComplete(acceptedFiles);
+    console.log('Files selected:', acceptedFiles.map(f => ({name: f.name, size: f.size})));
     setUploadStatus('Uploading files...');
 
     try {
@@ -60,12 +64,13 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
       
       const result = await response.json();
       setUploadStatus('Files uploaded successfully!');
+      setUploadedFiles(acceptedFiles);
       onUploadComplete(acceptedFiles);
       toast.success('Files uploaded successfully!');
     } catch (error) {
       console.error('Error uploading files:', error);
       let errorMessage = 'Failed to upload files. Please try again.';
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         errorMessage = 'Upload timed out. Please try again.';
       }
       setUploadStatus(`Error uploading files: ${errorMessage}`);
@@ -73,7 +78,7 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
     } finally {
       setIsUploading(false);
     }
-  }, [getAuthHeader, onUploadComplete]);
+  }, [getAuthHeader, onUploadComplete, setIsUploading, setUploadStatus, setUploadedFiles, allowedExtensions, clearUploadedFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,

@@ -1,4 +1,7 @@
 import { User } from 'firebase/auth';
+import { useAuthStore, AuthState } from '../store';
+import { useChatStore } from '../store';
+import { getCookie } from '../utils/cookies';
 
 class WebSocketService {
     private socket: WebSocket | null = null;
@@ -10,15 +13,31 @@ class WebSocketService {
 
     constructor(private getAuthHeader: () => Promise<HeadersInit>) {}
 
+    private reconnect = () => {
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          const delay = this.reconnectInterval * Math.pow(2, this.reconnectAttempts);
+          setTimeout(() => {
+              console.log(`Attempting to reconnect (attempt ${this.reconnectAttempts + 1})`);
+              this.reconnectAttempts++;
+              this.connect(this.user!);
+          }, delay);
+      } else {
+          console.error('Max reconnection attempts reached');
+      }
+    };
+
     async connect(user: User) {
         
         this.user = user;
         if (this.socket?.readyState === WebSocket.OPEN) return;
     
-        const headers = await this.getAuthHeader();
+        const { getAuthHeader } = useAuthStore.getState() as AuthState;
+        const headers = await getAuthHeader();
         const token = (headers as Record<string, string>)['Authorization']?.split(' ')[1];
 
         const wsUrl = new URL('/ws', process.env.NEXT_PUBLIC_API_URL);
+        const sessionId = getCookie('session_id'); // Implement getCookie function
+
         console.log("WebSocket URL:", wsUrl.toString());
         wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');
 
@@ -26,7 +45,14 @@ class WebSocketService {
 
         this.socket.onopen = () => {
             this.reconnectAttempts = 0;
-            this.socket?.send(JSON.stringify({ type: 'auth', token: `Bearer ${token}` }));
+            if (this.socket?.readyState === WebSocket.OPEN) {
+              if (sessionId){
+                this.socket.send(JSON.stringify({ type: 'auth', token: `Bearer ${token}`, session_id: sessionId }));
+              }
+              else {
+                this.socket?.send(JSON.stringify({ type: 'auth', token: `Bearer ${token}` }));
+              }
+            }
         };
     
         this.socket.onclose = () => {
@@ -56,7 +82,7 @@ class WebSocketService {
       setTimeout(() => {
         this.reconnectAttempts++;
         if (this.user) {
-          this.connect(this.user);
+          this.reconnect();
         }
       }, this.reconnectInterval);
     } else {
@@ -64,31 +90,79 @@ class WebSocketService {
     }
   };
 
-  sendMessage(message: any) {
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      const messageWithSession = {
-        ...message,
-        session_id: this.sessionId
-      };
-      if (messageWithSession.files && messageWithSession.files.length > 0) {
-        messageWithSession.files = messageWithSession.files.map((file: string) => file);
-      } else {
-        messageWithSession.files = []; // Ensure we always send an empty array if no files
-      }
-      console.log('Sending message:', messageWithSession);
-      this.socket.send(JSON.stringify(messageWithSession));
-    } else {
+  async sendMessage(message: { query: string, files?: { name: string, file: File }[] }) {
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not open');
+      return;
     }
+    const { addMessage, setIsWaitingForResponse } = useChatStore.getState();
+    addMessage({ role: 'user', content: message.query });
+    setIsWaitingForResponse(true);
+
+    console.log('WebSocket sending message:', JSON.stringify({
+      type: 'query',
+      query: message.query,
+      stream: true,
+      session_id: this.sessionId,
+      files: message.files ? message.files.map(file => ({ name: file.name })) : []
+    }));
+
+    if (message.files && message.files.length > 0) {
+      for (const { name, file } of message.files) {
+        console.log(`Preparing to send file: ${name}, size: ${file.size} bytes`);
+        const buffer = await file.arrayBuffer();
+        // Send file metadata first
+        this.socket.send(JSON.stringify({ type: 'file_metadata', name, size: file.size }));
+        // Then send the file content
+        this.socket.send(buffer);
+        await new Promise<void>(resolve => {
+          const checkBufferedAmount = () => {
+            if (this.socket!.bufferedAmount === 0) {
+              console.log(`File sent: ${name}`);
+              resolve();
+            } else {
+              setTimeout(checkBufferedAmount, 100);
+            }
+          };
+          checkBufferedAmount();
+        });
+      }
+    }
+
+    // Send query message
+    this.socket.send(JSON.stringify({
+      type: 'query',
+      query: message.query,
+      stream: true,
+      session_id: this.sessionId,
+      files: message.files ? message.files.map(file => ({ name: file.name })) : []
+    }));
   }
 
-  onMessage(callback: (data: any) => void) {
-    if (this.socket) {
-      this.socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        callback(data);
-      };
-    }
+    onMessage(callback: (data: any) => void) {
+      if (this.socket) {
+          this.socket.onmessage = (event) => {
+              const data = JSON.parse(event.data);
+              const { updateLastMessage, setIsWaitingForResponse, addMessage } = useChatStore.getState();
+
+              switch (data.type) {
+                  case 'chunk':
+                      updateLastMessage(data.content);
+                      break;
+                  case 'metadata':
+                      // Handle metadata (you might want to store this in the chat store)
+                      break;
+                  case 'end_stream':
+                      setIsWaitingForResponse(false);
+                      break;
+                  case 'error':
+                      console.error('WebSocket error:', data.content);
+                      addMessage({ role: 'system', content: `Error: ${data.content}` });
+                      break;
+              }
+              callback(data);
+          };
+      }
   }
 
   close() {
