@@ -70,49 +70,7 @@ class Eval:
             logger.error(f"Failed to initialize RAG pipeline: {e}")
             raise
     
-    
-    @staticmethod
-    def get_context_from_response(response_object):
-        """
-        Extracts and logs document metadata from a response object, avoiding duplicate entries for the same document.
 
-        Args:
-            response_object: An object containing metadata about documents processed in a pipeline.
-            Expected to have 'metadata' and 'source_nodes' attributes if present.
-        Returns:
-            tuple: A tuple containing:
-                - A dictionary of (file path, details).
-                - List of contents extracted from the 'source_nodes' that contribute to the response
-
-        Iterating over the document's information. It compiles a dictionary of unique file paths with their respective details and logs a formatted
-        summary of these details and maps it to the response.
-        """
-        document_info = {}
-        retrieval_context = None
-        if response_object:
-            try:
-                if hasattr(response_object, 'source_nodes'):
-                    retrieval_context = [node.get_content() for node in response_object.source_nodes]
-                if hasattr(response_object, 'metadata'):
-                    for doc_id, info in response_object.metadata.items():
-                        # print("\n\n")
-                        # print(info)
-                        # print("\n\n")
-                        file_path = info.get('file_path')
-                        file_name = info.get('file_name')
-                        # Check if this file_path or combination of file_name and doc_id already exists
-                        if (file_path not in document_info and 
-                            not any(d['file_name'] == file_name and d['doc_id'] == doc_id 
-                                    for d in document_info.values())):
-                            
-                            document_info[file_path] = {
-                                'file_name': file_name,
-                                'last_modified_date': info.get('last_modified_date'),
-                                'doc_id': doc_id
-                            }
-            except Exception as e:
-                logger.error("An error occurred while processing the response object: {}".format(e))
-        return document_info, retrieval_context
 
     def pretty_print_context(self, response):
         retrieval_context = [node.get_content() for node in response.source_nodes]
