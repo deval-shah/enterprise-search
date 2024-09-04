@@ -1,8 +1,6 @@
 
 
-import timeit
-import os
-import csv
+import datetime
 from tqdm import tqdm
 import re
 import uuid
@@ -32,7 +30,7 @@ class DatasetGenerator:
         data_path (str): Directory path of the knowledge base.
         result_file_path (str): Directory path where evaluation results are saved.
     """
-    def __init__(self, data_path: str, result_file_path: str):
+    def __init__(self, data_path: str, result_file_path: str, no_node_limit:int=None):
         """
         Initializes the Evaluation instance with the data and result paths.
 
@@ -46,6 +44,7 @@ class DatasetGenerator:
         self.parser=SentenceSplitter()
         self.num_questions_per_chunk=1
         self.llm=self.setup_model()
+        self.no_node_limit=no_node_limit
         self.QUESTION_PROMPT_TEMPLATE = """\
                 Given a text, generate {n_questions} questions that could be asked about that topic.
                 The topic is: {sub_topic}
@@ -72,36 +71,42 @@ class DatasetGenerator:
     def setup_model(self):
         logger.info("Setting up model")
         if self.config.dataset_generator.use_openai:
-            self.llm=OpenAI(temperature=0, model=self.config.dataset_generator.model_name)
+            self.llm=OpenAI(temperature=0,timeout=600, model=self.config.dataset_generator.model_name)
             return self.llm
         self.llm=Ollama(model=self.config.dataset_generator.model_name, request_timeout=120.0)
         return self.llm
 
     def save_results(self,path:str) -> None:
         """Saves the accumulated results to the specified results file."""
-        with open(self.result_file_path, 'w', encoding='utf-8') as f:
-            json.dump(path, f, ensure_ascii=False, indent=4)
-        logger.info(f"Results saved to {self.result_file_path}")
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(self.results, f, ensure_ascii=False, indent=4)
+        logger.info(f"Results saved to {path}")
     
     
      
     def generate_dataset(self,save_results_flag:bool) -> None:
         documents = SimpleDirectoryReader(self.data_path).load_data()
         nodes = self.parser.get_nodes_from_documents(documents)
+        if self.no_node_limit:
+            nodes=nodes[:self.no_node_limit]
         for idx, node in enumerate(nodes):
+            print(node.get_content())
             node.id_ = f"node_{idx}"
         self.results = generate_qa_embedding_pairs(
         nodes, llm=self.llm, num_questions_per_chunk=self.num_questions_per_chunk)
-        path=f"{self.result_file_path}/qna_dataset_{timeit.timeit()}.json"
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        path=f"{self.result_file_path}/qna_dataset_{timestamp}.json"
         if save_results_flag:
                 self.save_results(path)
         
     
     
 
-    def generate_question_from_subtopics(self,n_questions:int) -> None:
+    def generate_question_from_subtopics(self, save_results_flag:bool) -> None:
         documents = SimpleDirectoryReader("data").load_data()
         nodes = self.parser.get_nodes_from_documents(documents)
+        if self.no_node_limit:
+            nodes=nodes[:self.no_node_limit]
         for idx, node in enumerate(nodes):
             node.id_ = f"node_{idx}"
         
@@ -116,7 +121,7 @@ class DatasetGenerator:
         for node_id, text in tqdm(node_dict.items()):
             subtopic=self.generate_subtopics(text)
             subtopics=str(subtopic).split(',')
-            prompt = self.QUESTION_PROMPT_TEMPLATE.format(sub_topic=subtopics, n_questions=n_questions)
+            prompt = self.QUESTION_PROMPT_TEMPLATE.format(sub_topic=subtopics, n_questions=self.num_questions_per_chunk)
             response=self.llm.complete(prompt=prompt)
             result = str(response).strip().split("\n")
             questions = [
@@ -132,10 +137,11 @@ class DatasetGenerator:
                 relevant_docs[question_id] = [node_id]
 
                 # print(responses[question_id])
-        dataset={'queries':queries,'responses':responses,'corpus':node_dict,'relevant_docs':relevant_docs}
-        with open(f"{self.result_file_path}/dataset.json", 'w') as fp:
-            json.dump(dataset, fp,indent=4)
-        # dataset.save_json(f"{self.result_file_path}/dataset.json")
+        self.results={'queries':queries,'responses':responses,'corpus':node_dict,'relevant_docs':relevant_docs}
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        path=f"{self.result_file_path}/qna_dataset_{timestamp}.json"
+        if save_results_flag:
+                self.save_results(path)
 
     def generate_responses(self, question:str,context:str) ->str:
         prompt = self.RESPONSE_PROMPT_TEMPLATE.format(question=question,context=context)
@@ -155,8 +161,9 @@ if __name__=="__main__":
     parser.add_argument("--data_path", required=True, help="Path to the data directory.")
     parser.add_argument("--qa_json_path", required=True, help="Path to the QA JSON file.")
     parser.add_argument("--save", action="store_true", help="Flag to save the evaluation results.")
+    parser.add_argument("--node_limit", type=int, required=False, default=None, help="Limit the number of nodes to process (must be a positive integer).")
     args = parser.parse_args()
-    generator=DatasetGenerator(data_path=args.data_path,result_file_path=args.qa_json_path)
-    generator.generate_dataset(save_results_flag=True)
+    generator=DatasetGenerator(data_path=args.data_path,result_file_path=args.qa_json_path,no_node_limit=int(args.node_limit))
+    generator.generate_question_from_subtopics(save_results_flag=True)
     
 

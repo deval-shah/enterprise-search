@@ -2,47 +2,16 @@ import pytest
 from unittest.mock import patch, MagicMock
 from llamasearch.generate_datasets import DatasetGenerator  # Replace with the correct import path
 
-@pytest.fixture
-def mock_config():
-    with patch('llamasearch.settings.config') as mock_config:
-        mock_config.dataset_generator.use_openai = True
-        mock_config.dataset_generator.model_name = 'gpt-3.5-turbo'
-        yield mock_config
+class TestResultPrinter:
+    @staticmethod
+    def print_test_result(test_name: str, response):
+        print(f"\n{'=' * 80}")
+        print(f"Test: {test_name}")
+        print(f"{'-' * 80}")
+        print(f"Response: {response}")
+        print(f"{'-' * 80}")
 
-@pytest.fixture
-def mock_logger():
-    with patch('llamasearch.logger.logger') as mock_logger:
-        yield mock_logger
-
-@pytest.fixture
-def mock_openai():
-    with patch('llama_index.llms.openai.OpenAI') as mock_openai:
-        yield mock_openai
-
-@pytest.fixture
-def mock_ollama():
-    with patch('llama_index.llms.ollama.Ollama') as mock_ollama:
-        yield mock_ollama
-
-@pytest.fixture
-def mock_sentence_splitter():
-    with patch('llama_index.core.node_parser.SentenceSplitter') as mock_sentence_splitter:
-        yield mock_sentence_splitter
-
-@pytest.fixture
-def mock_directory_reader():
-    with patch('llama_index.core.SimpleDirectoryReader') as mock_directory_reader:
-        yield mock_directory_reader
-
-@pytest.fixture
-def mock_generate_qa_pairs():
-    with patch('llamasearch.embeddings.generate_qa_embedding_pairs') as mock_generate_qa_pairs:
-        yield mock_generate_qa_pairs
-
-@pytest.fixture
-def dataset_generator(mock_config, mock_openai, mock_ollama, mock_sentence_splitter, mock_directory_reader):
-    return DatasetGenerator(data_path="mock_data_path", result_file_path="mock_result_file_path")
-
+        print(f"{'=' * 80}\n")
 class TestDatasetGenerator:
 
     def test_generate_dataset(self, dataset_generator, mock_directory_reader, mock_sentence_splitter, mock_generate_qa_pairs):
