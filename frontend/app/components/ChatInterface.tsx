@@ -9,9 +9,6 @@ import { Message, ContextDetail } from '../types';
 import { useChatStore, useFileUploadStore } from '../store';
 import ContextDetails from './ContextDetails';
 
-interface ChatInterfaceProps {
-  initialFiles: File[];
-}
 const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

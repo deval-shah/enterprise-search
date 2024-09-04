@@ -13,26 +13,34 @@ class WebSocketService {
 
     //constructor(private getAuthHeader: () => Promise<HeadersInit>) {}
 
-    private reconnect = () => {
+    public reconnect = async () => {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
-          const delay = this.reconnectInterval * Math.pow(2, this.reconnectAttempts);
-          setTimeout(() => {
-              console.log(`Attempting to reconnect (attempt ${this.reconnectAttempts + 1})`);
-              this.reconnectAttempts++;
-              this.connect(this.user!);
-          }, delay);
+        const delay = this.reconnectInterval * Math.pow(2, this.reconnectAttempts);
+        setTimeout(() => {
+          console.log(`Attempting to reconnect (attempt ${this.reconnectAttempts + 1})`);
+          this.reconnectAttempts++;
+          this.connect(this.user!);
+        }, delay);
       } else {
-          console.error('Max reconnection attempts reached');
+        console.error('Max reconnection attempts reached');
       }
     };
 
-    async connect(user: User) {
-        
+    async connect(user: User): Promise<string> {
         this.user = user;
-        if (this.socket?.readyState === WebSocket.OPEN) return;
+        if (this.socket?.readyState === WebSocket.OPEN) return this.sessionId || '';
     
         const { getAuthHeader } = useAuthStore.getState() as AuthState;
-        const headers = await getAuthHeader();
+        let headers;
+        try {
+          headers = await getAuthHeader();
+        } catch (error) {
+          console.error('Failed to get auth header:', error);
+          // Retry after a short delay
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return this.connect(user);
+        }
+      
         const token = (headers as Record<string, string>)['Authorization']?.split(' ')[1];
 
         const wsUrl = new URL('/ws', process.env.NEXT_PUBLIC_API_URL);
@@ -63,19 +71,20 @@ class WebSocketService {
             console.error('WebSocket error:', error);
         };
 
-    return new Promise((resolve, reject) => {
-      if (!this.socket) return reject('Socket is null');
-      this.socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'authentication_success') {
-          this.sessionId = data.session_id;
-          resolve(this.sessionId);
-        } else if (data.type === 'authentication_failed') {
-          reject(data.content);
-        }
-      };
-    });
-  }
+        return new Promise<string>((resolve, reject) => {
+          if (!this.socket) return reject('Socket is null');
+      
+          this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'authentication_success') {
+              this.sessionId = data.session_id;
+              resolve(this.sessionId || '');
+            } else if (data.type === 'authentication_failed') {
+              reject(data.content);
+            }
+          };
+        });
+      }
 
   private handleDisconnection = () => {
     if (this.user && this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -87,9 +96,10 @@ class WebSocketService {
       }, this.reconnectInterval);
     } else {
       console.error('Max reconnection attempts reached or no user');
+      // Dispatch a custom event when max reconnection attempts are reached
+      window.dispatchEvent(new Event('websocket_disconnect'));
     }
   };
-
   async sendMessage(message: { query: string, files?: { name: string, file: File }[] }) {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not open');

@@ -18,4 +18,18 @@ export const useSessionRefresh = () => {
 
     return () => clearInterval(refreshInterval);
   }, [refreshSession, logout, router]);
+
+  // Add a listener for WebSocket disconnection
+  useEffect(() => {
+    const handleWebSocketDisconnect = () => {
+      logout();
+      router.push('/login');
+    };
+
+    window.addEventListener('websocket_disconnect', handleWebSocketDisconnect);
+
+    return () => {
+      window.removeEventListener('websocket_disconnect', handleWebSocketDisconnect);
+    };
+  }, [logout, router]);
 };

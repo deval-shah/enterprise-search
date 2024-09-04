@@ -14,23 +14,19 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
-  const { setUser } = useAuthStore();
+  // const { setUser } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     try {
-      const success = await login(email, password);
-      if (success) {
-        router.push('/chat');
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      await login(email, password);
+      router.push('/chat');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError('Failed to log in');
       console.error(err);
     }
   };
+
 
   return (
     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">

@@ -29,18 +29,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (user) {
-      const wsService = new WebSocketService(getAuthHeader);
-      wsService.connect(user).then(() => {
-        setWebSocketService(wsService);
-      }).catch(console.error);
-
+      const initWebSocket = async () => {
+        try {
+          const wsService = new WebSocketService();
+          await wsService.connect(user);
+          setWebSocketService(wsService);
+        } catch (error) {
+          console.error('Failed to initialize WebSocket:', error);
+        }
+      };
+      initWebSocket();
+  
       return () => {
-        wsService.close();
+        if (webSocketService) {
+          webSocketService.close();
+        }
       };
     } else {
       setWebSocketService(null);
     }
-  }, [user, getAuthHeader]);
+  }, [user]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -145,13 +153,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = await response.json();
         // Update any necessary state or tokens
         return true;
+      } else {
+        // Session is invalid, trigger logout
+        await logout();
+        return false;
       }
     } catch (error) {
       console.error('Failed to refresh session:', error);
+      await logout();
+      return false;
     }
-    return false;
   };
-
   const refreshToken = async () => {
     if (auth.currentUser) {
       try {
