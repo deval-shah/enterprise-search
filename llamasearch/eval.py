@@ -7,12 +7,7 @@ import signal
 from datetime import datetime
 import argparse
 import asyncio
-from llama_index.core.evaluation import RetrieverEvaluator
-from llama_index.core.evaluation import (
-    generate_question_context_pairs,
-    EmbeddingQAFinetuneDataset,
-)
-
+import warnings
 
 from llamasearch.settings import config
 from llamasearch.pipeline import Pipeline
@@ -94,12 +89,9 @@ class Eval:
         if response_object is None:
             logger.error("Failed to retrieve response from query application.")
             return
-
         actual_output = response_object.response
         retrieval_context = [node.get_content() for node in response_object.source_nodes]
-        
         logger.info("Evaluating ....")
-
         metrics_results = []
         if actual_output and retrieval_context:
             for metric_name in metrics_to_evaluate:

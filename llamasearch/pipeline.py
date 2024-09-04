@@ -212,7 +212,7 @@ class Pipeline:
         return response
 
     async def insert_documents(self, file_paths):
-        documents = await self.load_documents_async(input_files=file_paths)        
+        documents = await self.load_documents_async(input_files=file_paths)  
         for doc in documents:
             logger.debug(f"Processing Document ID: {doc.id_}")
         nodes = await self.ingest_documents(documents)

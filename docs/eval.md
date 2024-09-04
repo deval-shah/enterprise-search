@@ -22,7 +22,7 @@ Ensure the system is set up as per the setup instructions above, with all depend
 
 ### Preparing the Dataset
 
-1. Prepare a json file containing the questions and their corresponding ground truth answers. The json file should have at least four keys: `queries` and `response`{ground truth} `relevant_docs` {} and `corpus` {node of origin for the query}. There is a sample data in `./data/eval` folder that can be used for testing.
+1. Prepare a json file containing the questions and their corresponding ground truth answers. The json file should have at least four keys: `queries` and `response`{ground truth} `relevant_docs` {query_id, node_id k,v pairs} and `corpus` {node of origin for the query}. There is a sample data in `./data/eval` folder that can be used for testing.
 
 2. Place your dataset in an accessible directory and note the path to this CSV file for the evaluation process.
 
