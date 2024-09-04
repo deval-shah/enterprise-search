@@ -32,7 +32,7 @@ To evaluate the pipeline, a synthetic dataset based on the nodes(chunks) in the 
 
 
 ```bash
-python3 -m  llamasearch.generate_datasets --data_path ./data/eval/document/ --qa_json_path ./data/eval/ --save
+python -m  llamasearch.generate_datasets --data_path ./data/eval/document/ --qa_json_path ./data/eval/ --save
 ```
 
 - `--data_path`: Indicates the directory where your documents for indexing are stored.
