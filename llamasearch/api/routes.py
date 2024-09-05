@@ -132,9 +132,9 @@ async def query_endpoint(
     # Check if file count exceeds limit
     if (files):
         files_uploaded = get_file_count(current_user.firebase_uid)
-        if files_uploaded >= settings.MAX_FILES:
-            logger.error(f"Upload limit exhausted! for user {current_user}. Quota of {settings.MAX_FILES - files_uploaded} file uploads remaining")
-            raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES - files_uploaded} file uploads remaining")
+        if files_uploaded >= settings.MAX_FILES_PER_USER:
+            logger.error(f"Upload limit exhausted! for user {current_user}. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
+            raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
         elif files_uploaded + len(files) > settings.MAX_FILES_PER_CHAT:
             logger.error(f"Requesting to upload {len(files)}, Upload limit exceeded, cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
             raise HTTPException(status_code=400, detail=f"Upload limit exceeded. You cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
@@ -165,9 +165,9 @@ async def upload_files(
 
     # Check if file count exceeds limit
     files_uploaded = get_file_count(user_info.firebase_uid)
-    if files_uploaded >= settings.MAX_FILES:
-        logger.error(f"Upload limit exhausted! for user {user_info}. Quota of {settings.MAX_FILES - files_uploaded} file uploads remaining")
-        raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES - files_uploaded} file uploads remaining")
+    if files_uploaded >= settings.MAX_FILES_PER_USER:
+        logger.error(f"Upload limit exhausted! for user {user_info}. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
+        raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
     elif files_uploaded + len(files) > settings.MAX_FILES_PER_CHAT:
         logger.error(f"Requesting to upload {len(files)}, Upload limit exceeded, cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
         raise HTTPException(status_code=400, detail=f"Upload limit exceeded. You cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")

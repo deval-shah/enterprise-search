@@ -13,8 +13,9 @@ class Settings(BaseSettings):
 
     # Limits
     FILE_SIZE_LIMIT: int = Field(default=10 * 1024 * 1024)
-    MAX_FILES: int = Field(default=100)
+    MAX_FILES_PER_USER: int = Field(default=100)
     MAX_FILES_PER_CHAT: int = Field(default=10)
+    MAX_FILES: int = Field(default=10)
 
     # CORS Settings
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")
