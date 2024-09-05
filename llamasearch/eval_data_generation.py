@@ -182,7 +182,7 @@ class DatasetGenerator:
     def setup_model(self):
         logger.info("Setting up model")
         if self.config.dataset_generator.use_openai:
-            self.llm=OpenAI(temperature=0,timeout=600, model="gpt-3.5-turbo")
+            self.llm=OpenAI(temperature=0,timeout=600, model=self.config.dataset_generator.openai_model)
             return self.llm
         self.llm=Ollama(model=self.config.dataset_generator.model_name, request_timeout=120.0)
         return self.llm
