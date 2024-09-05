@@ -77,6 +77,7 @@ class DatasetGeneration(BaseModel):
     model_type: str = "custom"
     model_name :str = "llama3:latest"
     use_openai: bool =False
+    openai_model: str = "gpt4-o"
 
 
     

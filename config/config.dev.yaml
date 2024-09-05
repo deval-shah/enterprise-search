@@ -40,5 +40,6 @@ reranker:
 
 dataset_generator:
     model_type: "custom"
-    model_name: "gpt-4"
-    use_openai: True
+    model_name: "llama3:8b"
+    use_openai: False
+    openai_model: "gpt4-o"
