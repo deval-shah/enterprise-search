@@ -1,6 +1,7 @@
 # app/core/middleware.py
 
 from fastapi import Request, Response, HTTPException, WebSocketDisconnect
+from fastapi.responses import PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 import time
 from llamasearch.api.services.session import session_service
@@ -68,6 +69,25 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests[client_ip].append(current_time)
         response = await call_next(request)
 
+class FileSizeLimitMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, max_size: int = None):
+        super().__init__(app)
+        self.max_size = max_size if max_size is not None else settings.FILE_SIZE_LIMIT
+
+    async def dispatch(self, request: Request, call_next):
+        # Check if the content length exceeds the max size
+        if request.headers.get("content-length"):
+            content_length = int(request.headers.get("content-length"))
+            if content_length > self.max_size:
+                return PlainTextResponse("File too large", status_code=413)
+        
+        response = await call_next(request)
+        return response
+    
 async def session_middleware(request: Request, call_next):
     middleware = SessionMiddleware(app=None)
+    return await middleware.dispatch(request, call_next)
+
+async def filesize_middleware(request: Request, call_next):
+    middleware = FileSizeLimitMiddleware(app=None)
     return await middleware.dispatch(request, call_next)

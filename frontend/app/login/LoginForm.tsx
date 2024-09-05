@@ -22,7 +22,7 @@ export default function LoginForm() {
     try {
       const success = await login(email, password);
       if (success) {
-        router.push('/chat');
+        router.replace('/chat');
       } else {
         setError('Login failed. Please try again.');
       }

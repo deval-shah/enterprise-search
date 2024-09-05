@@ -29,6 +29,7 @@ interface FileUploadState {
     clearUploadedFiles: () => void;
     setIsUploading: (isUploading: boolean) => void;
     setUploadStatus: (status: string | null) => void;
+    clearUploadStatus: () => void;
 }
 
 interface Chat {
@@ -52,6 +53,7 @@ interface ChatState {
     isWaitingForResponse: boolean;
     metadata: any | null;
     fileUploadProgress: { [filename: string]: number };
+    fileCount: number | 0;
     setMessages: (messages: Message[]) => void;
     addMessage: (message: Message) => void;
     setInput: (input: string) => void;
@@ -62,6 +64,8 @@ interface ChatState {
     setMetadata: (metadata: any) => void;
     setIsTyping: (isTyping: boolean) => void;
     updateFileUploadProgress: (filename: string, progress: number) => void;
+    setFileCount: (fileCount: number) => void;
+    clearFileCount: () => void;
 }
 
 
@@ -105,6 +109,7 @@ export const useFileUploadStore = create<FileUploadState>()(
       clearUploadedFiles: () => set({ uploadedFiles: [] }),
       setIsUploading: (isUploading) => set({ isUploading }),
       setUploadStatus: (status) => set({ uploadStatus: status }),
+      clearUploadStatus: () => set({ uploadStatus: null }),
     }),
     {
       name: 'file-upload-storage',
@@ -123,6 +128,8 @@ export const useChatStore = create<ChatState>()(
       metadata: null,
       isTyping: false,
       fileUploadProgress: {},
+      fileCount: 0,
+      setFileCount: (fileCount: number) => set({ fileCount }),
       setMessages: (messages) => set({ messages }),
       setMetadata: (metadata: any) => set({ metadata }),
       setIsTyping: (isTyping: boolean) => set({ isTyping }),
@@ -131,6 +138,7 @@ export const useChatStore = create<ChatState>()(
       setIsLoading: (isLoading) => set({ isLoading }),
       setIsWaitingForResponse: (isWaiting) => set({ isWaitingForResponse: isWaiting }),
       clearMessages: () => set({ messages: [] }),
+      clearFileCount: () => set({ fileCount: 0 }),
       updateLastMessage: (content) => set((state) => {
         const messages = [...state.messages];
         const lastMessage = messages[messages.length - 1];

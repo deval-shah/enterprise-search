@@ -19,8 +19,8 @@ const PromptContainer: React.FC = () => {
   const router = useRouter();
   const [showUploadDialog, setShowUploadDialog] = useState(true);
   const { user, loading } = useAuthStore();
-  const { uploadedFiles, setUploadedFiles, clearUploadedFiles } = useFileUploadStore();
-  const { clearMessages } = useChatStore();
+  const { uploadedFiles, setUploadedFiles, clearUploadedFiles, clearUploadStatus } = useFileUploadStore();
+  const { clearMessages, clearFileCount } = useChatStore();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,6 +33,8 @@ const PromptContainer: React.FC = () => {
     setUploadedFiles([]);
     clearMessages();
     clearUploadedFiles();
+    clearFileCount();
+    clearUploadStatus();
   };
 
   const handleFileUpload = (files: File[]) => {

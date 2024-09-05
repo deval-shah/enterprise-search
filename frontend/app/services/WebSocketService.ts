@@ -90,13 +90,24 @@ class WebSocketService {
     }
   };
 
+  
   async sendMessage(message: { query: string, files?: { name: string, file: File }[] }) {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not open');
       return;
     }
     const { addMessage, setIsWaitingForResponse } = useChatStore.getState();
-    addMessage({ role: 'user', content: message.query });
+    const filesArray = message.files
+      ? Array.from(message.files).map((file) => ({ name: file.name }))
+      : [];
+    
+      const contextDetails = message.files ? Array.from(message.files).map((file) => ({
+        file_name: file.name, 
+        file_path: '', 
+        last_modified: new Date().toISOString(), 
+        document_id: ''
+      })): [];
+    addMessage({ role: 'user', content: message.query, context :contextDetails });
     setIsWaitingForResponse(true);
 
     console.log('WebSocket sending message:', JSON.stringify({
