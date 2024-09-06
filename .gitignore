@@ -13,3 +13,4 @@ __pycache__
 !assets/*.png
 !data/test/*.pdf
 !tests/
+/qn_pairs

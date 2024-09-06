@@ -1,0 +1,6 @@
+outs:
+- md5: dfa5f29739138accbdeb19e1288ccb56.dir
+  size: 929693
+  nfiles: 1
+  hash: md5
+  path: qa_pairs

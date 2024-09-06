@@ -34,6 +34,15 @@ To evaluate the pipeline, a synthetic dataset based on the nodes(chunks) in the 
 ```bash
 python -m  llamasearch.eval_data_generation --data_path ./data/eval/document/ --qa_json_path ./data/eval --save --node_limit 1
 ```
+### Pull dataset from google bucket
+A dataset has already been generated to access the data. Following command can be used to pull the data=.
+
+```
+dvc pull ./data/eval/qa_pairs.dvc 
+```
+
+
+
 
 - `--data_path`: Indicates the directory where your documents for indexing are stored.
 - `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
