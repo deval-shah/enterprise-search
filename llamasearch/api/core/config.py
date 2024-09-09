@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     def BACKEND_CORS_ORIGINS_LIST(self) -> List[str]:
         return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
 
-@lru_cache()
+# @lru_cache()
 def get_settings():
     return Settings()
 

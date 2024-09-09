@@ -27,6 +27,7 @@ container = Container()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup Logic
     await init_db()
     if settings.USE_SESSION_AUTH:
         redis_client = get_redis()

@@ -207,8 +207,7 @@ async def get_recent_queries(
 # @inject
 # async def create_chat(
 #     chat: ChatCreate,
-#     user_info: Tuple[User, bool] = Depends(get_current_user),
-#     state_manager: StateManager = Depends(Provide[Container.state_manager])
+#     user_info: Tuple[User, bool] = Depends(get_current_user)
 # ):
 #     try:
 #         return await state_manager.create_chat(user_info.id, chat)
