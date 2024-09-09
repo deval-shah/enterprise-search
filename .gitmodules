@@ -1,4 +1,4 @@
 
 [submodule "llamasearch/es-ragflow"]
 	path = llamasearch/ragflow
-	url = git@gitlab.aiml.team:samthomas/es-ragflow.git
+	url = git@gitlab.aiml.team:products/aiml/enterprise-search/es-ragflow.git
