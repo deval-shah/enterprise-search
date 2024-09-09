@@ -76,6 +76,8 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 
 2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
 
+3.  **Fetch Submodules** : To initiate Ragflow parser  pull the submodules using   `chmod +x init_submodule.sh`  then `./init_submodule.sh`.
+
 ### Option 1: Test the ES pipeline
 
 1. **Run Qdrant and Redis services using docker-compose**: 
