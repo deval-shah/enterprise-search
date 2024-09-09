@@ -269,9 +269,7 @@ class Pipeline:
             reader_kwargs["input_files"] = [input_files] if isinstance(input_files, str) else input_files
         else:
             raise ValueError("Please provide either data_path or input_files.")
-        
         documents = SimpleDirectoryReader(**reader_kwargs).load_data()
-        logger.info(f"-------------{len(documents)}")
         return documents
 
     @staticmethod
@@ -373,7 +371,7 @@ class PipelineFactory:
         pipeline = Pipeline(self.config.copy(), tenant_id)
         try:
             await pipeline.setup()
-            self.pipelines[user_id] = pipeline  
+            self.pipelines[user_id] = pipeline
             logger.info(f"Pipeline setup completed successfully for user {user_id}")
             return pipeline
         except Exception as e:
