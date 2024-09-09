@@ -21,11 +21,11 @@ export default function Login() {
   //   return null;
   // }
 
-  useEffect(() => {
-    if (user && !loading) {
-      router.push('/chat');
-    }
-  }, [user, loading, router]);
+//   useEffect(() => {
+//     if (user && !loading) {
+//       router.replace('/chat');
+//     }
+//   }, [user, loading, router]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">

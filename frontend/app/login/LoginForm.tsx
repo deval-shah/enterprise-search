@@ -19,8 +19,12 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      router.push('/chat');
+      const success = await login(email, password);
+      if (success) {
+        router.replace('/chat');
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } catch (err) {
       setError('Failed to log in');
       console.error(err);

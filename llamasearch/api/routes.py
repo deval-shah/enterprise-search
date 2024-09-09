@@ -20,6 +20,7 @@ from llamasearch.api.core.config import settings
 # Pipeline imports
 from llamasearch.logger import logger
 from llamasearch.api.core.container import Container
+from llamasearch.api.core.redis import get_file_count, update_file_count
 from llamasearch.pipeline import PipelineFactory, Pipeline
 from llamasearch.api.websocket_manager import get_websocket_manager
 from llamasearch.api.query_processor import process_query
@@ -124,9 +125,19 @@ async def query_endpoint(
     files: List[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
     pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory]),
-    current_user: User = Depends(get_current_user)
+    current_user: Tuple[User, bool] = Depends(get_current_user)
 ):
     logger.info(f"Query endpoint called by user: {current_user.email}")
+
+    # Check if file count exceeds limit
+    if (files):
+        files_uploaded = get_file_count(current_user.firebase_uid)
+        if files_uploaded >= settings.MAX_FILES_PER_USER:
+            logger.error(f"Upload limit exhausted! for user {current_user}. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
+            raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
+        elif files_uploaded + len(files) > settings.MAX_FILES_PER_CHAT:
+            logger.error(f"Requesting to upload {len(files)}, Upload limit exceeded, cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
+            raise HTTPException(status_code=400, detail=f"Upload limit exceeded. You cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
     try:
         result = await process_query(
             query=query,
@@ -135,6 +146,7 @@ async def query_endpoint(
             pipeline_factory=pipeline_factory,
             files=files
         )
+        update_file_count(current_user.firebase_uid, len(files))
         return JSONResponse(content=result, status_code=200)
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}", exc_info=True)
@@ -150,6 +162,15 @@ async def upload_files(
     pipeline = await pipeline_factory.get_or_create_pipeline_async(user_info.firebase_uid, user_info.tenant_id)
     user_upload_dir = pipeline.config.application.data_path
     logger.debug(f"User Upload Dir: {user_upload_dir}")
+
+    # Check if file count exceeds limit
+    files_uploaded = get_file_count(user_info.firebase_uid)
+    if files_uploaded >= settings.MAX_FILES_PER_USER:
+        logger.error(f"Upload limit exhausted! for user {user_info}. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
+        raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
+    elif files_uploaded + len(files) > settings.MAX_FILES_PER_CHAT:
+        logger.error(f"Requesting to upload {len(files)}, Upload limit exceeded, cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
+        raise HTTPException(status_code=400, detail=f"Upload limit exceeded. You cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
     try:
         logger.info(f"Uploading {len(files)} files for user {user_info.firebase_uid}")
         upload_results = await handle_file_upload(files, user_upload_dir)
