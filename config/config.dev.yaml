@@ -1,6 +1,6 @@
 application:
   config_path: "config/config.dev.yaml"
-  data_path: "data/sample-docs/"
+  data_path: "data/sample-docs/slim"
   log_dir: "data/app/logs"
   upload_subdir: "uploads"
   eval_data_path: "data/eval/document/"
@@ -14,8 +14,8 @@ vector_store_config:
   vector_size: 1536
   distance: Cosine
   batch_size: 30
-  alpha: 0.5 
-  top_k: 10
+  alpha: 0.4
+  top_k: 4
   use_async: False
   multi_tenancy: True
   enable_hybrid: True
@@ -25,11 +25,12 @@ redis_config:
   port: 6379
 
 embedding:
-  model: "local:Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  model: "Alibaba-NLP/gte-Qwen2-1.5B-instruct"
   use_openai: False
+  local_model_path: "data/models/embedding/"
 
 llm:
-  llm_model: "llama3"
+  llm_model: "ajindal/llama3.1-storm:8b"
   modelfile: "config/modelfile.yaml"
   use_openai: False
 

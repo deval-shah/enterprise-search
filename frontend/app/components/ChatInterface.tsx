@@ -1,154 +1,218 @@
 // app/components/ChatInterface.tsx
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FiSend, FiPaperclip } from 'react-icons/fi';
+import { FiSend, FiPaperclip} from 'react-icons/fi';
 import MessageItem from './MessageItem';
-import { Message, ContextDetail } from '../types';
 import AnimatedLoadingDots from './AnimatedLoadingDots';
 import { toast } from 'react-toastify';
+import { Message, ContextDetail, AttachedFile } from '../types';
+import { useChatStore, useFileUploadStore } from '../store';
+import ContextDetails from './ContextDetails';
 
-interface ChatInterfaceProps {
-  initialFiles: File[];
-}
-
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ initialFiles }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>(initialFiles);
-  const { getAuthHeader } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const { webSocketService } = useAuth();
+
+  // Stores
+  const {
+    messages, input, isLoading, isWaitingForResponse, metadata, isTyping, fileUploadProgress, fileCount,
+    setInput, addMessage, setIsLoading, setIsWaitingForResponse, setMetadata, setIsTyping, updateFileUploadProgress, setFileCount
+  } = useChatStore();
+
+  // const { uploadedFiles, setUploadedFiles, clearUploadedFiles } = useFileUploadStore();
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+
+  // Limitations
+  const maxFileSize = 10;
+  const allowedExtensions = ['.pdf', '.txt', '.docx', '.csv'];
+  const maxChatFiles = 10;
 
   const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  useEffect(() => {
-      scrollToBottom();
-  }, [messages, scrollToBottom]);
-
+  // Handles form submission, sends the query and files to the WebSocket service
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && uploadedFiles.length === 0) return;
-
-    const newMessage: Message = { role: 'user', content: input };
-    setMessages(prev => [...prev, newMessage]);
+    if (!input.trim()) return;
+    if (webSocketService) {
+      setIsTyping(true);
+      try{
+        await webSocketService.sendMessage({
+          query: input,
+          files: attachedFiles.map(file => ({ name: file.name, file }))
+        });
+      } catch (error) {
+        console.error('Error occurred:', error);
+        addMessage({ role: 'system', content: `Error processing your request. Try again later` });
+        setIsTyping(false);
+      }
+     
+    }
+    setFileCount(fileCount + attachedFiles.length)
     setInput('');
-    setIsLoading(true);
-    setIsWaitingForResponse(true);
+    // clearUploadedFiles();
+    setAttachedFiles([]);
+  };
 
-    try {
-      const headers = await getAuthHeader();
-      delete (headers as Record<string, string>)['Content-Type'];
-      const formData = new FormData();
-      formData.append('query', input);
-      uploadedFiles.forEach(file => formData.append('files', file));
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds timeout
+//   useEffect(() => {
+//     return () => {
+//       clearUploadedFiles();
+//     };
+//   }, [clearUploadedFiles]);
 
-      const response = await fetch('/api/actions/handleMessage', {
-        method: 'POST',
-        headers: headers,
-        body: formData,
-        signal: controller.signal, // Add abort signal
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const files = Array.from(event.target.files).map((file) => {
+        return Object.assign(file, {
+          preview: URL.createObjectURL(file)
+        });
       });
-      
-      clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const invalidFileSize = files.filter(file => file.size > maxFileSize * 1024 * 1024);
+      const invalidFiles = files.filter(file => {
+        const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+        return !allowedExtensions.includes(extension);
+      });
+
+      if (invalidFiles.length > 0) {
+        const invalidFileNames = invalidFiles.map(file => file.name).join(', ');
+        alert(`The following files are not allowed: ${invalidFileNames}\nPlease only upload .pdf, .txt, .docx, or .csv files.`);
+        return;
+      } else if (invalidFileSize.length > 0) {
+        const fileNames = invalidFileSize.map(file => `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`).join('\n');
+        alert(`The following files exceed the size limit (${maxFileSize} MB):\n${fileNames}`);
+        return;
+      } else if (fileCount + files.length> maxChatFiles) {
+        alert(`You have exceeded the maximum file limit of ${maxChatFiles} files per chat. Please upload no more than ${maxChatFiles} files or start a new chat.`);
+        return;
       }
 
-      const data = await response.json();
-      const assistantMessage: Message = { 
-        role: 'assistant', 
-        content: data.response,
-        context: data.context as ContextDetail[]
-      };
-      setIsWaitingForResponse(false);
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage: Message = { role: 'system', content: 'Sorry, an error occurred. Please try again.' };
-      setIsWaitingForResponse(false);
-      setMessages(prev => [...prev, errorMessage]);
-      toast.error('Failed to send message. Please try again.');
-    } finally {
-      setIsLoading(false);
-      setUploadedFiles([]);
+      setAttachedFiles((prevFiles) => [...prevFiles, ...files]);
+      // setUploadedFiles(Array.from(event.target.files));
+      console.log('Files selected:', Array.from(event.target.files).map(f => ({name: f.name, size: f.size})));
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.files) {
-          const newFiles = Array.from(event.target.files);
-          setUploadedFiles(prevFiles => [...prevFiles, ...newFiles]);
-      }
+  const removeFile = (index: number) => {
+    setAttachedFiles((prevFiles) => {
+      const newFiles = [...prevFiles];
+      URL.revokeObjectURL(newFiles[index].preview as string);
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
   };
 
-  const loadingMessage: Message = { role: 'system', content: '...' };
+  useEffect(() => {
+    if (webSocketService) {
+      webSocketService.onMessage((data) => {
+        switch (data.type) {
+          case 'chunk':
+            setIsTyping(false);
+            break;
+          case 'metadata':
+            setMetadata(data);
+            break;
+          case 'end_stream':
+            setIsWaitingForResponse(false);
+            setIsTyping(false);
+            break;
+        }
+      });
+    }
+  }, [webSocketService, setIsWaitingForResponse, setIsTyping, setMetadata]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, attachedFiles, scrollToBottom]);
+
   return (
-      <div className="flex flex-col h-full bg-white">
-          <div className="flex-1 overflow-y-auto p-4">
-              <div className="max-w-2xl mx-auto">
-                  {messages.map((message, index) => (
-                    <MessageItem key={index} message={message} />
-                  ))}
-                  {isWaitingForResponse && (
-                    <div className="flex justify-center my-4">
-                      <div className="rounded-full px-4 py-2">
-                        <AnimatedLoadingDots />
-                      </div>
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800">
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-2xl mx-auto">
+          {messages.map((message, index) => (
+            <MessageItem key={index} message={message} />
+          ))}
+          {isTyping && (
+            <div className="flex justify-start my-2">
+              <div className="bg-gray-200 rounded-lg p-2">
+                <AnimatedLoadingDots />
+              </div>
+            </div>
+          )}
+          {metadata && <ContextDetails context={metadata.context} />}
+
+          {/* {Object.entries(fileUploadProgress).map(([filename, progress]) => (
+                    <div key={filename} className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 my-2">
+                      <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${progress}%`}}></div>
                     </div>
-                  )}
-                  <div ref={messagesEndRef} />
-              </div>
-          </div>
-          <div className="p-4">
-              <div className="max-w-2xl mx-auto">
-                  <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-                      <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleFileUpload}
-                          className="hidden"
-                          multiple
-                      />
-                      <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="p-2 text-gray-500 hover:text-gray-700"
-                          disabled={isLoading}
-                      >
-                          <FiPaperclip className="w-5 h-5" />
-                      </button>
-                      <input
-                          type="text"
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          className="flex-1 p-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Type your message..."
-                          disabled={isLoading}
-                      />
-                      <button
-                          type="submit"
-                          className="p-2 text-blue-500 hover:text-blue-700"
-                          disabled={isLoading}
-                      >
-                          <FiSend className="w-5 h-5" />
-                      </button>
-                  </form>
-                  {uploadedFiles.length > 0 && (
-                      <div className="mt-2 text-sm text-gray-500">
-                          {uploadedFiles.length} file(s) selected
-                      </div>
-                  )}
-              </div>
-          </div>
+                  ))} */}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
+      <div className="p-4">
+        <div className="max-w-2xl mx-auto">
+        {attachedFiles.length > 0 && (
+          <div className="mb-2 max-h-24 overflow-y-auto">
+            <h3 className="text-sm font-semibold mb-1">Attached Files:</h3>
+            <div className="flex flex-wrap gap-2">
+              {attachedFiles.map((file, index) => (
+                <div key={index} className="flex items-center bg-gray-100 rounded-lg px-2 py-1">
+                  <span className="text-sm mr-1">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                   X
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+          <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              multiple
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-gray-500 hover:text-gray-700"
+              disabled={isLoading}
+            >
+              <FiPaperclip className="w-5 h-5" />
+            </button>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1 p-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Type your message..."
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              className={`p-2 ${isLoading || !input ? 'text-gray-400' : 'text-blue-500 hover:text-blue-700'}`}
+              disabled={isLoading || !input}
+            >
+              <FiSend className="w-5 h-5" />
+            </button>
+          </form>
+          {/* {uploadedFiles.length > 0 && (
+            <div className="mt-2 text-sm text-gray-500">
+              {uploadedFiles.length} file(s) selected
+            </div>
+          )} */}
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -12,5 +12,6 @@ __pycache__
 *pdf
 !assets/*.png
 !data/test/*.pdf
+!data/*.dvc
 !tests/
 /qn_pairs

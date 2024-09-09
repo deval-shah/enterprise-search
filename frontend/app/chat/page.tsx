@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuth } from "../contexts/AuthContext";
+import { useAuthStore } from '../store';
 import PromptContainer from '../components/PromptContainer';
 
 const ChatPage = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuthStore();
 
   if (!user) {
     console.log("User not authenticated, redirecting to login");

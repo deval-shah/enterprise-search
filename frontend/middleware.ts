@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
     console.log("No session ID found, redirecting to login");
     // Redirect to login if there's no authentication
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
+    //loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 

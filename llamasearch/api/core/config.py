@@ -11,11 +11,17 @@ class Settings(BaseSettings):
     SERVER_HOST: str = Field(default="http://localhost:8010", env="SERVER_HOST")
     PROJECT_NAME: str = Field(default="LlamaSearch", env="PROJECT_NAME")
 
+    # Limits
+    FILE_SIZE_LIMIT: int = Field(default=10 * 1024 * 1024)
+    MAX_FILES_PER_USER: int = Field(default=100)
+    MAX_FILES_PER_CHAT: int = Field(default=10)
+    MAX_FILES: int = Field(default=10)
+
     # CORS Settings
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")
 
     # Database Settings
-    DATABASE_URL: str = Field(default="sqlite:///./test.db", env="DATABASE_URL")
+    DATABASE_URL: str = Field(default='sqlite+aiosqlite:///./test.db', env="DATABASE_URL")
 
     # Redis Settings
     REDIS_URL: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
@@ -42,7 +48,7 @@ class Settings(BaseSettings):
     def BACKEND_CORS_ORIGINS_LIST(self) -> List[str]:
         return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
 
-@lru_cache()
+# @lru_cache()
 def get_settings():
     return Settings()
 
