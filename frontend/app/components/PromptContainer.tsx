@@ -2,19 +2,25 @@
 import React, { useState, Suspense, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
-import { useAuth } from '../contexts/AuthContext';
 import Sidebar from './Sidebar';
 import FileUploadDialog from './FileUploadDialog';
+import { useAuthStore, useFileUploadStore, useChatStore } from '../store';
 
-const ChatInterface = dynamic(() => import('./ChatInterface'), {
+// const ChatInterface = dynamic(() => import('./ChatInterface'), {
+//   loading: () => <p>Loading chat interface...</p>,
+// });
+
+const ChatInterface = dynamic(() => import('./ChatInterface').then(mod => mod.default), {
   loading: () => <p>Loading chat interface...</p>,
+  ssr: false
 });
 
 const PromptContainer: React.FC = () => {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const [showUploadDialog, setShowUploadDialog] = useState(true);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const { user, loading } = useAuthStore();
+  const { uploadedFiles, setUploadedFiles, clearUploadedFiles, clearUploadStatus } = useFileUploadStore();
+  const { clearMessages, clearFileCount } = useChatStore();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,6 +31,10 @@ const PromptContainer: React.FC = () => {
   const handleNewChat = () => {
     setShowUploadDialog(true);
     setUploadedFiles([]);
+    clearMessages();
+    clearUploadedFiles();
+    clearFileCount();
+    clearUploadStatus();
   };
 
   const handleFileUpload = (files: File[]) => {
@@ -44,7 +54,7 @@ const PromptContainer: React.FC = () => {
           <FileUploadDialog onUploadComplete={handleFileUpload} />
         ) : (
           <Suspense fallback={<div>Loading...</div>}>
-            <ChatInterface initialFiles={uploadedFiles} />
+            <ChatInterface />
           </Suspense>
         )}
       </div>

@@ -28,7 +28,7 @@ IPython
 xformers
 #API dependencies
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
 pydantic
 pydantic[email]

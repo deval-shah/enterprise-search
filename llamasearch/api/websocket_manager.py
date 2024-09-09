@@ -20,6 +20,24 @@ class ConnectionManager:
         self.users[client_id] = user
         return client_id
 
+    async def heartbeat(self):
+        while True:
+            for client_id, (websocket, _) in self.active_connections.items():
+                try:
+                    await websocket.send_json({"type": "ping"})
+                except Exception:
+                    await self.disconnect(client_id)
+            await asyncio.sleep(30)  # Send heartbeat every 30 seconds
+
+    async def send_upload_progress(self, client_id: str, filename: str, progress: float):
+        if client_id in self.active_connections:
+            websocket, _ = self.active_connections[client_id]
+            await websocket.send_json({
+                "type": "upload_progress",
+                "filename": filename,
+                "progress": progress
+            })
+
     def get_user(self, client_id: str) -> Optional[User]:
         connection = self.active_connections.get(client_id)
         return connection[1] if connection else None
@@ -55,12 +73,12 @@ class ConnectionManager:
             if stream:
                 for char in response:
                     await websocket.send_json({"type": "chunk", "content": char})
-                    await asyncio.sleep(0.01)  # Small delay to simulate streaming
+                    await asyncio.sleep(0.01)
             else:
                 await websocket.send_json({"type": "chunk", "content": response})
             await websocket.send_json({"type": "end_stream"})
         except WebSocketDisconnect:
-            await self.handle_disconnect(client_id)
+            await self.disconnect(client_id)
         except Exception as e:
             logger.error(f"Error streaming response for client {client_id}: {e}")
             await websocket.send_json({"type": "error", "content": str(e)})

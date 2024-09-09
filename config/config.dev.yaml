@@ -29,7 +29,7 @@ embedding:
   local_model_path: "data/models/embedding/"
 
 llm:
-  llm_model: "llama3"
+  llm_model: "ajindal/llama3.1-storm:8b"
   modelfile: "config/modelfile.yaml"
   use_openai: False
 

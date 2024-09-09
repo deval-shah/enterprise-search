@@ -11,4 +11,9 @@ export interface ContextDetail {
     role: 'user' | 'assistant' | 'system';
     content: string;
     context?: ContextDetail[];
+    files?:  { name: string }[];
+  }
+
+  export interface AttachedFile extends File {
+    preview?: string;
   }

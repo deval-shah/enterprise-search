@@ -1,34 +1,54 @@
 // FileUploadDialog.tsx
-import React, { useState, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useDropzone } from 'react-dropzone';
+import React, { useCallback, useMemo } from 'react';
+import { useDropzone, FileRejection } from 'react-dropzone';
 import { FiUploadCloud, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify'; // Add this import
+import { useAuthStore } from '../store';
+import { useFileUploadStore, useChatStore } from '../store';
 
 interface FileUploadDialogProps {
   onUploadComplete: (files: File[]) => void;
 }
 
 const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const { getAuthHeader } = useAuth();
+  const { isUploading, uploadStatus, setIsUploading, setUploadStatus, setUploadedFiles, clearUploadedFiles, clearUploadStatus } = useFileUploadStore();
+  const { getAuthHeader } = useAuthStore.getState();
 
+  // Store
+  const { fileCount, setFileCount } = useChatStore();
+
+  // Limitations
+  const maxFileSize = 10;
   const allowedExtensions = ['.pdf', '.txt', '.docx', '.csv'];
+  const maxChatFiles = 10;
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+
+    const invalidFileSize = acceptedFiles.filter(file => file.size > maxFileSize  * 1024 * 1024);
+
     const invalidFiles = acceptedFiles.filter(file => {
       const extension = '.' + file.name.split('.').pop()?.toLowerCase();
       return !allowedExtensions.includes(extension);
     });
 
-    if (invalidFiles.length > 0) {
-      const invalidFileNames = invalidFiles.map(file => file.name).join(', ');
-      alert(`The following files are not allowed: ${invalidFileNames}\nPlease only upload .pdf, .txt, .docx, or .csv files.`);
+    if (rejectedFiles.length > 0) {
+      const rejectedFileNames = rejectedFiles.map(({ file }) => file.name).join(', ');
+      alert(`The following files are not allowed: ${rejectedFileNames}. Please only upload .pdf, .txt, .docx, or .csv files.`);
+      return;
+    } else if (invalidFileSize.length > 0) {
+      const fileNames = invalidFileSize.map(file => `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`).join('\n');
+      alert(`The following files exceed the size limit (${maxFileSize} MB):\n${fileNames}`);
+      return;
+    } else if (acceptedFiles.length + fileCount > maxChatFiles) {
+      alert(`You have exceeded the maximum file limit of ${maxChatFiles} files per chat. Please upload no more than ${maxChatFiles} files or start a new chat.`);
       return;
     }
 
+    clearUploadedFiles();
     setIsUploading(true);
+    setUploadedFiles(acceptedFiles);
+    onUploadComplete(acceptedFiles);
+    console.log('Files selected:', acceptedFiles.map(f => ({name: f.name, size: f.size})));
     setUploadStatus('Uploading files...');
 
     try {
@@ -55,25 +75,32 @@ const FileUploadDialog: React.FC<FileUploadDialogProps> = ({ onUploadComplete })
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.log(errorData, errorData.detail, errorData)
+        const parsedError = JSON.parse(errorData.error.match(/{.*}/)?.[0] || '{}');
+        alert(`${parsedError.detail}`);
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       const result = await response.json();
+      setFileCount(fileCount + acceptedFiles.length)
       setUploadStatus('Files uploaded successfully!');
+      setUploadedFiles(acceptedFiles);
       onUploadComplete(acceptedFiles);
       toast.success('Files uploaded successfully!');
     } catch (error) {
       console.error('Error uploading files:', error);
       let errorMessage = 'Failed to upload files. Please try again.';
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         errorMessage = 'Upload timed out. Please try again.';
       }
       setUploadStatus(`Error uploading files: ${errorMessage}`);
       toast.error(errorMessage);
     } finally {
       setIsUploading(false);
+			toast.dismiss();
+			clearUploadStatus();
     }
-  }, [getAuthHeader, onUploadComplete]);
+  }, [getAuthHeader, onUploadComplete, setIsUploading, setUploadStatus, setUploadedFiles, allowedExtensions, clearUploadedFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,

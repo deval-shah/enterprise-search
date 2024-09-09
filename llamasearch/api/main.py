@@ -41,8 +41,7 @@ async def lifespan(app: FastAPI):
     logger.info("WebSocket manager initialized")
 
     yield
-
-    #Shutdown Logic
+    # Cleanup
     await container.pipeline_factory().cleanup_all()
     logger.info("Pipeline factory resources cleaned up")
     for client_id in list(app.state.websocket_manager.active_connections.keys()):
