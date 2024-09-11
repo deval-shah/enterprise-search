@@ -8,6 +8,7 @@ from llamasearch.logger import logger
 from llamasearch.settings import config
 from starlette.datastructures import UploadFile
 import base64
+
 CHUNK_SIZE = 64 * 1024  # 64KB chunks
 PARTIAL_MD5_SIZE = 8 * 1024  # 8KB for partial MD5
 
