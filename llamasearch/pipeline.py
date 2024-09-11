@@ -166,7 +166,8 @@ class Pipeline:
         )
 
     async def setup_parser(self):
-        self.parser = RagflowNodeParser()
+        #self.parser = RagflowNodeParser()
+        self.parser = SentenceSplitter()
 
     async def setup_ingestion_pipeline(self):
         self.ingestion = IngestionPipeline(

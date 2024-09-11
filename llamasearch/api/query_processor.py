@@ -8,11 +8,13 @@ from llamasearch.logger import logger
 from llamasearch.api.utils import handle_file_upload
 from typing import List, Union, Dict
 from fastapi import File, UploadFile, Form
-from cachetools import TTLCache
+# from cachetools import TTLCache
 import json
 import os
+import asyncio
 
-query_cache = TTLCache(maxsize=100, ttl=3600)
+# query_cache = TTLCache(maxsize=100, ttl=3600)
+QUERY_TIMEOUT = 60 # 60 seconds
 
 async def process_query(
     query: str,
@@ -25,7 +27,7 @@ async def process_query(
         pipeline = await pipeline_factory.get_or_create_pipeline_async(user.firebase_uid, user.tenant_id)
         user_upload_dir = pipeline.config.application.data_path
         logger.debug(f"User Upload Dir: {user_upload_dir}")
-        cache_key = f"{user.firebase_uid}:{query}"
+        # cache_key = f"{user.firebase_uid}:{query}"
         # if cache_key in query_cache:
         #     logger.info(f"Query cache hit for {cache_key}")
         #     return query_cache[cache_key]
@@ -38,7 +40,7 @@ async def process_query(
         else:
             logger.info("No files received")
 
-        response = await pipeline.perform_query_async(query)
+        response = await asyncio.wait_for(pipeline.perform_query_async(query), timeout=QUERY_TIMEOUT)
         logger.debug(f"Raw response from query_app: {response}")
 
         if response is None or not hasattr(response, 'response'):
@@ -55,7 +57,6 @@ async def process_query(
             for path, details in document_info.items()
         ]
         logger.debug("Context details: " + str(context_details))
-
         try:
             await log_query_task(db, user.firebase_uid, query, context_details, response.response)
         except Exception as e:
@@ -69,11 +70,19 @@ async def process_query(
         }
         # query_cache[cache_key] = result
         return result
-    except Exception as e:
-        logger.error(f"Error in process_query: {str(e)}", exc_info=True)
+    except asyncio.TimeoutError:
+        logger.error("Query processing timed out")
         return {
-            "response": f"An error occurred: {str(e)}",
+            "response": "Query processing timed out",
             "context": [],
             "query": query,
             "file_upload": []
+        }
+    except Exception as e:
+        logger.error(f"Error in process_query: {str(e)}", exc_info=True)
+        return {
+            "response": f"An error occurred during query processing: {str(e)}",
+            "context": [],
+            "query": query,
+            "file_upload": file_upload_response if 'file_upload_response' in locals() else []
         }

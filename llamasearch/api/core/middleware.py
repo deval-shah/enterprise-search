@@ -51,6 +51,10 @@ class SessionMiddleware(BaseHTTPMiddleware):
         logger.info(f"Request processed: {response.status_code}")
         return response
 
+async def session_middleware(request: Request, call_next):
+    middleware = SessionMiddleware(app=None)
+    return await middleware.dispatch(request, call_next)
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_requests: int = 100, window_seconds: int = 60):
         super().__init__(app)
@@ -68,6 +72,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             raise HTTPException(status_code=429, detail="Too many requests")
         self.requests[client_ip].append(current_time)
         response = await call_next(request)
+
 
 class FileSizeLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_size: int = None):
@@ -88,20 +93,6 @@ class FileSizeLimitMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         return response
 
-    async def _check_file_size(self, file: UploadFile) -> bool:
-        file_size = 0
-        chunk_size = 8192  # 8 KB chunks 
-        while True:
-            chunk = await file.read(chunk_size)
-            if not chunk:
-                break
-            file_size += len(chunk)
-            if file_size > self.max_file_size:
-                await file.seek(0)
-                return True
-        await file.seek(0)
-        return False
-
 class FileUploadLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_files: int = None):
         super().__init__(app)
@@ -120,15 +111,25 @@ class FileUploadLimitMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
         return response
-    
-async def session_middleware(request: Request, call_next):
-    middleware = SessionMiddleware(app=None)
-    return await middleware.dispatch(request, call_next)
 
-async def filesize_middleware(request: Request, call_next):
-    middleware = FileSizeLimitMiddleware(app=None)
-    return await middleware.dispatch(request, call_next)
+    async def _check_file_size(self, file: UploadFile) -> bool:
+        file_size = 0
+        chunk_size = 8192  # 8 KB chunks
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            file_size += len(chunk)
+            if file_size > self.max_file_size:
+                await file.seek(0)
+                return True
+        await file.seek(0)
+        return False
 
-async def file_upload_middleware(request: Request, call_next):
-    middleware = FileUploadLimitMiddleware(app=None)
-    return await middleware.dispatch(request, call_next)
+# async def filesize_middleware(request: Request, call_next):
+#     middleware = FileSizeLimitMiddleware(app=None)
+#     return await middleware.dispatch(request, call_next)
+
+# async def file_upload_middleware(request: Request, call_next):
+#     middleware = FileUploadLimitMiddleware(app=None)
+#     return await middleware.dispatch(request, call_next)

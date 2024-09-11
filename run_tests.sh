@@ -17,7 +17,7 @@ done
 
 # Pull data from DVC
 echo "Pulling test documents from DVC..."
-if ! dvc pull data/test_docs.dvc; then
+if ! dvc pull --force data/test_docs.dvc; then
     echo "Error: Failed to pull data from DVC."
     exit 1
 fi

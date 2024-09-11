@@ -15,6 +15,7 @@ class ConnectionManager:
 
     async def connect(self, websocket: WebSocket, user: User) -> str:
         client_id = user.firebase_uid
+        #client_id = str(uuid.uuid4())
         self.active_connections[client_id] = (websocket, user)
         self.message_queues[client_id] = asyncio.Queue()
         self.users[client_id] = user
@@ -62,7 +63,7 @@ class ConnectionManager:
         for client_id in disconnected_clients:
             await self.handle_disconnect(client_id)
 
-    async def stream_response(self, response: str, client_id: str, stream: bool = True):
+    async def stream_response(self, response: str, client_id: str, stream: bool = False):
         if client_id not in self.active_connections:
             logger.error(f"Client {client_id} not found in active connections")
             return

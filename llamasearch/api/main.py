@@ -22,6 +22,10 @@ from llamasearch.api.query_processor import process_query
 from llamasearch.pipeline import PipelineFactory
 from llamasearch.api.ws_routes import ws_router
 from llamasearch.api.db.session import sessionmanager, Base
+import logging
+
+logging.getLogger("websockets").setLevel(logging.WARNING)
+logging.getLogger("fastapi").setLevel(logging.WARNING)
 
 container = Container()
 
@@ -53,7 +57,7 @@ app = FastAPI(
     lifespan=lifespan,
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    debug=True,
+    debug=False,
     dependencies=[Depends(container.wire)]
 )
 
@@ -72,7 +76,6 @@ if settings.USE_SESSION_AUTH:
 
 # Initialize ConnectionManager
 app.state.websocket_manager = websocket_manager
-# app.add_middleware(RateLimitMiddleware)
 
 # Wire the container
 container.wire(modules=[__name__, "llamasearch.api.routes", "llamasearch.api.ws_routes"])
