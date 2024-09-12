@@ -1,11 +1,29 @@
 # websocket_manager.py
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import Dict, Any, Callable, Optional, Tuple
+from pydantic import BaseModel
 import asyncio
 import uuid
 import json
 from llamasearch.api.schemas.user import User
 from llamasearch.logger import logger
+
+#------------------------------------------
+class WSMessage(BaseModel):
+    type: str
+    content: Dict[str, Any]
+
+class WSStreamChunk(BaseModel):
+    type: str = "chunk"
+    content: str
+
+class WSMetadata(BaseModel):
+    type: str = "metadata"
+    content: Dict[str, Any]
+
+class WSEndStream(BaseModel):
+    type: str = "end_stream"
+#------------------------------------------
 
 class ConnectionManager:
     def __init__(self):
@@ -63,26 +81,21 @@ class ConnectionManager:
         for client_id in disconnected_clients:
             await self.handle_disconnect(client_id)
 
-    async def stream_response(self, response: str, client_id: str, stream: bool = False):
+    async def stream_response(self, response: str, client_id: str):
         if client_id not in self.active_connections:
             logger.error(f"Client {client_id} not found in active connections")
             return
 
         websocket, _ = self.active_connections[client_id]
         try:
-            await websocket.send_json({"type": "start_stream"})
-            if stream:
-                for char in response:
-                    await websocket.send_json({"type": "chunk", "content": char})
-                    await asyncio.sleep(0.01)
-            else:
-                await websocket.send_json({"type": "chunk", "content": response})
-            await websocket.send_json({"type": "end_stream"})
+            for chunk in response.split():  # Split response into words for demonstration
+                await websocket.send_json(WSStreamChunk(content=chunk).dict())
+            await websocket.send_json(WSEndStream().dict())
         except WebSocketDisconnect:
             await self.disconnect(client_id)
         except Exception as e:
             logger.error(f"Error streaming response for client {client_id}: {e}")
-            await websocket.send_json({"type": "error", "content": str(e)})
+            await websocket.send_json(WSMessage(type="error", content={"error": str(e)}).dict())
 
     def _default_streamer(self, response: Any):
         if isinstance(response, str):

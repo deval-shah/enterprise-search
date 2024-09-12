@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, File, UploadFile, Form, BackgroundTasks, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from dependency_injector.wiring import inject, Provide
-from llamasearch.api.websocket_manager import get_websocket_manager
+from llamasearch.api.websocket_manager import get_websocket_manager, WSMessage, WSStreamChunk, WSMetadata, WSEndStream
 from llamasearch.api.core.security import get_current_user_ws
 from llamasearch.api.core.container import Container
 from llamasearch.api.db.session import get_db
@@ -17,7 +17,6 @@ from typing import List, Optional, Dict, Union, Any
 from collections import defaultdict
 
 ws_router = APIRouter()
-temp_file_storage = defaultdict(list)
 
 class WSQueryRequest(BaseModel):
     query: str
@@ -68,18 +67,24 @@ async def websocket_endpoint(
                     if invalid_files:
                         error_response = {
                             "type": "error",
-                            "content": "Invalid file data",
-                            "invalid_files": [file['name'] for file in invalid_files]
+                            "content": {
+                                "error": "Invalid file data",
+                                "invalid_files": [file['name'] for file in invalid_files]
+                            }
                         }
                         await websocket.send_json(error_response)
                         continue
 
                     result = await process_query_request(websocket, user, query_data, files, db, pipeline_factory, client_id)
-                    metadata = result.get("metadata", {})
-                    response = result.get("response", "")
-
-                    await websocket.send_json(metadata)
-                    await websocket_manager.stream_response(response, client_id)
+    
+                    # Send metadata
+                    await websocket.send_json(WSMetadata(content=result.content["metadata"]).dict()) 
+                    # Stream response
+                    response = result.content["response"]
+                    for chunk in response.split():  # Split response into words for demonstration
+                        await websocket.send_json(WSStreamChunk(content=chunk).dict())
+                    # Send end of stream
+                    await websocket.send_json(WSEndStream().dict())
 
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for client: {client_id if client_id else 'Unknown'}")
@@ -114,16 +119,29 @@ async def process_query_request(websocket, user, query_data: WSQueryRequest, fil
             pipeline_factory=pipeline_factory,
             file_paths=file_paths
         )
-        res = {
-            "metadata": {
-                "type": "metadata",
-                "context": result.get('context', []),
-                "query": result.get('query', ''),
-                "file_upload": file_upload_results
-            },
-            "response": result.get('response', '')
-        }
-        return res
+        response = WSQueryResponse(
+            type="query_response",
+            content={
+                "response": result.get('response', ''),
+                "metadata": {
+                    "query": query_data.query,
+                    "context": result.get('context', []),
+                    "file_upload": file_upload_results
+                }
+            }
+        )
+        return response
     except Exception as e:
         logger.error(f"Query processing error for client {client_id}: {str(e)}")
-        return {"type": "error", "content": str(e)}
+        return WSQueryResponse(
+            type="error",
+            content={
+                "response": '',
+                "metadata": {
+                    "error": str(e),
+                    "query": query_data.query,
+                    "context": result.get('context', []),
+                    "file_upload": []
+                }
+            }
+        )

@@ -9,6 +9,7 @@ from llamasearch.api.db.session import get_db
 from llamasearch.api.core.config import settings
 from llamasearch.logger import logger
 from llamasearch.api.core.security  import get_current_user_ws
+from llamasearch.api.core.config import settings
 
 class SessionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -17,7 +18,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
         logger.debug(f"Session ID from cookie: {session_id}")
         request.state.user = None
         request.state.session_id = None
-        if settings.USE_SESSION_AUTH and session_id:
+        if settings.ENABLE_AUTH and session_id:
             async for db in get_db():
                 user = await session_service.validate_session(db, session_id)
                 if user:
@@ -27,7 +28,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
                 else:
                     logger.debug("SessionMiddleware: Invalid session")
         else:
-            logger.debug(f"No session ID or session auth not enabled. USE_SESSION_AUTH: {settings.USE_SESSION_AUTH}")
+            logger.debug(f"No session ID or session auth not enabled. ENABLE_AUTH: {settings.ENABLE_AUTH}")
 
         response = await call_next(request)
         logger.info(f"Request processed: {response.status_code}")
@@ -74,62 +75,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
 
-class FileSizeLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_size: int = None):
-        super().__init__(app)
-        self.max_size = max_size if max_size is not None else settings.FILE_SIZE_LIMIT
-
+class FileUploadMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.method == "POST":
-            try:
-                form = await request.form()
-                for field_name, field_value in form.items():
-                    if isinstance(field_value, UploadFile):
-                        if await self._check_file_size(field_value):
-                            raise HTTPException(status_code=413, detail=f"File {field_name} exceeds the limit of {self.max_size}")
-            except Exception as e:
-                raise HTTPException(status_code=500, detail="An error occurred while processing the request")
-
+        if request.method == "POST" and "multipart/form-data" in request.headers.get("Content-Type", ""):
+            form = await request.form()
+            files = form.getlist("files")
+            total_size = sum(file.size for file in files if isinstance(file, UploadFile))
+            if total_size > settings.FILE_SIZE_LIMIT:
+                raise HTTPException(status_code=413, detail=f"Total file size exceeds the allowed limit of {settings.FILE_SIZE_LIMIT} bytes")
+            if len(files) > settings.MAX_FILES:
+                raise HTTPException(status_code=422, detail=f"Number of files exceeds the allowed limit of {settings.MAX_FILES} files")
         response = await call_next(request)
         return response
-
-class FileUploadLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_files: int = None):
-        super().__init__(app)
-        self.max_files = max_files if max_files is not None else settings.FMAX_FILES
-
-    async def dispatch(self, request: Request, call_next):
-        if request.method == "POST":
-            try:
-                form = await request.form()
-                file_count = sum(1 for field in form.values() if isinstance(field, UploadFile))
-                
-                if file_count > self.max_file_count:
-                    raise HTTPException(status_code=400, detail=f"Number of attached files exceeds the limit of {self.max_files}")
-            except Exception as e:
-                raise HTTPException(status_code=500, detail="An error occurred while processing the request")
-
-        response = await call_next(request)
-        return response
-
-    async def _check_file_size(self, file: UploadFile) -> bool:
-        file_size = 0
-        chunk_size = 8192  # 8 KB chunks
-        while True:
-            chunk = await file.read(chunk_size)
-            if not chunk:
-                break
-            file_size += len(chunk)
-            if file_size > self.max_file_size:
-                await file.seek(0)
-                return True
-        await file.seek(0)
-        return False
-
-# async def filesize_middleware(request: Request, call_next):
-#     middleware = FileSizeLimitMiddleware(app=None)
-#     return await middleware.dispatch(request, call_next)
-
-# async def file_upload_middleware(request: Request, call_next):
-#     middleware = FileUploadLimitMiddleware(app=None)
-#     return await middleware.dispatch(request, call_next)

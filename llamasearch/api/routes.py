@@ -29,6 +29,11 @@ router = APIRouter()
 cookie_sec = APIKeyCookie(name="llamasearch_session")
 security = HTTPBearer()
 
+ALLOWED_EXTENSIONS = {'pdf', 'docx', 'txt'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def standard_error_response(status_code: int, detail: str):
     return JSONResponse(
         status_code=status_code,
@@ -53,7 +58,7 @@ async def login(
 ):
     user = await get_current_user(request, response, credentials, db)
     if user:
-        if settings.USE_SESSION_AUTH:
+        if settings.ENABLE_AUTH:
             session_id = await session_service.create_session(db, user.id)
             response.set_cookie(
                 key="session_id",
@@ -104,14 +109,21 @@ async def refresh_session(
     raise HTTPException(status_code=401, detail="Invalid session")
 
 @router.get("/protected")
-async def protected_route(request: Request, user_info: Tuple[User, bool] = Depends(get_current_user)):
-    user, _ = user_info
+async def protected_route(request: Request, user: User = Depends(get_current_user)):
     return {"message": f"Hello, {user.display_name or user.email}!"}
 
+@router.get("/chats/", response_model=List[ChatListResponse])
+async def read_chats(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 10
+):
+    return await ChatService.get_user_chats(db, user.id, skip, limit)
+
 @router.get("/optional-auth")
-async def optional_auth_route(request: Request, user_info: Optional[Tuple[Optional[User], bool]] = Depends(get_optional_user)):
-    if user_info and user_info[0]:
-        user, _ = user_info
+async def optional_auth_route(request: Request, user: Optional[User] = Depends(get_optional_user)):
+    if user:
         return {"message": f"Hello, {user.display_name or user.email}!"}
     else:
         return {"message": "Hello, anonymous user!"}
@@ -125,29 +137,37 @@ async def query_endpoint(
     files: List[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
     pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory]),
-    current_user: Tuple[User, bool] = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
+    # Check for empty query
+    if not query.strip():
+        raise HTTPException(status_code=422, detail="Empty query string is not allowed")
     logger.info(f"Query endpoint called by user: {current_user.email}")
-
-    # Check if file count exceeds limit
-    if (files):
-        files_uploaded = get_file_count(current_user.firebase_uid)
-        if files_uploaded >= settings.MAX_FILES_PER_USER:
-            logger.error(f"Upload limit exhausted! for user {current_user}. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
-            raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
-        elif files_uploaded + len(files) > settings.MAX_FILES_PER_CHAT:
-            logger.error(f"Requesting to upload {len(files)}, Upload limit exceeded, cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
-            raise HTTPException(status_code=400, detail=f"Upload limit exceeded. You cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
     try:
+        pipeline = await pipeline_factory.get_or_create_pipeline_async(current_user.firebase_uid, current_user.tenant_id)
+        user_upload_dir = pipeline.config.application.data_path
+
+        file_paths = []
+        if files:
+            upload_results = await handle_file_upload(files, user_upload_dir)
+            file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
+            logger.info(f"Uploaded {len(file_paths)} files for query processing")
+
         result = await process_query(
             query=query,
             user=current_user,
             db=db,
             pipeline_factory=pipeline_factory,
-            files=files
+            file_paths=file_paths
         )
-        update_file_count(current_user.firebase_uid, len(files))
+
+        # Update file count in Redis
+        update_file_count(current_user.firebase_uid, len(file_paths))
+
         return JSONResponse(content=result, status_code=200)
+    except ValueError as ve:
+        logger.error(f"Validation error in query processing: {str(ve)}")
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An error occurred during processing the query: {query}")
@@ -156,33 +176,36 @@ async def query_endpoint(
 @inject
 async def upload_files(
     files: List[UploadFile] = File(...),
-    user_info: Tuple[User, bool] = Depends(get_current_user),
+    user_info: User = Depends(get_current_user),
     pipeline_factory: PipelineFactory = Depends(Provide[Container.pipeline_factory])
 ):
+    logger.info(f"Received upload request for {len(files)} files")
+    if not files:
+        logger.warning("No files provided in the request")
+        raise HTTPException(status_code=422, detail="No file uploaded")
+
+    for file in files:
+        logger.info(f"Processing file: {file.filename}")
+        if not allowed_file(file.filename):
+            logger.warning(f"Invalid file type: {file.filename}")
+            raise HTTPException(status_code=400, detail=f"Invalid file type for {file.filename}. Allowed types are: {', '.join(ALLOWED_EXTENSIONS)}")
+
     pipeline = await pipeline_factory.get_or_create_pipeline_async(user_info.firebase_uid, user_info.tenant_id)
     user_upload_dir = pipeline.config.application.data_path
     logger.debug(f"User Upload Dir: {user_upload_dir}")
 
-    # Check if file count exceeds limit
-    files_uploaded = get_file_count(user_info.firebase_uid)
-    if files_uploaded >= settings.MAX_FILES_PER_USER:
-        logger.error(f"Upload limit exhausted! for user {user_info}. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
-        raise HTTPException(status_code=400, detail=f"Upload limit exceeded. Quota of {settings.MAX_FILES_PER_USER - files_uploaded} file uploads remaining")
-    elif files_uploaded + len(files) > settings.MAX_FILES_PER_CHAT:
-        logger.error(f"Requesting to upload {len(files)}, Upload limit exceeded, cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
-        raise HTTPException(status_code=400, detail=f"Upload limit exceeded. You cannot upload more than {settings.MAX_FILES_PER_CHAT} files at a time.")
     try:
-        logger.info(f"Uploading {len(files)} files for user {user_info.firebase_uid}")
         upload_results = await handle_file_upload(files, user_upload_dir)
-        file_paths = [result['location'] for result in upload_results if result['status'] == "success"]
-        if file_paths:
-            logger.info("Inserting file paths : {}".format(file_paths))
-            await pipeline.insert_documents(file_paths)
-        else:
-            logger.warning("No valid file paths to insert")
+        successful_uploads = [result for result in upload_results if result['status'] == 'success']
+        if not successful_uploads:
+            raise HTTPException(status_code=400, detail="No files were successfully uploaded")
+
+        file_paths = [result['location'] for result in successful_uploads]
+        await pipeline.insert_documents(file_paths)
+
         return JSONResponse(content={"file_upload": upload_results}, status_code=200)
-    except HTTPException as he:
-        raise he
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"Error uploading files: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred while uploading the files: {str(e)}")
@@ -210,19 +233,9 @@ async def get_recent_queries(
 #     user_info: Tuple[User, bool] = Depends(get_current_user)
 # ):
 #     try:
-#         return await state_manager.create_chat(user_info.id, chat)
+#         # TODO :: Add logic to create a chat
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
-
-@router.get("/chats/", response_model=List[ChatListResponse])
-async def read_chats(
-    user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-    skip: int = 0,
-    limit: int = 10
-):
-    user, _ = user_info
-    return await ChatService.get_user_chats(db, user.id, skip, limit)
 
 @router.get("/chats/{chat_id}", response_model=ChatResponse)
 async def read_chat(

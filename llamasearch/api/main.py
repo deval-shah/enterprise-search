@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from dependency_injector.wiring import inject, Provide
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
-from llamasearch.api.core.middleware import SessionMiddleware
+from llamasearch.api.core.middleware import SessionMiddleware, FileUploadMiddleware
 from llamasearch.api.routes import router
 from llamasearch.api.core.config import settings
 from llamasearch.api.core.redis import get_redis
@@ -33,7 +33,7 @@ container = Container()
 async def lifespan(app: FastAPI):
     # Startup Logic
     await init_db()
-    if settings.USE_SESSION_AUTH:
+    if settings.ENABLE_AUTH:
         redis_client = get_redis()
         session_service.init_redis(redis_client)
         print(redis_client)
@@ -69,8 +69,9 @@ if settings.BACKEND_CORS_ORIGINS_LIST:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    #app.add_middleware(FileUploadMiddleware)
     
-if settings.USE_SESSION_AUTH:
+if settings.ENABLE_AUTH:
     print("Session authentication enabled")
     app.add_middleware(SessionMiddleware)
 

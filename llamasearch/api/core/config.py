@@ -13,7 +13,6 @@ class Settings(BaseSettings):
 
     # Toggle Settings
     ENABLE_RATE_LIMIT: int = Field(default=False, env="RATE_LIMIT_ENABLED")
-    ENABLE_AUTH: int = Field(default=True, env="AUTH_ENABLED")
 
     # CORS Settings
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")
@@ -25,7 +24,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
 
     # Authentication Settings
-    USE_SESSION_AUTH: bool = Field(default=True, env="USE_SESSION_AUTH")
+    ENABLE_AUTH: bool = Field(default=True, env="ENABLE_AUTH")
     COOKIE_SECURE: bool = Field(default=False, env="COOKIE_SECURE")
 
     # Firebase Settings
