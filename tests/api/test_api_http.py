@@ -2,11 +2,11 @@ import pytest
 import requests
 import json
 import os
-from base_api_test import BaseAPITest
+from .base_api_test import BaseAPITest
 from llamasearch.api.core.config import settings
 from io import BytesIO
 
-class TestHTTPEndpoints(BaseAPITest):
+class TestHTTPAPI(BaseAPITest):
     @pytest.fixture(autouse=True)
     def setup_test_data(self, test_qa_dict):
         self.test_qa_dict = test_qa_dict

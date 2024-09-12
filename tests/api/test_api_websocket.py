@@ -4,9 +4,9 @@ import websockets
 import json
 import base64
 import os
-from base_api_test import BaseAPITest
+from .base_api_test import BaseAPITest
 
-class TestWebSocket(BaseAPITest):
+class TestWebSocketAPI(BaseAPITest):
     @pytest.fixture(autouse=True)
     def setup_test_data(self, test_qa_dict):
         self.test_qa_dict = test_qa_dict

@@ -4,7 +4,7 @@ import os
 import subprocess
 import json
 from llama_index.core import SimpleDirectoryReader
-from api.generate_token import generate_firebase_tokens
+from .api.generate_token import generate_firebase_tokens
 
 # Test Constants
 WS_URL = "ws://localhost:8010/ws"

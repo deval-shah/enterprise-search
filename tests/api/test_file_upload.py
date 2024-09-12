@@ -5,7 +5,7 @@ from fastapi import UploadFile
 from io import BytesIO
 import pytest
 from llamasearch.api.utils import handle_file_upload, get_file_size_and_partial_md5, get_upload_file_size_and_partial_md5
-from base_api_test import BaseAPITest
+from .base_api_test import BaseAPITest
 
 class TestFileUpload(BaseAPITest):
     @pytest.fixture(scope="class")
