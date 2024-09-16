@@ -8,7 +8,7 @@ from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 from pydantic import parse_obj_as
-from sqlalchemy import select
+from sqlalchemy import select, desc
 
 class ChatService:
     @staticmethod
