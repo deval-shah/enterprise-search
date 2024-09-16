@@ -163,8 +163,11 @@ Please refer to the [Troubleshooting README](docs/troubleshooting.md) for common
 
 ## Release Notes
 
-**Version 1.0.9 - 11/09/2024**
-- Added bug fixes for the websocket routes (file upload, query response generations)
-- Added config settings to enable/disable auth and rate limiting
-- Added git submodule init script
-- README updates
+**Version 1.0.9 - 16/09/2024**
+- Implemented DVC pipeline for reproducible test runs
+- Added `tests/dvc.yaml` for managing test data and execution
+- Updated testing documentation with DVC-based test running instructions
+- Refactored test setup in conftest.py for improved organization
+- Optimized pytest configuration in `pytest.ini`
+- Added WebSocket client (`ws_client.py`)
+- Fixed bugs in WebSocket and HTTP routes and improved error handling

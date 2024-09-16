@@ -32,7 +32,7 @@ dvc repro -f tests/dvc.yaml
 
 This command will run the following stages:
 - **pull_test_data**: Pulls the latest test documents from DVC storage.
-- **run_tests**: Set up the test environment
+- **run_tests**: Set up the test environment.
 
 The DVC pipeline ensures that the latest test data is used and all tests are run consistently. After execution, you can find the test results in the `report.html` file in the project root directory.
 
