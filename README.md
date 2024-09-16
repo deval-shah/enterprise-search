@@ -143,7 +143,7 @@ Refer to the [curl.md](docs/curl.md) For detailed instructions on how to test th
 ### Option 3: Testing the UI and backend server locally
 
 1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2-testing-the-backend-server-api-using-curl-locally)
-2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally.
+2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally. UI is not stable and may have bugs.
 
 ## Testing
 

@@ -131,41 +131,14 @@ curl -X GET http://localhost:8010/api/v1/me \
 curl -X GET http://localhost:8010/api/v1/user/{uid} \
   -b cookies.txt
 ```
-## Other Endpoints (unstable)
+## WebSocket Endpoints
 
-8. Get recent queries
+Test the WebSocket API using the client script. Run from the project root directory:
+
 ```bash
-curl -X GET "http://localhost:8010/api/v1/recent-queries?limit=10" \
-  -b cookies.txt
+python -m llamasearch.api.ws_client
 ```
 
-9. Create a new chat
-```bash
-curl -X POST http://localhost:8010/api/v1/chats/ \
-  -H "Content-Type: application/json" \
-  -d '{"title": "New Chat Title"}' \
-  -b cookies.txt
+This client demonstrates how to authenticate, send a query, and receive a streamed response using the WebSocket API.
 
-```
-10. Get list of chats
-```bash
-curl -X GET "http://localhost:8010/api/v1/chats/?skip=0&limit=10" \
-  -b cookies.txt
-
-```
-
-11. Get a specific chat
-```bash
-curl -X GET http://localhost:8010/api/v1/chats/{chat_id} \
-  -b cookies.txt
-```
-Replace {chat_id} with an actual chat ID.
-
-12. Add a message to a chat
-```bash
-curl -X POST http://localhost:8010/api/v1/chats/{chat_id}/messages \
-  -H "Content-Type: application/json" \
-  -d '{"content": "Your message content here"}' \
-  -b cookies.txt
-```
-Replace {chat_id} with an actual chat ID.
+Refer test scripts in `tests/api/test_api_websocket.py` for more examples.

@@ -30,7 +30,7 @@ Follow steps upto Option 2 in the [README.md](../README.md#option-2-testing-the-
 
 This will set up the necessary components for running the tests against the API server.
 
-To run the test suite:
+To run the test suite, open a new terminal and follow these steps:
 
 1. Ensure you're in the project root directory.
 
