@@ -8,7 +8,7 @@ from .api.generate_token import generate_firebase_tokens
 
 # Test Constants
 WS_URL = "ws://localhost:8010/ws"
-AUTH_TOKEN = generate_firebase_tokens(os.getenv('FIREBASE_TEST_UID'), os.getenv('FIREBASE_CREDENTIALS_PATH'))[1]
+AUTH_TOKEN = generate_firebase_tokens()[1]
 INVALID_TOKEN = "invalid_token"
 FILES = {
     "file1": "./data/test_docs/Adelaide_Strategic_Plan_2024_2028.pdf",

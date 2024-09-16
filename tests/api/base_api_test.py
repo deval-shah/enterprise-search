@@ -10,12 +10,12 @@ class BaseAPITest:
         yield
         # Add any API-specific teardown if needed
 
-    @pytest.fixture(autouse=True)
-    async def setup_db(self):
-        # Initialize the database connection
-        await init_db()
-        yield
-        await close_db()
+    #@pytest.fixture(autouse=True)
+    #async def setup_db(self):
+    #    # Initialize the database connection
+    #    await init_db()
+    #    yield
+    #    await close_db()
 
     async def send_query(self, query: str, files=None):
         # Implement a method to send queries to the API
