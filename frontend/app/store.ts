@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { User } from 'firebase/auth';
 import { auth } from './lib/firebase';
-import { Message } from './types';
+import { Message,ContextDetail } from './types';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { subscribeWithSelector } from 'zustand/middleware'
 
@@ -58,10 +58,10 @@ interface ChatState {
     addMessage: (message: Message) => void;
     setInput: (input: string) => void;
     setIsLoading: (isLoading: boolean) => void;
-    updateLastMessage: (content: string) => void;
+    updateLastMessage: (content: string, context?: ContextDetail[]) => void;
+    setMetadata: (metadata: Record<string, any>) => void;
     setIsWaitingForResponse: (isWaiting: boolean) => void;
     clearMessages: () => void;
-    setMetadata: (metadata: any) => void;
     setIsTyping: (isTyping: boolean) => void;
     updateFileUploadProgress: (filename: string, progress: number) => void;
     setFileCount: (fileCount: number) => void;
@@ -131,21 +131,24 @@ export const useChatStore = create<ChatState>()(
       fileCount: 0,
       setFileCount: (fileCount: number) => set({ fileCount }),
       setMessages: (messages) => set({ messages }),
-      setMetadata: (metadata: any) => set({ metadata }),
+      setMetadata: (metadata: Record<string, any>) => set({ metadata }),
       setIsTyping: (isTyping: boolean) => set({ isTyping }),
-      addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
       setInput: (input) => set({ input }),
       setIsLoading: (isLoading) => set({ isLoading }),
       setIsWaitingForResponse: (isWaiting) => set({ isWaitingForResponse: isWaiting }),
       clearMessages: () => set({ messages: [] }),
       clearFileCount: () => set({ fileCount: 0 }),
-      updateLastMessage: (content) => set((state) => {
+      addMessage: (message: Message) => set((state) => ({
+        messages: [...state.messages, message]
+      })),
+      updateLastMessage: (content: string) => set((state) => {
         const messages = [...state.messages];
-        const lastMessage = messages[messages.length - 1];
-        if (lastMessage && lastMessage.role === 'assistant') {
-          messages[messages.length - 1] = { ...lastMessage, content: lastMessage.content + content };
-        } else {
-          messages.push({ role: 'assistant', content });
+        const lastMessageIndex = messages.length - 1;
+        if (lastMessageIndex >= 0 && messages[lastMessageIndex].role === 'assistant') {
+          messages[lastMessageIndex] = {
+            ...messages[lastMessageIndex],
+            content: messages[lastMessageIndex].content + content,
+          };
         }
         return { messages };
       }),

@@ -7,7 +7,7 @@ export interface ContextDetail {
     document_id: string;
   }
   
-  export interface Message {
+export interface Message {
     role: 'user' | 'assistant' | 'system';
     content: string;
     context?: ContextDetail[];

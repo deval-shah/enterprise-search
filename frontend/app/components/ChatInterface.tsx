@@ -17,7 +17,7 @@ const ChatInterface: React.FC = () => {
   // Stores
   const {
     messages, input, isLoading, isWaitingForResponse, metadata, isTyping, fileUploadProgress, fileCount,
-    setInput, addMessage, setIsLoading, setIsWaitingForResponse, setMetadata, setIsTyping, updateFileUploadProgress, setFileCount
+    setInput, addMessage, setIsLoading, setIsWaitingForResponse, setMetadata, setIsTyping, updateLastMessage, setFileCount
   } = useChatStore();
 
   // const { uploadedFiles, setUploadedFiles, clearUploadedFiles } = useFileUploadStore();
@@ -38,24 +38,21 @@ const ChatInterface: React.FC = () => {
     if (!input.trim()) return;
     if (webSocketService) {
       setIsTyping(true);
-      try{
+      try {
         await webSocketService.sendMessage({
           query: input,
-          files: attachedFiles.map(file => ({ name: file.name, file }))
+          files: attachedFiles
         });
       } catch (error) {
         console.error('Error occurred:', error);
         addMessage({ role: 'system', content: `Error processing your request. Try again later` });
         setIsTyping(false);
       }
-     
     }
-    setFileCount(fileCount + attachedFiles.length)
+    setFileCount(fileCount + attachedFiles.length);
     setInput('');
-    // clearUploadedFiles();
     setAttachedFiles([]);
   };
-
 //   useEffect(() => {
 //     return () => {
 //       clearUploadedFiles();
@@ -109,20 +106,28 @@ const ChatInterface: React.FC = () => {
     if (webSocketService) {
       webSocketService.onMessage((data) => {
         switch (data.type) {
+          case 'metadata':
+            if (typeof data.content === 'object') {
+              setMetadata(data.content);
+            }
+            break;
           case 'chunk':
             setIsTyping(false);
-            break;
-          case 'metadata':
-            setMetadata(data);
             break;
           case 'end_stream':
             setIsWaitingForResponse(false);
             setIsTyping(false);
             break;
+          case 'error':
+            if (typeof data.content === 'string') {
+              console.error('WebSocket error:', data.content);
+              addMessage({ role: 'system', content: `Error: ${data.content}` });
+            }
+            break;
         }
       });
     }
-  }, [webSocketService, setIsWaitingForResponse, setIsTyping, setMetadata]);
+  }, [webSocketService, setIsWaitingForResponse, setIsTyping, setMetadata, addMessage]);
 
   useEffect(() => {
     scrollToBottom();
@@ -132,9 +137,9 @@ const ChatInterface: React.FC = () => {
     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-2xl mx-auto">
-          {messages.map((message, index) => (
-            <MessageItem key={index} message={message} />
-          ))}
+        {messages.map((message, index) => (
+          <MessageItem key={index} message={message} />
+        ))}
           {isTyping && (
             <div className="flex justify-start my-2">
               <div className="bg-gray-200 rounded-lg p-2">
@@ -142,7 +147,6 @@ const ChatInterface: React.FC = () => {
               </div>
             </div>
           )}
-          {metadata && <ContextDetails context={metadata.context} />}
 
           {/* {Object.entries(fileUploadProgress).map(([filename, progress]) => (
                     <div key={filename} className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 my-2">

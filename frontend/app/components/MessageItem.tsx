@@ -7,7 +7,18 @@ import { Message } from '../types';
 const MessageItem: React.FC<{ message: Message }> = ({ message }) => {
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
   const [copied, setCopied] = useState(false);
-  const [displayContent, setDisplayContent] = useState(message.content);
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < message.content.length) {
+      const timer = setTimeout(() => {
+        setDisplayedContent(prev => prev + message.content[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 1); // Adjust timing as needed
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, message.content]);
 
   const handleFeedback = (type: 'like' | 'dislike') => {
     setFeedback(type);
@@ -20,16 +31,12 @@ const MessageItem: React.FC<{ message: Message }> = ({ message }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  useEffect(() => {
-    setDisplayContent(message.content);
-  }, [message.content]);
-
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
       <div className={`max-w-[70%] rounded-lg p-3 ${
         message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
       }`}>
-        <p>{displayContent}</p>
+        {message.content}
         {message.role === 'assistant' && (
           <>
             <div className="flex items-center mt-2 space-x-2">
