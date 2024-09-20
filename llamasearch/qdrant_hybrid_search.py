@@ -123,7 +123,7 @@ class QdrantHybridSearch:
         except Exception as e:
             logger.error(f"Error creating QdrantVectorStore: {e}")
             raise
-
+        
     @track_latency
     async def create_index_async(self):
         """Create a vector store index from given nodes and docstore asynchronously."""
@@ -271,21 +271,12 @@ class QdrantHybridSearch:
             logger.error(f"Error in relative_score_fusion: {str(e)}", exc_info=True)
             return VectorStoreQueryResult(nodes=[], similarities=[], ids=[])
 
-    # def get_nodes(self, limit=None):
-    #     print(self.index.ref_doc_info)
-    #     nodes = self.index.docstore.docs
-    #     if limit is not None:
-    #         limited_nodes = OrderedDict(list(nodes.items())[:limit])
-    #         return limited_nodes.values()
-    #     return nodes.values()
-
-    async def delete_nodes(self, node_ids: List[str]):
-        await self.aclient.delete(
-            collection_name=self.vectordb_config.collection_name,
-            points_selector=models.PointIdsList(points=node_ids)
-        )
-        logger.info(f"Deleted {len(node_ids)} nodes from Qdrant")
-
+    def get_nodes(self, limit=None):
+        nodes = self.index.docstore.docs
+        if limit is not None:
+            limited_nodes = OrderedDict(list(nodes.items())[:limit])
+            return limited_nodes.values()
+        return nodes.values()
 
     async def cleanup(self):
         if self._client:

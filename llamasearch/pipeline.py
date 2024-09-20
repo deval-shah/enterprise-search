@@ -257,24 +257,24 @@ class Pipeline:
 
     # Delete a document from index and docstore
     # TODO :: Issue with deleting from docstore not fixed yet
-    # async def delete_document_using_id(self, doc_id, delete_from_docstore=True):
-    #     try:
-    #         if self.qdrant_search.index is None:
-    #             print(f"Error: The index is not initialized in qdrant_search.")
-    #             return
-    #         # Check if the document exists in the index
-    #         # if doc_id not in qdrant_search.index.docstore.docs:
-    #         #     print(f"Document with ID {doc_id} is not in the index. Nothing to delete.")
-    #         #     return
-    #         # Delete the document from the index
-    #         self.qdrant_search.index.delete_ref_doc(doc_id, delete_from_docstore=delete_from_docstore)
-    #         logger.info(f"Document with ID {doc_id} has been deleted from the index.")
-    #         if delete_from_docstore:
-    #             logger.info(f"Document with ID {doc_id} has also been deleted from the docstore.")
-    #         else:
-    #             logger.info(f"Document with ID {doc_id} remains in the docstore but will not be used for querying.")        
-    #     except Exception as e:
-    #         logger.error(f"Error deleting document with ID {doc_id}: {str(e)}")
+    async def delete_document_using_id(self, doc_id, delete_from_docstore=True):
+        try:
+            if self.qdrant_search.index is None:
+                print(f"Error: The index is not initialized in qdrant_search.")
+                return
+            # Check if the document exists in the index
+            # if doc_id not in qdrant_search.index.docstore.docs:
+            #     print(f"Document with ID {doc_id} is not in the index. Nothing to delete.")
+            #     return
+            # Delete the document from the index
+            self.qdrant_search.index.delete_ref_doc(doc_id, delete_from_docstore=delete_from_docstore)
+            logger.info(f"Document with ID {doc_id} has been deleted from the index.")
+            if delete_from_docstore:
+                logger.info(f"Document with ID {doc_id} has also been deleted from the docstore.")
+            else:
+                logger.info(f"Document with ID {doc_id} remains in the docstore but will not be used for querying.")        
+        except Exception as e:
+            logger.error(f"Error deleting document with ID {doc_id}: {str(e)}")
 
     @track_latency
     async def load_documents_async(self, data_dir=None, input_files=None, use_llamaparse=False):
@@ -359,35 +359,6 @@ class Pipeline:
         #         print(context[:500] + "..." if len(context) > 500 else context)
         # else:
         #     print("No retrieval context available.")
-    async def delete_document(self, doc_id: str, delete_from_docstore: bool = True):
-        if self.qdrant_search.index is None:
-            raise ValueError("Index is not initialized")
-
-        # Get the nodes associated with this document
-        ref_doc_info = self.qdrant_search.index.ref_doc_info.get(doc_id)
-        print("CHECK ",ref_doc_info.node_ids, doc_id, ref_doc_info)
-        if ref_doc_info is None:
-            logger.warning(f"Document with ID {doc_id} not found in the index")
-            return
-
-        # Delete from docstore if required
-        if delete_from_docstore:
-            success = await self.ingestion.docstore.adelete_ref_doc(doc_id)
-            if success:
-                logger.info(f"Document {doc_id} successfully deleted from docstore")
-            else:
-                logger.warning(f"Failed to delete document {doc_id} from docstore")
-
-        
-        # Delete nodes from Qdrant vector store
-        await self.qdrant_search.delete_nodes(ref_doc_info.node_ids)
-
-        # Delete from index struct
-        for node_id in ref_doc_info.node_ids:
-            self.qdrant_search.index.index_struct.delete(node_id)
-        # Update the index struct in storage
-        self.qdrant_search.index._storage_context.index_store.add_index_struct(self.qdrant_search.index.index_struct)
-        logger.info(f"Document {doc_id} and its associated nodes have been deleted")
 
     async def cleanup(self):
         if self.qdrant_search:
