@@ -1,6 +1,6 @@
 application:
   config_path: "config/config.dev.yaml"
-  data_path: "data/slim"
+  data_path: "data/slim/"
   log_dir: "data/app/logs"
   upload_subdir: "uploads"
   eval_data_path: "data/eval/document/"
@@ -31,6 +31,7 @@ embedding:
 
 llm:
   llm_model: "ajindal/llama3.1-storm:8b"
+  #llm_model: "llama3:8b"
   modelfile: "config/modelfile.yaml"
   use_openai: False
 

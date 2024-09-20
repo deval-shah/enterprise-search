@@ -40,14 +40,13 @@ class WebSocketService {
           await new Promise(resolve => setTimeout(resolve, 1000));
           return this.connect(user);
         }
-      
-        const token = (headers as Record<string, string>)['Authorization']?.split(' ')[1];
 
+        const token = (headers as Record<string, string>)['Authorization']?.split(' ')[1];
         const wsUrl = new URL('/ws', process.env.NEXT_PUBLIC_API_URL);
         const sessionId = getCookie('session_id'); // Implement getCookie function
-
+        
         console.log("WebSocket URL:", wsUrl.toString());
-        wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');
+        wsUrl.protocol = wsUrl.protocol.replace('https', 'ws');
 
         this.socket = new WebSocket(wsUrl.toString());
 
@@ -62,7 +61,7 @@ class WebSocketService {
               }
             }
         };
-    
+
         this.socket.onclose = () => {
             console.log('WebSocket connection closed');
             this.handleDisconnection;
@@ -73,7 +72,7 @@ class WebSocketService {
 
         return new Promise<string>((resolve, reject) => {
           if (!this.socket) return reject('Socket is null');
-      
+
           this.socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'authentication_success') {

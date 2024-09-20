@@ -1,4 +1,6 @@
 [core]
     remote = origin
+[cache]
+    dir = /home/deval/.cache/dvc
 ['remote "origin"']
     url = gs://aiml-enterprise-search-data/llamasearch/dvc
