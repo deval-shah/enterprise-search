@@ -3,10 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   console.log("Middleware triggered for path:", request.nextUrl.pathname);
-    // Bypass middleware for API routes
-    if (request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.next();
-    }
+
   const sessionId = request.cookies.get('session_id')?.value;
 
   // List of paths that should be accessible without authentication

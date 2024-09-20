@@ -42,11 +42,12 @@ class WebSocketService {
         }
 
         const token = (headers as Record<string, string>)['Authorization']?.split(' ')[1];
+
         const wsUrl = new URL('/ws', process.env.NEXT_PUBLIC_API_URL);
         const sessionId = getCookie('session_id'); // Implement getCookie function
-        
+
         console.log("WebSocket URL:", wsUrl.toString());
-        wsUrl.protocol = wsUrl.protocol.replace('https', 'ws');
+        wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');
 
         this.socket = new WebSocket(wsUrl.toString());
 
@@ -106,7 +107,7 @@ class WebSocketService {
       return;
     }
     const { addMessage, setIsWaitingForResponse } = useChatStore.getState();
-    
+
     let fileContents: { name: string, content: string }[] = [];
     if (message.files && message.files.length > 0) {
       fileContents = await Promise.all(message.files.map(async (file) => {
