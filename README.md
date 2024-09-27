@@ -24,7 +24,6 @@ Before setting up the project, ensure you have the following installed:
 - Docker and Docker Compose
 - Cuda 11 or higher
 
-
 ## Conda Setup (Local Testing)
 
 **Set up a local Conda environment and install dependencies:**
@@ -76,7 +75,15 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 
 2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
 
-3.  **Fetch Submodules** : To initiate Ragflow parser  pull the submodules using   `chmod +x init_submodule.sh`  then `./init_submodule.sh`.
+3. **Fetch Submodules**: To initialize the Ragflow parser submodule, run the following command:
+
+1. Ensure you have the necessary GitLab access rights for the submodule repository.
+2. Run the following commands:
+
+```bash
+chmod +x scripts/init_submodule.sh
+./scripts/init_submodule.sh
+```
 
 ### Option 1: Test the ES pipeline
 
@@ -136,7 +143,7 @@ Refer to the [curl.md](docs/curl.md) For detailed instructions on how to test th
 ### Option 3: Testing the UI and backend server locally
 
 1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2-testing-the-backend-server-api-using-curl-locally)
-2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally.
+2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally. UI is not stable and may have bugs.
 
 ## Testing
 
@@ -156,7 +163,11 @@ Please refer to the [Troubleshooting README](docs/troubleshooting.md) for common
 
 ## Release Notes
 
-**Version 1.0.8 - 26/07/2024**
-- Added multi tenancy support to isolate data during indexing and filtering during query stage
-- Added tests for multi tenancy
-- Added pytest support to integrate more tests later
+**Version 1.0.9 - 16/09/2024**
+- Implemented DVC pipeline for reproducible test runs
+- Added `tests/dvc.yaml` for managing test data and execution
+- Updated testing documentation with DVC-based test running instructions
+- Refactored test setup in conftest.py for improved organization
+- Optimized pytest configuration in `pytest.ini`
+- Added WebSocket client (`ws_client.py`)
+- Fixed bugs in WebSocket and HTTP routes and improved error handling

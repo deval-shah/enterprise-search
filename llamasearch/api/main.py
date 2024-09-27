@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from dependency_injector.wiring import inject, Provide
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
-from llamasearch.api.core.middleware import SessionMiddleware
+from llamasearch.api.core.middleware import SessionMiddleware, FileUploadMiddleware
 from llamasearch.api.routes import router
 from llamasearch.api.core.config import settings
 from llamasearch.api.core.redis import get_redis
@@ -22,6 +22,10 @@ from llamasearch.api.query_processor import process_query
 from llamasearch.pipeline import PipelineFactory
 from llamasearch.api.ws_routes import ws_router
 from llamasearch.api.db.session import sessionmanager, Base
+import logging
+
+logging.getLogger("websockets").setLevel(logging.WARNING)
+logging.getLogger("fastapi").setLevel(logging.WARNING)
 
 container = Container()
 
@@ -29,7 +33,7 @@ container = Container()
 async def lifespan(app: FastAPI):
     # Startup Logic
     await init_db()
-    if settings.USE_SESSION_AUTH:
+    if settings.ENABLE_AUTH:
         redis_client = get_redis()
         session_service.init_redis(redis_client)
         print(redis_client)
@@ -53,7 +57,7 @@ app = FastAPI(
     lifespan=lifespan,
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    debug=True,
+    debug=False,
     dependencies=[Depends(container.wire)]
 )
 
@@ -65,14 +69,14 @@ if settings.BACKEND_CORS_ORIGINS_LIST:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    #app.add_middleware(FileUploadMiddleware)
     
-if settings.USE_SESSION_AUTH:
+if settings.ENABLE_AUTH:
     print("Session authentication enabled")
     app.add_middleware(SessionMiddleware)
 
 # Initialize ConnectionManager
 app.state.websocket_manager = websocket_manager
-# app.add_middleware(RateLimitMiddleware)
 
 # Wire the container
 container.wire(modules=[__name__, "llamasearch.api.routes", "llamasearch.api.ws_routes"])

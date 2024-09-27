@@ -1,24 +1,25 @@
 version: 1.0
 metadata:
   author: "Deval Shah"
-  last_modified: "2024-06-07"
+  last_modified: "2024-09-11"
   description: "Prompt to generate answer based on the query and context"
 model:
   name: "ajindal/llama3.1-storm:8b"
+  # name: "llama3:8b"
   # format: "json"
   options:
-    temperature: 0.3 # controlling the randomness of the responses.
+    temperature: 0.2 # controlling the randomness of the responses.
     num_predict: 256
-    num_ctx: 2048
+    num_ctx: 8192
+    seed: 123
     #top_k: 40 # Reduces the probability of generating nonsense.
     #top_p: 0.9
   stream: false
   raw: true
   keep_alive: "5m" # Configures how long the model remains loaded in memory after a request.
-  system: "You are an assistant for question-answering tasks" #"system message to (overrides what is defined in the Modelfile)"
-  #context: the context parameter returned from a previous request to /generate, this can be used to keep a short conversational memory
+  system: "You are a helpful assistant that answers questions based on provided context." #"system message to (overrides what is defined in the Modelfile)"
 prompts:
   - role: user
     text: >
-      Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
+      You are given the extracted parts of a long document as context and a question. If you cannot answer based on the given context, just say `I am unable to answer based on provided context`
     type: text

@@ -4,25 +4,27 @@ from logging.handlers import TimedRotatingFileHandler
 import os
 from llamasearch.settings import config
 
+# Define custom VERBOSE level
+VERBOSE = 15
+logging.addLevelName(VERBOSE, "VERBOSE")
+
 class CustomLogger:
     """
     A custom logger class that configures log formatting, filtering based on the log level,
     and supports log file saving with rotation.
     """
+    def __init__(self):
+        logging.Logger.verbose = verbose
+
     @staticmethod
-    def get_formatter() -> ColoredFormatter:
+    def get_formatter(verbose=False) -> ColoredFormatter:
         """
         Defines and returns a ColoredFormatter with custom format and colors.
         """
-        log_format = (
-            "%(asctime)s - "
-            "%(log_color)s"
-            "[%(levelname)s] "
-            "%(reset)s - "
-            "%(dynamic_part)s"
-            "%(message_log_color)s"
-            "%(message)s"
-        )
+        log_format = "%(asctime)s - %(log_color)s[%(levelname)s]%(reset)s - "
+        if verbose:
+            log_format += "%(filename)s:%(lineno)d - "
+        log_format += "%(message_log_color)s%(message)s"
         log_colors = {
             'DEBUG': 'cyan',
             'INFO': 'green',
@@ -39,20 +41,29 @@ class CustomLogger:
         }
         return ColoredFormatter(log_format, log_colors=log_colors, secondary_log_colors={'message': message_log_colors}, reset=True)
 
+    def verbose(self, message, *args, **kwargs):
+        if self.isEnabledFor(VERBOSE):
+            self._log(VERBOSE, message, args, **kwargs)
+
     @classmethod
-    def setup_logger(cls, name: str = None, level: str = None, save_to_disk: bool = False, log_dir: str = './logs', log_name: str = 'app.log') -> logging.Logger:
-        """
-        Setups and returns a configured logger instance.
-        """
+    def setup_logger(cls, name=None, level=None, save_to_disk=False, log_dir='./logs', log_name='app.log'):
         log_level_ = os.getenv('LOGLEVEL', 'INFO').upper()
-        level = getattr(logging, log_level_, logging.INFO)
+        verbose = os.getenv('VERBOSE', 'false').lower() == 'true'
+        debug = os.getenv('DEBUG', 'false').lower() == 'true'
+
+        if debug:
+            level = logging.DEBUG
+        elif verbose:
+            level = VERBOSE
+        else:
+            level = getattr(logging, log_level_, logging.INFO)
 
         logger = logging.getLogger(name)
         logger.setLevel(level)
         logger.propagate = False
+
         stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(cls.get_formatter())
-        stream_handler.addFilter(cls.ContextFilter())
+        stream_handler.setFormatter(CustomLogger.get_formatter(verbose))  # Use CustomLogger explicitly
         logger.addHandler(stream_handler)
 
         if save_to_disk:
@@ -61,13 +72,14 @@ class CustomLogger:
                 filename=os.path.join(log_dir, log_name),
                 when='midnight',
                 interval=1,
-                backupCount=30  # Keep logs for 30 days
+                backupCount=30
             )
             file_format = logging.Formatter('%(asctime)s - [%(levelname)s] - %(message)s')
             file_handler.setFormatter(file_format)
             logger.addHandler(file_handler)
 
         return logger
+
 
     class ContextFilter(logging.Filter):
         """

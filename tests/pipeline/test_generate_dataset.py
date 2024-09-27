@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from llamasearch.generate_datasets import DatasetGenerator  # Replace with the correct import path
+from llamasearch.eval_data_generation import DatasetGenerator
 
 class TestResultPrinter:
     @staticmethod

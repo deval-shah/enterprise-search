@@ -11,11 +11,8 @@ class Settings(BaseSettings):
     SERVER_HOST: str = Field(default="http://localhost:8010", env="SERVER_HOST")
     PROJECT_NAME: str = Field(default="LlamaSearch", env="PROJECT_NAME")
 
-    # Limits
-    FILE_SIZE_LIMIT: int = Field(default=10 * 1024 * 1024)
-    MAX_FILES_PER_USER: int = Field(default=100)
-    MAX_FILES_PER_CHAT: int = Field(default=10)
-    MAX_FILES: int = Field(default=10)
+    # Toggle Settings
+    ENABLE_RATE_LIMIT: int = Field(default=False, env="RATE_LIMIT_ENABLED")
 
     # CORS Settings
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")
@@ -27,7 +24,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
 
     # Authentication Settings
-    USE_SESSION_AUTH: bool = Field(default=True, env="USE_SESSION_AUTH")
+    ENABLE_AUTH: bool = Field(default=True, env="ENABLE_AUTH")
     COOKIE_SECURE: bool = Field(default=False, env="COOKIE_SECURE")
 
     # Firebase Settings
@@ -38,6 +35,12 @@ class Settings(BaseSettings):
     CONFIG_PATH: str = Field(default="config/config.dev.yaml", env="CONFIG_PATH")
     DATA_PATH: str = Field(default="data/sample-docs/", env="DATA_PATH")
     LOG_DIR: str = Field(default="data/app/logs", env="LOG_DIR")
+
+    # Limits
+    FILE_SIZE_LIMIT: int = Field(default=10 * 1024 * 1024)
+    MAX_FILES_PER_USER: int = Field(default=100)
+    MAX_FILES_PER_CHAT: int = Field(default=10)
+    MAX_FILES: int = Field(default=10)
 
     # Logging
     LOGLEVEL: str = Field(default="DEBUG", env="LOGLEVEL")

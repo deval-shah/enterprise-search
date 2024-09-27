@@ -15,8 +15,9 @@ from llamasearch.api.schemas.user import User, UserCreate
 from llamasearch.api.services.session import session_service
 from llamasearch.logger import logger
 
-cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps:
+    cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
+    firebase_admin.initialize_app(cred)
 security = HTTPBearer(auto_error=False)
 
 async def verify_token_and_get_user(token: str, db: AsyncSession) -> User:
@@ -52,7 +53,7 @@ async def get_current_user(
     # Check for session cookie
     session_id = request.cookies.get("session_id")
     logger.debug(f"Session ID from cookie: {session_id}")
-    if settings.USE_SESSION_AUTH and session_id:
+    if settings.ENABLE_AUTH and session_id:
         user = await session_service.validate_session(db, session_id)
         if user:
             logger.debug(f"User authenticated via session: {user.email}")
@@ -70,21 +71,6 @@ async def get_current_user(
     logger.debug("No valid authentication found")
     raise HTTPException(status_code=401, detail="Authentication required")
 
-# async def get_current_user_ws(
-#     websocket: WebSocket,
-#     db: AsyncSession = Depends(get_db),
-#     token: str = None
-# ) -> User:
-#     if not token or not token.startswith('Bearer '):
-#         raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
-#     token = token.split(' ')[1]
-#     user = await verify_token_and_get_user(token, db)
-#     if settings.USE_SESSION_AUTH:
-#         session_id = await create_session(user, db)
-#         print("Session id : {}".format(session_id))
-#         websocket.cookies["session_id"] = session_id
-#     return user
-
 async def get_current_user_ws(
     websocket: WebSocket,
     db: AsyncSession = Depends(get_db),
@@ -92,7 +78,7 @@ async def get_current_user_ws(
 ) -> Tuple[User, str]:
     # Check for session cookie
     session_id = websocket.cookies.get("session_id")
-    if settings.USE_SESSION_AUTH and session_id:
+    if settings.ENABLE_AUTH and session_id:
         logger.info("WS AUTH ::Session validation for the websocket")
         user = await session_service.validate_session(db, session_id)
         if user:
@@ -105,7 +91,7 @@ async def get_current_user_ws(
     token = token.split(' ')[1]
     user = await verify_token_and_get_user(token, db)
     logger.info(f"WS AUTH :: User authenticated via token: {user.email}")
-    if settings.USE_SESSION_AUTH:
+    if settings.ENABLE_AUTH:
         session_id = await session_service.create_session(db, user.id)
     return user, session_id
 
@@ -143,7 +129,7 @@ async def logout_user(
     try:
         session_id = request.cookies.get("session_id")
         logger.info(f"Logout user with session {session_id}")
-        if settings.USE_SESSION_AUTH and session_id:
+        if settings.ENABLE_AUTH and session_id:
             await session_service.end_session(db, session_id)
             logger.debug(f"Session ended for session_id: {session_id}")
         if user:

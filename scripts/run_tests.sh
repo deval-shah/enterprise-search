@@ -2,6 +2,10 @@
 
 set -e  # Exit immediately if a command exits with a non-zero status
 
+echo "Starting LlamaSearch test suite..."
+
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 # Function to check if a command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -17,7 +21,7 @@ done
 
 # Pull data from DVC
 echo "Pulling test documents from DVC..."
-if ! dvc pull data/test_docs.dvc; then
+if ! dvc pull --force data/test_docs.dvc; then
     echo "Error: Failed to pull data from DVC."
     exit 1
 fi

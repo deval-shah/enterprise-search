@@ -16,18 +16,18 @@ UID = os.getenv('FIREBASE_TEST_UID', '')  # Add this to your .env file
 
 CRED_PATH = BASE_PATH / FIREBASE_CREDENTIALS_PATH
 
-def initialize_firebase(cred_path):
+def initialize_firebase():
     try:
         firebase_admin.get_app()
     except ValueError:
-        cred = credentials.Certificate(cred_path)
+        cred = credentials.Certificate(CRED_PATH)
         firebase_admin.initialize_app(cred)
 
-def generate_firebase_tokens(uid, cred_path):
-    initialize_firebase(cred_path)
+def generate_firebase_tokens():
+    initialize_firebase()
 
     # Generate a custom token
-    custom_token = auth.create_custom_token(uid).decode('utf-8')
+    custom_token = auth.create_custom_token(UID).decode('utf-8')
 
     # Exchange custom token for ID token
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={FIREBASE_API_KEY}"
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        custom_token, id_token = generate_firebase_tokens(UID, CRED_PATH)
+        custom_token, id_token = generate_firebase_tokens()
         print("Generated Firebase Custom Token:")
         print(custom_token)
         print("\nGenerated Firebase ID Token:")
