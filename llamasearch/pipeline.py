@@ -31,6 +31,9 @@ from llama_index.core.response.pprint_utils import pprint_response
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from qdrant_client import models
 
+from pprint import pprint
+from collections import defaultdict
+
 #from llamasearch.Ragflow import RagflowNodeParser
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="huggingface_hub.file_download")
@@ -70,6 +73,7 @@ class Pipeline:
         self.setup_llm()
         # self.setup_embed_model()
         self.reranker = None
+        self.ingestion = None
         self.index = None
         self.qa_template = None
         self.prompt_template = ""
@@ -93,6 +97,7 @@ class Pipeline:
             ("Qdrant index", lambda: self.qdrant_search.setup_index_async(tenant_id=self.tenant_id)),
             ("Docstore", self.setup_docstore),
             ("Parser", self.setup_parser),
+            #("Ingestion pipeline", self.setup_ingestion_pipeline),
             ("Documents", lambda: self.load_documents_async(data_dir=data_dir)),
             #("Reranker", self.setup_reranker),
             ("Index creation", self.qdrant_search.create_index_async),
@@ -116,6 +121,13 @@ class Pipeline:
             except Exception as e:
                 logger.error(f"Error during {step_name} setup: {str(e)}")
                 raise
+
+        if self.documents and self.ingestion:
+            nodes = await self.ingest_documents(self.documents)
+            logger.info(f"Ingesting {len(nodes)} nodes for {len(self.ingestion.docstore.docs)} chunks")
+            await self.qdrant_search.add_nodes_to_index_async(nodes, self.tenant_id)
+            logger.info("Ingestion pipeline setup completed.")
+
         self.is_setup_complete = True
         logger.info("All setup steps completed successfully.")
 
@@ -248,34 +260,6 @@ class Pipeline:
         await self.setup_query_engine()
         return nodes
 
-    # async def get_ref_info(self):
-    #     try:
-    #         all_ref_doc_info = self.qdrant_search.index.ref_doc_info
-    #         pprint(dict(list(all_ref_doc_info.items())[:5]), width=100, compact=True)
-    #     except Exception as e:
-    #         logger.error(f"Error getting ref_doc_info: {e}")
-
-    # Delete a document from index and docstore
-    # TODO :: Issue with deleting from docstore not fixed yet
-    # async def delete_document_using_id(self, doc_id, delete_from_docstore=True):
-    #     try:
-    #         if self.qdrant_search.index is None:
-    #             print(f"Error: The index is not initialized in qdrant_search.")
-    #             return
-    #         # Check if the document exists in the index
-    #         # if doc_id not in qdrant_search.index.docstore.docs:
-    #         #     print(f"Document with ID {doc_id} is not in the index. Nothing to delete.")
-    #         #     return
-    #         # Delete the document from the index
-    #         self.qdrant_search.index.delete_ref_doc(doc_id, delete_from_docstore=delete_from_docstore)
-    #         logger.info(f"Document with ID {doc_id} has been deleted from the index.")
-    #         if delete_from_docstore:
-    #             logger.info(f"Document with ID {doc_id} has also been deleted from the docstore.")
-    #         else:
-    #             logger.info(f"Document with ID {doc_id} remains in the docstore but will not be used for querying.")        
-    #     except Exception as e:
-    #         logger.error(f"Error deleting document with ID {doc_id}: {str(e)}")
-
     @track_latency
     async def load_documents_async(self, data_dir=None, input_files=None, use_llamaparse=False):
         # if use_llamaparse:
@@ -359,39 +343,62 @@ class Pipeline:
         #         print(context[:500] + "..." if len(context) > 500 else context)
         # else:
         #     print("No retrieval context available.")
-    async def delete_document(self, doc_id: str, delete_from_docstore: bool = True):
-        if self.qdrant_search.index is None:
-            raise ValueError("Index is not initialized")
-
-        # Get the nodes associated with this document
-        ref_doc_info = self.qdrant_search.index.ref_doc_info.get(doc_id)
-        print("CHECK ",ref_doc_info.node_ids, doc_id, ref_doc_info)
-        if ref_doc_info is None:
-            logger.warning(f"Document with ID {doc_id} not found in the index")
-            return
-
-        # Delete from docstore if required
-        if delete_from_docstore:
-            success = await self.ingestion.docstore.adelete_ref_doc(doc_id)
-            if success:
-                logger.info(f"Document {doc_id} successfully deleted from docstore")
-            else:
-                logger.warning(f"Failed to delete document {doc_id} from docstore")
-
-        
-        # Delete nodes from Qdrant vector store
-        await self.qdrant_search.delete_nodes(ref_doc_info.node_ids)
-
-        # Delete from index struct
-        for node_id in ref_doc_info.node_ids:
-            self.qdrant_search.index.index_struct.delete(node_id)
-        # Update the index struct in storage
-        self.qdrant_search.index._storage_context.index_store.add_index_struct(self.qdrant_search.index.index_struct)
-        logger.info(f"Document {doc_id} and its associated nodes have been deleted")
 
     async def cleanup(self):
         if self.qdrant_search:
             await self.qdrant_search.cleanup()
+
+    @track_latency
+    async def delete_documents(self, filenames_to_delete: List[str]) -> Dict[str, str]:
+        """
+        Efficiently delete documents from both docstore and vector store based on filenames.
+
+        Args:
+            filenames_to_delete (List[str]): List of filenames to delete.
+
+        Returns:
+            Dict[str, str]: A dictionary with filenames as keys and deletion status as values.
+        """
+        deletion_results = {}
+        documents = self.ingestion.docstore.docs
+
+        # Group document IDs by filename
+        filename_to_doc_ids = defaultdict(list)
+        for doc_id, doc in documents.items():
+            filename = doc.metadata.get('file_name')
+            if filename in filenames_to_delete:
+                filename_to_doc_ids[filename].append(doc_id)
+
+        # Prepare batch deletion tasks
+        vector_store_tasks = []
+        docstore_tasks = []
+        for filename, doc_ids in filename_to_doc_ids.items():
+            if not doc_ids:
+                logger.warning(f"No documents found for filename: {filename}")
+                deletion_results[filename] = "Not found"
+                continue
+
+            logger.info(f"Found {len(doc_ids)} nodes for filename: {filename}")
+            vector_store_tasks.extend([self.qdrant_search.vector_store.adelete(doc_id) for doc_id in doc_ids])
+            docstore_tasks.extend([self.ingestion.docstore.adelete_document(doc_id) for doc_id in doc_ids])
+
+        # Execute batch deletions concurrently
+        try:
+            await asyncio.gather(*vector_store_tasks, *docstore_tasks)
+            for filename in filename_to_doc_ids.keys():
+                deletion_results[filename] = "Deleted successfully"
+                logger.info(f"Successfully deleted all nodes for {filename}")
+        except Exception as e:
+            logger.error(f"Error during batch deletion: {str(e)}")
+            for filename in filename_to_doc_ids.keys():
+                deletion_results[filename] = f"Error: {str(e)}"
+
+        # Handle filenames not found in the documents
+        for filename in filenames_to_delete:
+            if filename not in deletion_results:
+                deletion_results[filename] = "Not found"
+
+        return deletion_results
 
 # TODO :: Background worker to assign pipeline init tasks (celery q?)
 # TODO :: Pipeline pool implementation to keep the pipelines ready upon server start
@@ -462,6 +469,57 @@ class PipelineFactory:
             await self.cleanup_pipeline(user_id)
         logger.info("All pipelines cleaned up")
 
+async def test_delete_functionality():
+    pipeline = None
+    try:
+        tenant_id = "test_tenant"
+        # global_embed_model = setup_global_embed_model(config)
+        # pipeline = Pipeline(config, tenant_id, global_embed_model)
+        # await pipeline.setup()
+        factory = PipelineFactory(config)
+        await factory.initialize_common_resources()
+        user_id = "test_user"
+        pipeline = await factory.get_or_create_pipeline_async(user_id, tenant_id)
+
+        # Step 1: Insert documents
+        file_path1 = "./data/slim/RAG_Survey_Paper.pdf"
+        file_path2 = "./data/slim/uber_10k-1-5.pdf"
+        print("\nStep 1: Inserting documents")
+        await pipeline.insert_documents(file_paths=[file_path1, file_path2])
+
+        # Step 2: Verify insertion
+        print("\nStep 2: Verifying insertion")
+        print(pipeline.ingestion.docstore)
+        documents = pipeline.ingestion.docstore.docs
+        pprint({doc_id: {'id': doc.id_, 'file_name': doc.metadata['file_name']}
+                for doc_id, doc in documents.items()})
+
+        # Step 3: Delete one document
+        files_to_delete = ["RAG_Survey_Paper.pdf",'meta-10k-1-5.pdf']
+        print("\nStep 3: Deleting document")
+        deletion_results = await pipeline.delete_documents(files_to_delete)
+        LatencyTracker().print_summary()
+        for filename, result in deletion_results.items():
+            print(f"Deletion of {filename}: {result}")
+
+        # Step 4: Verify deletion
+        print("\nStep 4: Verifying deletion")
+        documents = pipeline.ingestion.docstore.docs
+        pprint({doc_id: {'id': doc.id_, 'file_name': doc.metadata['file_name']}
+                for doc_id, doc in documents.items()})
+
+        # Step 5: Attempt to delete non-existent document
+        files_to_delete = ["NonExistentFile.pdf"]
+        print("\nStep 5: Attempting to delete non-existent document")
+        deletion_results = await pipeline.delete_documents(files_to_delete)
+        for filename, result in deletion_results.items():
+            print(f"Deletion of {filename}: {result}")
+
+    except Exception as err:
+        logger.error(f"An error occurred during delete functionality test: {err}")
+    finally:
+        await pipeline.cleanup()
+
 # TODO :: Move embed model per user to docker setting to avoid reinitializing same model for every user
 async def main_async():
     try:
@@ -493,4 +551,5 @@ async def main_async():
         await factory.cleanup_all()
 
 if __name__ == "__main__":
+    #asyncio.run(test_delete_functionality())
     asyncio.run(main_async())
