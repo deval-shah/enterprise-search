@@ -8,7 +8,7 @@ from dependency_injector.wiring import inject, Provide
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
 from llamasearch.api.core.middleware import SessionMiddleware, FileUploadMiddleware
-from llamasearch.api.routes import router
+from llamasearch.api.routes import router, document_router
 from llamasearch.api.core.config import settings
 from llamasearch.api.core.redis import get_redis
 from llamasearch.api.services.session import session_service
@@ -83,6 +83,7 @@ container.wire(modules=[__name__, "llamasearch.api.routes", "llamasearch.api.ws_
 
 # Include routers
 app.include_router(router, prefix=settings.API_V1_STR)
+app.include_router(document_router, prefix=f"{settings.API_V1_STR}/documents")
 app.include_router(ws_router)
 
 @app.get("/")

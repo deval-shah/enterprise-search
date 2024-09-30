@@ -21,11 +21,16 @@ This will set up the necessary components for running the tests against the API 
 
 To run the test suite, open a new terminal and follow these steps:
 
-1. Ensure you're in the project root directory.
+1. Ensure you're in the project root directory. 
 
-2. Start the local conda environment and install requirements as mentioned in the [README.md](../README.md) file.
+2. Update current worknig directory to the project root directory.
+```bash
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+```
 
-3. Execute the DVC pipeline:
+3. Start the local conda environment and install requirements as mentioned in the [README.md](../README.md) file.
+
+4. Execute the DVC pipeline:
 ```bash
 dvc repro -f tests/dvc.yaml
 ```
@@ -37,6 +42,11 @@ This command will run the following stages:
 The DVC pipeline ensures that the latest test data is used and all tests are run consistently. After execution, you can find the test results in the `report.html` file in the project root directory.
 
 To run specific tests, you can modify the pytest command in the run_tests stage of the `tests/dvc.yaml` file or run pytest directly with custom options.
+
+## Troubleshooting
+
+If you are getting errors related to DVC, you can try the following:
+- Clear .dvc/cache and .dvc/tmp
 
 ### Guidlines for adding new Test Cases
 

@@ -95,6 +95,52 @@ class TestHTTPAPI(BaseAPITest):
         )
         assert response.status_code == 400
 
+    def test_insert_documents(self, api_url, auth_token, test_files):
+        file_path = test_files['file1']
+        with open(file_path, 'rb') as f:
+            files = {'files': (os.path.basename(file_path), f, 'application/pdf')}
+            response = requests.post(
+                f"{api_url}/documents/insert",
+                headers={"Authorization": f"Bearer {auth_token}"},
+                files=files
+            )
+
+        assert response.status_code == 200
+        response_data = response.json()
+        assert response_data['status'] == 'success'
+        assert 'data' in response_data
+        assert len(response_data['data']) == 1
+        assert response_data['data'][0]['filename'] == os.path.basename(file_path)
+        assert response_data['data'][0]['status'] == 'inserted'
+
+    def test_delete_documents(self, api_url, auth_token, test_files):
+        # First, insert a document
+        file_path = test_files['file1']
+        with open(file_path, 'rb') as f:
+            files = {'files': (os.path.basename(file_path), f, 'application/pdf')}
+            insert_response = requests.post(
+                f"{api_url}/documents/insert",
+                headers={"Authorization": f"Bearer {auth_token}"},
+                files=files
+            )
+        assert insert_response.status_code == 200
+
+        # Now, delete the document
+        filename = os.path.basename(file_path)
+        delete_response = requests.delete(
+            f"{api_url}/documents/delete",
+            headers={
+                "Authorization": f"Bearer {auth_token}",
+                "Content-Type": "application/json"
+            },
+            json={"filenames": [filename]}
+        )
+
+        assert delete_response.status_code == 200
+        delete_data = delete_response.json()
+        assert 'results' in delete_data
+        assert delete_data['results'][filename] == "Deleted successfully"
+
     def assert_valid_response(self, response, query_id):
         assert "response" in response
         assert "context" in response
