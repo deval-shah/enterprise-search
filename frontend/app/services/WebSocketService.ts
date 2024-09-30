@@ -2,7 +2,7 @@ import { User } from 'firebase/auth';
 import { useAuthStore, AuthState } from '../store';
 import { useChatStore } from '../store';
 import { getCookie } from '../utils/cookies';
-
+import { WSQueryMessage, WSResponse } from '../websocket.types';
 class WebSocketService {
     private socket: WebSocket | null = null;
     private reconnectAttempts = 0;
@@ -40,7 +40,7 @@ class WebSocketService {
           await new Promise(resolve => setTimeout(resolve, 1000));
           return this.connect(user);
         }
-      
+
         const token = (headers as Record<string, string>)['Authorization']?.split(' ')[1];
 
         const wsUrl = new URL('/ws', process.env.NEXT_PUBLIC_API_URL);
@@ -62,7 +62,7 @@ class WebSocketService {
               }
             }
         };
-    
+
         this.socket.onclose = () => {
             console.log('WebSocket connection closed');
             this.handleDisconnection;
@@ -73,7 +73,7 @@ class WebSocketService {
 
         return new Promise<string>((resolve, reject) => {
           if (!this.socket) return reject('Socket is null');
-      
+
           this.socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'authentication_success') {
@@ -101,91 +101,79 @@ class WebSocketService {
     }
   };
 
-  
-  async sendMessage(message: { query: string, files?: { name: string, file: File }[] }) {
+  async sendMessage(message: { query: string, files?: File[] }) {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not open');
       return;
     }
     const { addMessage, setIsWaitingForResponse } = useChatStore.getState();
-    const filesArray = message.files
-      ? Array.from(message.files).map((file) => ({ name: file.name }))
-      : [];
-    
-      const contextDetails = message.files ? Array.from(message.files).map((file) => ({
-        file_name: file.name, 
-        file_path: '', 
-        last_modified: new Date().toISOString(), 
-        document_id: ''
-      })): [];
-    addMessage({ role: 'user', content: message.query, context :contextDetails });
-    setIsWaitingForResponse(true);
 
-    console.log('WebSocket sending message:', JSON.stringify({
-      type: 'query',
-      query: message.query,
-      stream: true,
-      session_id: this.sessionId,
-      files: message.files ? message.files.map(file => ({ name: file.name })) : []
-    }));
-
+    let fileContents: { name: string, content: string }[] = [];
     if (message.files && message.files.length > 0) {
-      for (const { name, file } of message.files) {
-        console.log(`Preparing to send file: ${name}, size: ${file.size} bytes`);
-        const buffer = await file.arrayBuffer();
-        // Send file metadata first
-        this.socket.send(JSON.stringify({ type: 'file_metadata', name, size: file.size }));
-        // Then send the file content
-        this.socket.send(buffer);
-        await new Promise<void>(resolve => {
-          const checkBufferedAmount = () => {
-            if (this.socket!.bufferedAmount === 0) {
-              console.log(`File sent: ${name}`);
-              resolve();
-            } else {
-              setTimeout(checkBufferedAmount, 100);
-            }
+      fileContents = await Promise.all(message.files.map(async (file) => {
+        return new Promise<{ name: string, content: string }>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const base64Content = e.target?.result as string;
+            resolve({
+              name: file.name,
+              content: base64Content.split(',')[1] // Remove the data URL prefix
+            });
           };
-          checkBufferedAmount();
+          reader.readAsDataURL(file);
         });
-      }
+      }));
     }
 
-    // Send query message
-    this.socket.send(JSON.stringify({
+    const wsMessage: WSQueryMessage = {
       type: 'query',
       query: message.query,
       stream: true,
-      session_id: this.sessionId,
-      files: message.files ? message.files.map(file => ({ name: file.name })) : []
-    }));
+      files: fileContents,
+      session_id: this.sessionId || ''
+    };
+
+    addMessage({ role: 'user', content: message.query });
+    setIsWaitingForResponse(true);
+
+    console.log('WebSocket sending message:', JSON.stringify(wsMessage));
+    this.socket.send(JSON.stringify(wsMessage));
   }
 
-    onMessage(callback: (data: any) => void) {
+    onMessage(callback: (data: WSResponse) => void) {
       if (this.socket) {
-          this.socket.onmessage = (event) => {
-              const data = JSON.parse(event.data);
-              const { updateLastMessage, setIsWaitingForResponse, addMessage } = useChatStore.getState();
-
-              switch (data.type) {
-                  case 'chunk':
-                      updateLastMessage(data.content);
-                      break;
-                  case 'metadata':
-                      // Handle metadata (you might want to store this in the chat store)
-                      break;
-                  case 'end_stream':
-                      setIsWaitingForResponse(false);
-                      break;
-                  case 'error':
-                      console.error('WebSocket error:', data.content);
-                      addMessage({ role: 'system', content: `Error: ${data.content}` });
-                      break;
+        this.socket.onmessage = (event) => {
+          const data: WSResponse = JSON.parse(event.data);
+          const { addMessage, updateLastMessage, setIsWaitingForResponse, setMetadata } = useChatStore.getState();
+          console.log('WebSocket response message:', JSON.stringify(data));
+          switch (data.type) {
+            case 'metadata':
+              if (typeof data.content === 'object') {
+                setMetadata(data.content);
+                // Add a new assistant message with empty content but with context
+                addMessage({ role: 'assistant', content: '', context: data.content.context });
               }
-              callback(data);
-          };
+              break;
+            case 'chunk':
+              if (typeof data.content === 'string') {
+                console.log('Received chunk:', data.content);
+                updateLastMessage(data.content);
+              }
+              break;
+            case 'end_stream':
+              setIsWaitingForResponse(false);
+              break;
+            case 'error':
+              console.error('WebSocket error:', data.content);
+              if (typeof data.content === 'string') {
+                addMessage({ role: 'system', content: `Error: ${data.content}` });
+              }
+              break;
+          }
+          callback(data);
+        };
       }
-  }
+    }
 
   close() {
     if (this.socket) {

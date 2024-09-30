@@ -10,7 +10,7 @@ from llamasearch.api.query_processor import process_query
 from llamasearch.logger import logger
 from llamasearch.api.utils import handle_file_upload
 import asyncio
-import os
+import os, re
 import json
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Union, Any
@@ -76,13 +76,13 @@ async def websocket_endpoint(
                         continue
 
                     result = await process_query_request(websocket, user, query_data, files, db, pipeline_factory, client_id)
-    
+
                     # Send metadata
                     await websocket.send_json(WSMetadata(content=result.content["metadata"]).dict()) 
                     # Stream response
                     response = result.content["response"]
-                    for chunk in response.split():  # Split response into words for demonstration
-                        await websocket.send_json(WSStreamChunk(content=chunk).dict())
+                    for char in response:
+                        await websocket.send_json(WSStreamChunk(content=char).dict())
                     # Send end of stream
                     await websocket.send_json(WSEndStream().dict())
 

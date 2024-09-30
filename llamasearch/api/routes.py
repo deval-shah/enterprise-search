@@ -226,6 +226,17 @@ async def get_recent_queries(
         } for log in recent_queries
     ]
 
+@router.get("/me", response_model=UserInDB)
+async def read_users_me(user_info: Tuple[UserInDB, bool] = Depends(get_current_user)):
+    return user_info
+
+@router.get("/user/{uid}", response_model=UserInDB)
+async def read_user(uid: str, user_info: Tuple[User, bool] = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    user = await UserService.get_user_by_uid(db, uid)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
 # @router.post("/chats/", response_model=ChatResponse)
 # @inject
 # async def create_chat(
@@ -237,39 +248,28 @@ async def get_recent_queries(
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=f"An error occurred while creating the chat: {str(e)}")
 
-@router.get("/chats/{chat_id}", response_model=ChatResponse)
-async def read_chat(
-    chat_id: str,
-    user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    try:
-        return await ChatService.get_chat(db, chat_id)
-    except ValueError:
-        raise HTTPException(status_code=404, detail="Chat not found")
+# @router.get("/chats/{chat_id}", response_model=ChatResponse)
+# async def read_chat(
+#     chat_id: str,
+#     user_info: Tuple[User, bool] = Depends(get_current_user),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     try:
+#         return await ChatService.get_chat(db, chat_id)
+#     except ValueError:
+#         raise HTTPException(status_code=404, detail="Chat not found")
 
-@router.post("/chats/{chat_id}/messages", response_model=MessageResponse)
-async def add_message_to_chat(
-    chat_id: str,
-    message: MessageCreate,
-    user_info: Tuple[User, bool] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    try:
-        return await ChatService.add_message_to_chat(db, chat_id, message)
-    except ValueError:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred while adding the message: {str(e)}")
-    
-@router.get("/me", response_model=UserInDB)
-async def read_users_me(user_info: Tuple[UserInDB, bool] = Depends(get_current_user)):
-    return user_info
-
-@router.get("/user/{uid}", response_model=UserInDB)
-async def read_user(uid: str, user_info: Tuple[User, bool] = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    user = await UserService.get_user_by_uid(db, uid)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+# @router.post("/chats/{chat_id}/messages", response_model=MessageResponse)
+# async def add_message_to_chat(
+#     chat_id: str,
+#     message: MessageCreate,
+#     user_info: Tuple[User, bool] = Depends(get_current_user),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     try:
+#         return await ChatService.add_message_to_chat(db, chat_id, message)
+#     except ValueError:
+#         raise HTTPException(status_code=404, detail="Chat not found")
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"An error occurred while adding the message: {str(e)}")
 
