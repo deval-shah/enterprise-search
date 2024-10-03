@@ -34,7 +34,6 @@ from qdrant_client import models
 from pprint import pprint
 from collections import defaultdict
 
-#from llamasearch.Ragflow import RagflowNodeParser
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="huggingface_hub.file_download")
 
@@ -178,7 +177,6 @@ class Pipeline:
         )
 
     async def setup_parser(self):
-        #self.parser = RagflowNodeParser()
         self.parser = SentenceSplitter()
 
     async def setup_ingestion_pipeline(self):

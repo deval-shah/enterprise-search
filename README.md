@@ -75,15 +75,6 @@ Update the `config/config.dev.yaml` file with the necessary paths and configurat
 
 2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
 
-3. **Fetch Submodules**: To initialize the Ragflow parser submodule, run the following command:
-
-1. Ensure you have the necessary GitLab access rights for the submodule repository.
-2. Run the following commands:
-
-```bash
-chmod +x scripts/init_submodule.sh
-./scripts/init_submodule.sh
-```
 
 ### Option 1: Test the ES pipeline
 
