@@ -1,6 +1,6 @@
 stages:
-  pull_test_data:
-    cmd: dvc pull --force ../data/test_docs.dvc
+  # pull_test_data:
+  #   cmd: dvc pull --force ../data/test_docs.dvc
   run_tests:
     cmd: pytest
     wdir: ..

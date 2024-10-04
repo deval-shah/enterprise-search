@@ -1,161 +1,192 @@
+
 # Enterprise Search
 
-## Overview
+Enterprise Search is a scalable Retrieval-Augmented Generation (RAG) pipeline designed to provide accurate answers based on your documents. It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions.
 
-Enterprise search aims to give accurate answers on your documents.
+## Core Features
 
-The Enterprise Search pipeline is built using LLaMA index framework to process, embed, and index documents for semantic search and generate answers using indexed documents. We use Qdrant as a vector search engine (for indexing/retrieval of the document data) and Redis for document storage and caching.
-
-## Architecture
-
-This architecture illustrates the main components and data flow of the Enterprise Search pipeline, including the indexing and generation stages, as well as the hybrid search mechanism.
-
-<div align="center">
-  <figure>
-    <img src="assets/pipeline.png" alt="Enterprise Search Pipeline Architecture - 1.0.7" />
-    <figcaption><i>Figure 1: High-level architecture of the Enterprise Search pipeline (v1.0.7)</i></figcaption>
-  </figure>
-</div>
+- **Document Processing**: Efficiently handle various document formats including PDF, DOCX, and TXT files.
+- **Semantic Embedding**: Utilize open source state-of-the-art embedding models to capture the meaning of your documents.
+- **Vector Indexing**: Fast and scalable indexing of document vectors using Qdrant.
+- **Hybrid Search**: Combine dense and sparse vector search using Reciprocal Rank Fusion (RRF) for improved retrieval accuracy.
+- **LLM-powered Generation**: Generate contextually relevant answers using advanced language models.
+- **Customizable Pipeline**: Easily configure and extend the pipeline to suit your specific needs.
+- **RESTful API**: Simple API endpoints for document indexing, querying, and management.
+- **Multi-tenancy Support**: Securely handle multiple users or organizations within the same instance.
+- **Containerized Deployment**: Docker and Kubernetes support for easy scaling and deployment.
 
 ## Prerequisites
 
-Before setting up the project, ensure you have the following installed:
+Before setting up Enterprise Search, ensure you have the following:
+
 - Python 3.9 or higher
 - Docker and Docker Compose
-- Cuda 11 or higher
+- CUDA 11 or higher (for GPU acceleration)
+- Access to a vector database (Qdrant)
+- Access to a document store and cache (Redis)
+- Any specific API keys or accounts needed, e.g., OpenAI API key if using OpenAI models
 
-## Conda Setup (Local Testing)
+## Tech Stack
 
-**Set up a local Conda environment and install dependencies:**
+- LlamaIndex (Document processing and indexing)
+- Qdrant (Vector database)
+- Redis (Caching and document storage)
+- Ollama or OpenAI (Language models)
+- FastAPI (API framework)
+- Docker and Docker Compose
+- Kubernetes (for deployment)
+- Firebase (for authentication)
+- pytest (for testing)
+- DVC (for data version control)
 
-Create and activate a new environment with Python 3.9:
+## Local Setup
+
+Set up a Conda environment locally:
 ```bash
 conda create --name es_env python=3.9
 conda activate es_env
 pip install -r requirements.txt
 ```
 
-## Services
+## Configuration
 
-### 1. Qdrant
+1. Rename `.env.example` to `.env` and update the values to match your setup.
 
-Qdrant is used as the vector search database to support efficient searching over vectorized data for retrieval. It is configured to run through `docker/docker-compose.yml`:
+2. Update the configuration in `config/config.dev.yaml`. Default settings are defined in `llamasearch/settings.py`:
+- `application`: General application settings
+- `vector_store_config`: Qdrant settings for vector storage
+- `qdrant_client_config`: Qdrant client connection settings
+- `redis_config`: Redis settings for document store and cache
+- `embedding`: Embedding model configuration (uses model from HuggingFace)
+- `llm`: Language model configuration (uses model from ollama/openai)
+- `reranker`: Reranker model settings (uses model from HuggingFace)
 
-This default configuration starts the Qdrant container on localhost on the ports 6333 and 6334.
+3. Setup up LLM of your choice.
 
-### 2. Redis
+### Open-Source Option: Ollama
 
-Redis serves as the caching and document storage layer. It is configured to run through `docker/docker-compose.yml`:
+1. **Start Ollama docker:**: Use the `docker/docker-compose-ollama.yml` file to run Ollama:
+```bash
+docker-compose -f docker/docker-compose-ollama.yml up -d
+```
+The docker container will pull models mentioned in the `config/config.dev.yaml` on startup. It may take few minutes to download the models. Check ollama docker logs for progress.
 
-This default configuration starts the Redis server accessible on port 6379 on localhost.
+### External Providers Option: OpenAI
 
-### 3. LLM
+To use OpenAI's proprietary models, set `OPENAI_API_KEY` in .env file.
 
-The pipeline supports open source llms via Ollama and OpenAI models. Update the `config/config.dev.yaml` file to use the desired LLM. Currently, we support open source llms using Ollama server and OpenAI models via API.
+1. **Set up OpenAI API key**: Export your OpenAI API key:
+```bash
+export OPENAI_API_KEY=your_api_key_here
+```
+2. **Configure for OpenAI:**: Update the `config/config.dev.yaml` file to use an OpenAI model, set `use_openai` flag to `True`. Check the [openai models list](https://platform.openai.com/docs/models).
 
+## Usage
 
-### 4. Configuration
+### Running the Pipeline locally
 
-Update the `config/config.dev.yaml` file with the necessary paths and configurations. The default config file assumes a localhost setup.
+1. Start the redis and qdrant services:
+```bash
+docker-compose -f docker/docker-compose.yml up -d redis qdrant
+```
 
-#### Configuration Descriptions:
-- **application**: General application settings.
-- **vector_store_config**: Qdrant is used as vector store for storing dense and sparse vectors for data retrieval.
-- **qdrant_client_config**: Specifies the connection settings for Qdrant client.
-- **redis_config**: Redis is used for document store and cache.
-- **embedding**: Embedding model used for document processing. Pulled from HuggingFace library.
-- **llm_model**: Generation model to generate response using context from retreival stage.
-- **reranker**: Reranker model to refine the results post retrieval stage.
+2. **Run the ES pipeline:**:
+```bash
+python -m llamasearch.pipeline
+```
 
-## Running Locally
+The pipeline loads documents from `application->data_path` defined in config file, processes and indexes them on startup.
 
-### Before you start
+3. Enter your query when prompted. Results will be displayed in the terminal.
 
-1. **Update the config file**: Modify the [config](config/config.dev.yaml) file with the necessary data paths and configurations. A sample test PDF is provided in `./data/test/`.
+## API
 
-2. **Rename the env file**: Rename the `.env.example` file to `.env` and update the paths that matches your local setup.
+We provide a RESTful API for document indexing, querying, and management. Follow steps to test the pipeline and backend server (API) using curl locally.
 
+Default API settings are defined in `llamasearch/api/core/config.py`. These settings can be customized using environment variables defined in `.env` file in the project root.
 
-### Option 1: Test the ES pipeline
-
-1. **Run Qdrant and Redis services using docker-compose**: 
-   ```bash
-   docker-compose -f docker/docker-compose.yml up -d redis qdrant
-   ```
-
-2. **Setup LLM**: Setup up LLM of your choice.
-
-   #### Open-Source Option: Ollama
-
-   1. **Start Ollama docker:**: Use the `docker/docker-compose-ollama.yml` file to run Ollama:
-      ```bash
-      docker-compose -f docker/docker-compose-ollama.yml up -d
-      ```
-      The docker container will pull models mentioned in the `config/config.dev.yaml` on startup. It may take few minutes to download the models. Check ollama docker logs for progress.
-   2. **Explore LLM Model library**: Please have a look at [Ollama Library](https://ollama.com/library) and pull the LLM model of your choice. Update the model name in the `config/config.dev.yaml`.
-
-   #### External Providers Option: OpenAI Models
-
-   To use OpenAI's proprietary models, set `OPENAI_API_KEY`.
-
-   1. **Set up OpenAI API key**: Export your OpenAI API key:
-      ```bash
-      export OPENAI_API_KEY=your_api_key_here
-      ```
-   2. **Configure for OpenAI:**: Update the `config/config.dev.yaml` file to use an OpenAI model, set `use_openai` flag to `True`. Check the [openai models list](https://platform.openai.com/docs/models).
-
-3. **Run the ES pipeline:**:
-   ```bash
-   python -m llamasearch.pipeline
-   ```
-4. **Test**: The pipeline loads documents from `application->data_path` defined in config file, processes and indexes them. When prompted, enter your query. Results will be displayed in the terminal.
-
-### Option 2: Testing the pipeline and backend server (API) using curl locally 
+*Important: When deploying to production, ensure you set appropriate values related to server, authentication.*
 
 1. **Build the Docker Image:**
-   Open your terminal and run the following command to build the Docker image and run the docker image:
-   ```bash
-   docker build -t docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest -f docker/Dockerfile .
-   ```
+Run the following command to build the Docker image.
+```bash
+docker build -t es:latest -f docker/Dockerfile .
+```
 
 2. **Authentication**:  Update `FIREBASE_CREDENTIALS_PATH` to point to your firebase credentials file in `.env` file for user authentication. Refer to [Firebase README](docs/firebase.md) for instructions.
 
-3. **Setup LLM**: Setup the LLM service of your choice. Please follow instructions listed in Option 1, Step 2.
+*Note: Currently, we only support testing API endpoints with authentication enabled. A firebase account is required to test the API endpoints.*
+
+3. **Setup LLM**: Setup the LLM of your choice (if you haven't already) as mentioned in the [configuration](#configuration) section.
 
 4. **Run the docker image:**
-   Adjust docker mount points in the `docker/docker-compose.yml` file to point to the local data path.
-   ```bash
-   docker-compose -f docker/docker-compose.yml up -d
-   ```
+Adjust docker mount points in the `docker/docker-compose.yml` file to point to match your local setup. It will run the API server on port 8010 by default.
+```bash
+docker-compose -f docker/docker-compose.yml up -d
+```
 
-5. **Test the API:**
-Refer to the [curl.md](docs/curl.md) For detailed instructions on how to test the API using curl.
-
-### Option 3: Testing the UI and backend server locally
-
-1. **Run the backend server**: Follow the steps 1-3 from [Option 2](#option-2-testing-the-backend-server-api-using-curl-locally)
-2. **Run the UI**: Follow steps in the [UI README](frontend/README.md) to run the UI locally. UI is not stable and may have bugs.
+For detailed API usage examples, including request and response formats, curl request examples and more, please refer to our [API Documentation](docs/curl.md).
 
 ## Testing
 
-Follow steps in [Testing README](docs/testing.md) to test the ES pipeline. We will be adding more test cases for better coverage in upcoming releases.
+We use pytest for testing. To run the test suite:
 
-## Evaluation
+1. Ensure you're in the project root directory.
 
-Follow steps in [Eval README](docs/eval.md) to evaluate the ES pipeline.
+2. Start the API server as stated in the [API](#api) section.
+
+3. In another terminal, set up the Python path:
+```bash
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+```
+
+4. Run the tests:
+```bash
+dvc repro -f tests/dvc.yaml
+```
+For more detailed testing instructions, including how to run specific tests, please refer to our [Testing Guide](docs/testing.md).
 
 ## Deployment
 
-Follow steps in [Deployment README](k8s/README.md) to deploy Enterprise Search using Kubernetes and Helm.
+Enterprise Search can be deployed using Kubernetes and Helm. Here's a high-level overview of the deployment process:
 
-## Troubleshooting
+1. Build and push the Docker image to your docker registry:
+```bash
+docker build -t es:latest .
+docker push es:latest
+```
 
-Please refer to the [Troubleshooting README](docs/troubleshooting.md) for common issues and their resolutions.
+2. Configure your Kubernetes cluster and ensure `kubectl` is set up correctly.
 
-## Release Notes
+3. Update the `k8s/values.yaml` file with your specific configuration.
 
-**Version 1.0.10 - 27/09/2024**
-- Added new endpoints for document insertion and deletion
-- Implemented comprehensive test suite for new endpoints
-- Improved API consistency and error handling
-- Updated documentation for new features
+4. Deploy using Helm:
+```bash
+cd k8s/
+helm install enterprise-search . --values values.yaml
+```
+
+5. Monitor the deployment:
+```bash
+kubectl get pods,svc -n {{YOUR_NAMESPACE}}
+```
+
+For detailed deployment instructions, please refer to our [Deployment Guide](k8s/README.md).
+
+## Contributing
+
+## License
+
+This project is licensed under the {{LICENSE_TYPE}} - see the [LICENSE]({{LICENSE_FILE_URL}}) file for details.
+
+## Acknowledgements
+
+Enterprise Search project is built upon valuable open source projects. We'd like to acknowledge the following projects and their contributors:
+
+- [LlamaIndex](https://github.com/jerryjliu/llama_index) for a stable foundation for indexing and querying capabilities with wide array of integrations
+- [Qdrant](https://github.com/qdrant/qdrant) for the vector database functionality
+- [FastAPI](https://github.com/tiangolo/fastapi) for the high-performance web framework
+- [Ollama](https://github.com/ollama/ollama) for local LLM inference
+- [Redis](https://github.com/redis/redis) for caching and document storage
+- [Docker](https://github.com/docker) and [Kubernetes](https://github.com/kubernetes/kubernetes) for containerization and orchestration
+

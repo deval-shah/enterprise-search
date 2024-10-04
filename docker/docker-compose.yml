@@ -2,29 +2,29 @@ version: '3.7'
 
 services:
   # ES Pipeline
-  # es:
-  #   image: docker.aiml.team/products/aiml/enterprise-search/llamasearch:latest
-  #   container_name: enterprise_search
-  #   volumes:
-  #     - ../model_files:/app/model_files
-  #     - ../config/config.dev.yaml:/app/config/config.dev.yaml
-  #     - ../keys/firebase.json:/app/keys/firebase.json
-  #     - ../data:/app/data
-  #     - ../data/models/embeddings:/app/data/models/embeddings
-  #   env_file:
-  #     - ../.env
-  #   environment:
-  #     - DOCKER_ENV=true
-  #     - APP_BASE_PATH=/app
-  #     - FIREBASE_CREDENTIALS_PATH=/app/keys/firebase.json
-  #   network_mode: host
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: all
-  #             capabilities: [gpu]
+  es:
+    image: es:latest
+    container_name: enterprise_search
+    volumes:
+      - ../model_files:/app/model_files
+      - ../config/config.dev.yaml:/app/config/config.dev.yaml
+      - ../keys/firebase.json:/app/keys/firebase.json
+      - ../data:/app/data
+      - ../data/models/embeddings:/app/data/models/embeddings
+    env_file:
+      - ../.env
+    environment:
+      - DOCKER_ENV=true
+      - APP_BASE_PATH=/app
+      - FIREBASE_CREDENTIALS_PATH=/app/keys/firebase.json
+    network_mode: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   # Vector Store
   qdrant:

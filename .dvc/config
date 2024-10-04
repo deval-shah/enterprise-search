@@ -1,4 +1,4 @@
 [core]
     remote = origin
 ['remote "origin"']
-    url = gs://aiml-enterprise-search-data/llamasearch/dvc
+    url = gs://add-your-bucket-path/dvc

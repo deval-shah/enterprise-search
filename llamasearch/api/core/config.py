@@ -7,9 +7,9 @@ from functools import lru_cache
 class Settings(BaseSettings):
     # API Settings
     API_V1_STR: str = Field(default="/api/v1", env="API_V1_STR")
-    SERVER_NAME: str = Field(default="LlamaSearch", env="SERVER_NAME")
+    SERVER_NAME: str = Field(default="EnterpriseSearch", env="SERVER_NAME")
     SERVER_HOST: str = Field(default="http://localhost:8010", env="SERVER_HOST")
-    PROJECT_NAME: str = Field(default="LlamaSearch", env="PROJECT_NAME")
+    PROJECT_NAME: str = Field(default="EnterpriseSearch", env="PROJECT_NAME")
 
     # Toggle Settings
     ENABLE_RATE_LIMIT: int = Field(default=False, env="RATE_LIMIT_ENABLED")

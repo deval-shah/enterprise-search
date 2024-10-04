@@ -81,7 +81,7 @@ class CustomModel(DeepEvalBaseLLM):
             ],
             "stream": False,
             "format": "json",
-            "grammar": "./model_files/json_arr.gbnf",
+            #"grammar": "./model_files/json_arr.gbnf",
             "keep_alive": "30m"
         }
 

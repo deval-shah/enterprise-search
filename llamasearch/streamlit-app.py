@@ -44,7 +44,7 @@ def save_uploaded_files(directory: str, uploaded_files: List) -> List[str]:
 
 if __name__ == "__main__":
     # profile_app(config_path='config.yml')
-    st.title("Ask LlamaSearch")
+    st.title("Ask Enterprise Search..")
     uploaded_files = st.file_uploader("Choose a file to upload", type=['txt', 'pdf', 'docx', 'xlsx'], accept_multiple_files=True)
     # Check if files were uploaded successfully
     if uploaded_files is not None:

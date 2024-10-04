@@ -19,12 +19,12 @@ for cmd in dvc pytest; do
     fi
 done
 
-# Pull data from DVC
-echo "Pulling test documents from DVC..."
-if ! dvc pull --force data/test_docs.dvc; then
-    echo "Error: Failed to pull data from DVC."
-    exit 1
-fi
+# # Pull data from DVC
+# echo "Pulling test documents from DVC..."
+# if ! dvc pull --force data/test_docs.dvc; then
+#     echo "Error: Failed to pull data from DVC."
+#     exit 1
+# fi
 
 # Check if test_docs directory contains files
 if [ -z "$(ls -A data/test_docs)" ]; then

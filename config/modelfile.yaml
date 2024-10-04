@@ -5,7 +5,6 @@ metadata:
   description: "Prompt to generate answer based on the query and context"
 model:
   name: "ajindal/llama3.1-storm:8b"
-  # name: "llama3:8b"
   # format: "json"
   options:
     temperature: 0.2 # controlling the randomness of the responses.
