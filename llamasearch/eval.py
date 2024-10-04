@@ -182,44 +182,58 @@ class Eval:
         # Join all metric summaries into a single line and log it
         logger.info(" | ".join(stats_summary))
 
-async def main(data_path: str, qa_json_path: str, save_results_flag: bool):
+async def main(data_path: str, qa_json_path: str,output_filename:str, limit:str, save_results_flag: bool):
     """
     Main function to run the evaluation process.
     
     Args:
         data_path: Path to the data directory.
         qa_json_path: Path to the QA CSV file.
-        save_results_flag: Flag indicating whether to save results to a file.
+        output_file_name: A flag when set , results in evaluation results to be named 'eval_results.json'. Else the file could be timestamped.
+        limit: Indicates a limit of the number of questions to be evaluated.
+        save: Flag indicating whether to save results to a file.
+
     """
-    results_dir = "./results"
+    results_dir = "./data/eval_results"
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
+    output_path=f"evaluation_result_metrics"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_file_path = os.path.join(results_dir, f"eval_{timestamp}.json")
+    results_file_path = os.path.join(results_dir, f"{output_path}_{timestamp}.json")
+    logger.info(output_filename)
+    if output_filename:        
+        results_file_path = os.path.join(results_dir, f"{output_path}.json")
+    
     try:
         logger.info("Initialising the pipeline for evaluation....")
         eval_instance = Eval(data_path, results_file_path)
         await eval_instance.init_rag_pipeline()
         print("-"*120)
         json_content = eval_instance.load_json(qa_json_path)
-        for idx, query in json_content['queries'].items():
-            input_query = query
-            ground_truth = json_content['responses'][idx]
-            logger.info(f"Evaluating: ID {idx} | Question: {input_query} | Ground Truth: {ground_truth}")
-            await eval_instance.evaluate(idx, input_query, ground_truth)
-            if save_results_flag:
-                await eval_instance.save_results()
-            await eval_instance.display_stats()
-            print("-"*120)
-       
+        for idx, (key,query) in enumerate(json_content['queries'].items()):
+            
+            if idx<int(limit):
+                input_query = query
+                ground_truth = json_content['responses'][key]
+                logger.info(f"Evaluating: ID {key} | Question: {input_query} | Ground Truth: {ground_truth}")
+                await eval_instance.evaluate(key, input_query, ground_truth)
+                if save_results_flag:
+                    await eval_instance.save_results()
+                await eval_instance.display_stats()
+                print("-"*120)
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
-        exit(1)
-
+   
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate LLaMA Index Questions and Answers.")
     parser.add_argument("--data_path", required=True, help="Path to the data directory.")
     parser.add_argument("--qa_json_path", required=True, help="Path to the QA CSV file.")
+    parser.add_argument("--output_file_name",action="store_true", help="Filename to Output.")
+    parser.add_argument("--limit", required=True,help="limit no. of  evaluation")
     parser.add_argument("--save", action="store_true", help="Flag to save the evaluation results.")
     args = parser.parse_args()
-    asyncio.run(main(args.data_path, args.qa_json_path, args.save))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(main(args.data_path, args.qa_json_path,args.output_file_name, args.limit,args.save))
+    loop.close()

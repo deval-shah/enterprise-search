@@ -48,7 +48,7 @@ class EmbeddingQAFinetuneDataset(BaseModel):
             (query, self.relevant_docs[query_id])
             for query_id, query in self.queries.items()
         ]
-
+#comment
     def save_json(self, path: str) -> None:
         """Save json."""
         with open(path, "w") as f:

@@ -33,20 +33,11 @@ To evaluate the pipeline, a synthetic dataset based on the nodes(chunks) in the 
 
 ```bash
 python -m  llamasearch.eval_data_generation --data_path ./data/eval/document/ --qa_json_path ./data/eval --save --node_limit 1
-```
-### Pull dataset from google bucket
-A dataset has already been generated to access the data. Following command can be used to pull the data=.
-
-```
-dvc pull ./data/eval/qa_pairs.dvc 
-```
-
-
-
 
 - `--data_path`: Indicates the directory where your documents for indexing are stored.
 - `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
 - `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
+```
 
 ### Evaluation Metrics Configuration
 
@@ -71,24 +62,40 @@ export OPENAI_API_KEY='your_openai_api_key_here'
 ```
 Ensure this variable is set in your environment to avoid authentication issues during the evaluation process.
 
-### Running the Evaluation
 
-The evaluation process involves executing the main script with appropriate arguments to specify the configuration file, data path, path to the QA CSV file, and an option to save the results.
+### Running the Evaluation Pipeline
 
-1. **Navigate to the Project Directory**: Ensure you are in the root directory of the project.
-
-2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
-
-```bash
-python -m llamasearch.eval --data_path ./data/eval/document/ --qa_json_path ./data/eval/qn_a_data.json --save
+The evaluation pipeline has been setup to run on DVC to track the pipeline results. Use the following command to execute the pipeline.
+```bash 
+dvc repro
 ```
+This should execute the pipeline in three stages, as follows:
 
-- `--data_path`: Indicates the directory where your documents for indexing are stored.
-- `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
-- `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
+### DVC Stages
 
-The script will process each question in the json file, perform a query against the indexed documents, and evaluate the responses using the specified metrics.
+#### 1. data_pull
+A dataset has already been generated and stored in the google cloud bucket.
 
-You can replace the dataset with your documents and relevant Q/A pairs.
+#### 2. evaluate 
+The evaluation process involves executing the main script with appropriate arguments to specify the configuration file, data path, path to the QA CSV file, and an option to save the results in json `.data/eval_results/evaluation_result_metrics.json`. 
+The pipeline has been setup to evaluate one Question & Answer Pair, to increase the limit toggle the `--limit` option in the `dvc.yaml`
 
-Results will be logged and, if the `--save` flag is used, saved to a JSON file in the `./results` directory with a timestamped filename.
+#### 3. analyse  
+This stage analyzes model evaluation results stored in a JSON file and calculate performance metrics. It computes the mean, median, and standard deviation for the metrics. It  then saves the results to a CSV file  `data/eval_results/eval_metrics.csv` along with additional metadata (timestamp, model used, and optional side note) and a bar plot comparing the mean of evaluation metrics over different runs is also generated and saved as image `.data/eval_results/evaluation_result_metrics.json`.
+
+
+
+ ### Results:
+ The current run shows the mean score of each metrics on sentence splitter. More of it can be analzsed by referring `./data/eval_results/eval_metrics.csv`.
+
+
+ ![alt text](../assets/results_evaluation.png)
+
+ | Metric                    |     Mean |   Median |   Standard Deviation | Run Timestamp       | Model Used   | Side Note          |
+|:--------------------------|---------:|---------:|---------------------:|:--------------------|:-------------|:-------------------|
+| ContextualPrecisionMetric  | 0.790433 | 1        |             0.322457 | 2024-09-11 17:27:02 | llama3       | Initial evaluation  |
+| ContextualRecallMetric     | 0.907876 | 1        |             0.253418 | 2024-09-11 17:27:02 | llama3       | Initial evaluation  |
+| FaithfulnessMetric         | 0.918978 | 1        |             0.238641 | 2024-09-11 17:27:02 | llama3       | Initial evaluation  |
+| AnswerRelevancyMetric      | 0.930791 | 1        |             0.203652 | 2024-09-11 17:27:02 | llama3       | Initial evaluation  |
+| ContextualRelevancyMetric  | 0.770308 | 1        |             0.373611 | 2024-09-11 17:27:02 | llama3       | Initial evaluation  |
+| Coherence                  | 0.768505 | 0.874086 |             0.258601 | 2024-09-11 17:27:02 | llama3       | Initial evaluation  |
