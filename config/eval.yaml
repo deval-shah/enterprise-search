@@ -4,31 +4,37 @@ metrics:
     model_type: openai
     model: gpt-4o
     include_reason: true
+    async_mode: False
   faithfulness:
     threshold: 0.7
     model_type: openai
     model: gpt-4o
     include_reason: true
+    async_mode: False
   contextual_precision:
     threshold: 0.7
     model_type: openai
     model: gpt-4o
     include_reason: true
+    async_mode: False
   contextual_recall:
     threshold: 0.7
     model_type: openai
     model: gpt-4o
     include_reason: true
+    async_mode: False
   contextual_relevancy:
     threshold: 0.7
     model_type: openai
     model: gpt-4o
     include_reason: true
+    async_mode: False
   coherence:
     name: Coherence
     threshold: 0.5
     model_type: openai
     model: gpt-4o
+    async_mode: False
     criteria: "Coherence - determine if the actual output is coherent with the input."
     evaluation_params:
       - input

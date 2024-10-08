@@ -12,7 +12,7 @@ Enterprise Search is a scalable Retrieval-Augmented Generation (RAG) pipeline de
 - **LLM-powered Generation**: Generate contextually relevant answers using advanced language models.
 - **Customizable Pipeline**: Easily configure and extend the pipeline to suit your specific needs.
 - **RESTful API**: Simple API endpoints for document indexing, querying, and management.
-- **Multi-tenancy Support**: Securely handle multiple users or organizations within the same instance.
+- **Multi-tenancy Support**: Handle multiple users with data isolation at the database level.
 - **Containerized Deployment**: Docker and Kubernetes support for easy scaling and deployment.
 
 ## Prerequisites
@@ -22,9 +22,6 @@ Before setting up Enterprise Search, ensure you have the following:
 - Python 3.9 or higher
 - Docker and Docker Compose
 - CUDA 11 or higher (for GPU acceleration)
-- Access to a vector database (Qdrant)
-- Access to a document store and cache (Redis)
-- Any specific API keys or accounts needed, e.g., OpenAI API key if using OpenAI models
 
 ## Tech Stack
 

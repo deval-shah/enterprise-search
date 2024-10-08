@@ -39,7 +39,7 @@ reranker:
   top_n: 3
 
 dataset_generator:
-    model_type: "custom"
-    model_name: "llama3:8b"
-    use_openai: False
-    openai_model: "gpt4-o"
+  model: "gpt-4o"
+  use_openai: True
+  # model: "ajindal/llama3.1-storm:8b"
+  # use_openai: False

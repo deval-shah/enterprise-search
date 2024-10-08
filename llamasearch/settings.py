@@ -74,14 +74,11 @@ class ApplicationConfig(BaseModel):
 
     def get_log_dir(self):
         return get_path(self.log_dir)
+
 class DatasetGeneration(BaseModel):
-    model_type: str = "custom"
-    model_name :str = "llama3:latest"
-    use_openai: bool =False
-    openai_model: str = "gpt4-o"
+    model: str = "gpt-4o"
+    use_openai: bool = True
 
-
-    
 class Config(BaseModel):
     application: ApplicationConfig = ApplicationConfig()
     qdrant_client_config: QdrantClientConfig = QdrantClientConfig()

@@ -1,94 +1,142 @@
 ## Evaluation
 
-The Evaluation module is designed to assess the performance of the RAG Pipeline, specifically focusing on the quality of answers. 
+The Evaluation module assesses the performance of the RAG Pipeline using the [DeepEval framework](https://github.com/confident-ai/deepeval).
 
 It leverages a set of metrics to provide a comprehensive evaluation of the system's output compared to ground truth data.
 
-### Interpreting the Results
-
-The results will include metrics scores for each query in a json, providing insights into the quality of the answers. These metrics measure the component wise and end to end accuracy of the rag pipeline.
-
-#### Metrics Explained:
-- `faithfulness`: A generator based metric that measures how factually accurate is the generated answer. 
-- `answer_relevancy`: A generator based metric that measures how relevant is the generated answer to the question.
-- `contextual_precision`: A retriever based metric that measures the signal to noise ratio of retrieved context. Requires ground truth.
-- `contextual_recall`:  A retriever based metric that measures whether it can retrieve all the relevant information required to answer the question. Requires ground truth.
-- `contextual_relevancy`: A retriever based metric that measures the relevancy of the retrieved context, calculated based on both the question and contexts.
-- `coherence`: Checks alignment of answer with the question. It is custom LLM metric evaluated using model.
-
 ### Prerequisites
 
-Ensure the system is set up as per the setup instructions above, with all dependencies installed and both Qdrant and Redis services running.
+Setup the conda environment, start the redis, qdrant and ollama services as mentioned in the [README](../README.md).
+
 
 ### Preparing the Dataset
 
-1. Prepare a json file containing the questions and their corresponding ground truth answers. The json file should have at least four keys: `queries` and `response`{ground truth} `relevant_docs` {query_id, nodeid k,v pairs} and `corpus` {node of origin for the query}. There is a sample data in `./data/eval` folder that can be used for testing.
+Generate a Synthetic Dataset on your documents
+To evaluate the pipeline, a synthetic dataset for your document nodes(chunks) shall be generated. This dataset will consist of question-answer pairs derived from the nodes. 
+*Note: Ensure the chunking method remains same for the synthetic dataset generation and evaluation for a fair comparison.*
 
-2. Place your dataset in an accessible directory and note the path to this CSV file for the evaluation process.
 
+#### Option 1: Using OpenAI
 
-### Generating Synthetic Dataset
-To evaluate the pipeline, a synthetic dataset based on the nodes(chunks) in the pipeline can be generated. This dataset will consist of question-answer pairs derived from the nodes, allowing for both end-to-end and component-wise evaluation of the pipeline.
+Set the OpenAI API key in your environment variables:
+```bash
+export OPENAI_API_KEY='your_openai_api_key_here'
+```
 
+#### Option 2: Using Open Source Models
+
+Choose the model from ollama library and update the model name. Update `llm->llm_model`  in [config](../config/config.dev.yaml). Restart the ollama docker service. This will pull the model automatically on startup in the ollama service.
+
+Set the `dataset_generator` configuration in [config](../config/config.dev.yaml):
+  - `model`: Specify the model to use (e.g., "gpt-4o" for OpenAI or a model from ollama library for local models)
+  - `use_openai`: Set to True for OpenAI models, False for local models
+
+Run the evaluation data generation script:
 
 ```bash
 python -m  llamasearch.eval_data_generation --data_path ./data/eval/document/ --qa_json_path ./data/eval --save --node_limit 1
 ```
-### Pull dataset from google bucket
-A dataset has already been generated to access the data. Following command can be used to pull the data=.
+- `--data_path`: Add your documents in this directory for indexing.
+- `--qa_json_path`: Output folder path to generate the evaluation data json.
+- `--save`: A flag to instruct the script to save the evaluation results to a file.
 
+The evaluation json file should have four keys. Refer expected output sample below.
+  - `queries`
+  - `response`(ground truth)
+  - `relevant_docs` (query_id, nodeid k,v pairs)
+  - `corpus` (node of origin for the query).
+
+Sample evaluation json
+```json
+{
+    "queries": {
+        "2648912d-84b4-4d8f-99fa-9a520332badc": "What are the key goals outlined in the City of Adelaide's Strategic Plan for 2024-2028?"
+    },
+    "responses": {
+        "2648912d-84b4-4d8f-99fa-9a520332badc": "The key goals outlined in the City of Adelaide's Strategic Plan for 2024-2028 are to foster boldness, aspiration, and innovation within the city."
+    },
+    "corpus": {
+        "node_0": "Our Adelaide.\nBold.\nAspirational.\nInnovative.City of Adelaide\nStrategic Plan  \n2024  –2028"
+    },
+    "relevant_docs": {
+        "2648912d-84b4-4d8f-99fa-9a520332badc": [
+            "node_0"
+        ]
+    }
+}
 ```
-dvc pull ./data/eval/qa_pairs.dvc 
-```
-
-
-
-
-- `--data_path`: Indicates the directory where your documents for indexing are stored.
-- `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
-- `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
 
 ### Evaluation Metrics Configuration
 
-The evaluation process utilizes a metrics configuration file. The configuration specifies the thresholds and models used for each metric, as outlined below:
+Before running the evaluation, set up the metrics configuration file `config/eval.yaml`. This file defines the thresholds and models for each metric:
 
-- **Metrics**:
-  - `answer_relevancy`, `faithfulness`, `contextual_precision`, `contextual_recall`, `contextual_relevancy`, `coherence`: Each metric is configured with a `threshold` indicating the minimum acceptable score.
-- **Model Types**:
-  - `api`: Utilizes OpenAI's API for metric evaluation, suitable for production environments where high accuracy is essential.
-  - `custom`: Uses locally hosted LLM models for evaluation, offering flexibility and reduced costs at the expense of potential stability issues. Note: Custom model evaluation is currently experimental and may exhibit bugs, which will be addressed in future releases.
-- **Model Selection**:
-  - The `model` field specifies the model used for evaluation. For API model types, this typically refers to an OpenAI model identifier, such as `gpt-4-0125-preview` which is most suitable for the evaluation.
-- **Thresholds**:
-  - The `threshold` value for each metric defines the cut-off score for considering a response satisfactory. Scores above this threshold indicate acceptable performance on the metric.
+- **Metrics**: Each metric (e.g., answer_relevancy, faithfulness) has a configuration block.
+- **Threshold**: Defines the minimum acceptable score for each metric (e.g., 0.7).
+- **Model Type**: `openai`: Uses OpenAI's API for evaluation (reliable for LLM as a judge setup).
+- **Model**: Specifies the evaluation model (e.g., gpt-4o for OpenAI).
 
-#### Environment Setup for Evaluation
+Adjust these settings based on your evaluation requirements and available resources.
 
-To perform evaluations using the `api` model type, you must set the `OPENAI_API_KEY` environment variable with your API key from OpenAI account [settings](https://platform.openai.com/api-keys). This key enables the application to authenticate with OpenAI's API for generating evaluation scores. Set the environment variable as follows before running evaluations:
+### Before you run the Evaluation
 
+To perform evaluations using the `api` model type, you must set the `OPENAI_API_KEY` environment variable with your API key from OpenAI account [settings](https://platform.openai.com/api-keys).
 ```bash
 export OPENAI_API_KEY='your_openai_api_key_here'
 ```
+
 Ensure this variable is set in your environment to avoid authentication issues during the evaluation process.
 
 ### Running the Evaluation
 
-The evaluation process involves executing the main script with appropriate arguments to specify the configuration file, data path, path to the QA CSV file, and an option to save the results.
-
-1. **Navigate to the Project Directory**: Ensure you are in the root directory of the project.
-
-2. **Execute the Evaluation Script**: Use the following command to run the evaluation, replacing the placeholder paths with your actual file paths.
+To run the evaluation:
 
 ```bash
-python -m llamasearch.eval --data_path ./data/eval/document/ --qa_json_path ./data/eval/qn_a_data.json --save
+python -m llamasearch.eval --data_path ./data/eval/document/ --qa_json_path data/eval/qa_pairs/qna_dataset_xxxx_yyyy.json --output_file_name --limit 1 --save
 ```
 
-- `--data_path`: Indicates the directory where your documents for indexing are stored.
-- `--qa_json_path`: The path to the QA json file containing your evaluation dataset.
-- `--save`: A flag that, when used, instructs the script to save the evaluation results to a file.
+Arguments:
+- --data_path: Directory path containing documents for evaluation. Note the documents should be the same as the one used for synthetic data generation.
+- --qa_json_path: Path to the JSON file with question-answer pairs.
+- --output_file_name: Flag to use a standard output filename.
+- --limit: Number of questions to evaluate (default is 1).
+- --save: Flag to save the evaluation results.
 
-The script will process each question in the json file, perform a query against the indexed documents, and evaluate the responses using the specified metrics.
+The evaluation generates a CSV file (./data/eval_results/eval_metrics.csv) with mean, median, and standard deviation for each metric.
 
-You can replace the dataset with your documents and relevant Q/A pairs.
+### Analyzing Results
 
-Results will be logged and, if the `--save` flag is used, saved to a JSON file in the `./results` directory with a timestamped filename.
+After running the evaluation, analyze the results using:
+
+```bash
+python -m llamasearch.eval_result_analyser --json_file ./data/eval_results/evaluation_result_metrics.json --model_used gpt-4o --side_note "Initial evaluation" --output_file ./data/eval_results/eval_metrics.csv
+```
+
+Arguments:
+- --json_file: Path to the JSON file containing evaluation results.
+- --model_used: Name of the model used for evaluation.
+- --side_note: Additional note for the evaluation run.
+- --output_file: Path to save the CSV file with analyzed metrics.
+
+### Interpreting the Results
+
+The results include metric scores for each query in a JSON file, providing insights into the quality of the answers. These metrics measure the component-wise and end-to-end accuracy of the RAG pipeline.
+
+#### Metrics Explained:
+
+- **faithfulness**: Measures the factual accuracy of the generated answer.
+- **answer_relevancy**: Measures the relevance of the generated answer to the question.
+- **contextual_precision**: Measures the signal-to-noise ratio of retrieved context.
+- **contextual_recall**: Measures the ability to retrieve all relevant information required to answer the question.
+- **contextual_relevancy**: Measures the relevancy of the retrieved context based on both the question and contexts.
+- **coherence**: Checks alignment of the answer with the question using a custom LLM metric.
+
+| Metric                    |     Mean |   Median |   Standard Deviation | Run Timestamp       | Model Used   | Side Note          |
+|:--------------------------|---------:|---------:|---------------------:|:--------------------|:-------------|:-------------------|
+| ContextualPrecisionMetric  | 0.790433 | 1        |             0.322457 | 2024-09-11 17:27:02 | gpt-4o       | Initial evaluation  |
+| ContextualRecallMetric     | 0.907876 | 1        |             0.253418 | 2024-09-11 17:27:02 | gpt-4o       | Initial evaluation  |
+| FaithfulnessMetric         | 0.918978 | 1        |             0.238641 | 2024-09-11 17:27:02 | gpt-4o       | Initial evaluation  |
+| AnswerRelevancyMetric      | 0.930791 | 1        |             0.203652 | 2024-09-11 17:27:02 | gpt-4o       | Initial evaluation  |
+| ContextualRelevancyMetric  | 0.770308 | 1        |             0.373611 | 2024-09-11 17:27:02 | gpt-4o       | Initial evaluation  |
+| Coherence                  | 0.768505 | 0.874086 |             0.258601 | 2024-09-11 17:27:02 | gpt-4o       | Initial evaluation  |
+
+ ![alt text](../assets/results_evaluation.png)

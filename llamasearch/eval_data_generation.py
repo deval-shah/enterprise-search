@@ -182,9 +182,9 @@ class DatasetGenerator:
     def setup_model(self):
         logger.info("Setting up model")
         if self.config.dataset_generator.use_openai:
-            self.llm=OpenAI(temperature=0,timeout=600, model=self.config.dataset_generator.openai_model)
-            return self.llm
-        self.llm=Ollama(model=self.config.dataset_generator.model_name, request_timeout=120.0)
+            self.llm = OpenAI(temperature=0, timeout=600, model=self.config.dataset_generator.model)
+        else:
+            self.llm = Ollama(model=self.config.dataset_generator.model, request_timeout=120.0)
         return self.llm
 
     def save_results(self,path:str) -> None:
@@ -196,7 +196,7 @@ class DatasetGenerator:
     
      
     def generate_dataset(self,save_results_flag:bool) -> None:
-        documents = SimpleDirectoryReader(self.data_path).load_data()
+        documents = SimpleDirectoryReader(self.data_path, recursive=False).load_data()
         nodes = self.parser.get_nodes_from_documents(documents)
         if self.no_node_limit:
             nodes=nodes[:self.no_node_limit]
