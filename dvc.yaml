@@ -1,0 +1,21 @@
+stages:
+  data_pull:
+    cmd: dvc pull data/eval/qa_pairs.dvc
+   
+  evaluate:
+    cmd: python -m llamasearch.eval --data_path ./data/eval/document/ --qa_json_path data/eval/qa_pairs/qna_dataset_20240904_111210.json --output_file_name --limit 1 --save
+    deps:
+    - data/eval/document/
+    - data/eval/qa_pairs/qna_dataset_20240904_111210.json
+    - llamasearch/eval.py
+    outs:
+    - ./data/eval_results/evaluation_result_metrics.json
+
+  analyse:
+    cmd: python -m llamasearch.eval_result_analyser --json_file ./data/eval_results/eval_results.json --model_used llama3 --side_note "Initial evaluation" --output_file ./data/eval_results/eval_metrics.csv
+    deps:
+      - ./data/eval_results/evaluation_result_metrics.json  # The input JSON file with evaluation results
+      - ./llamasearch/eval_result_analyser.py
+    outs:
+      - ./data/eval_results/eval_metrics.csv:
+          persist: true  # Marks eval_metrics.csv as persistent
