@@ -1,5 +1,6 @@
 app:
   name: "enterprise-search"
+  namespace: aiml-engineering
   enabled: true
   image:
     repository: docker.aiml.team/products/aiml/enterprise-search/llamasearch
@@ -7,21 +8,43 @@ app:
     pullPolicy: Always
   service:
     type: ClusterIP
-    port: 8000
-    targetPort: 8000
+    port: 8010
+    targetPort: 8010
   resources:
     limits:
       nvidia.com/gpu: "1"
       cpu: "10000m"
       memory: "10Gi"
   env:
+    # Pipeline Settings
+    APP_BASE_PATH: /app
     CONFIG_PATH: "/app/config.yaml"
+    DATA_PATH: "/data/files"
+    LOG_DIR: "/data/app/logs"
     OLLAMA_SERVER_URL: "http://ollama-es-service.aiml-engineering.svc.cluster.local:80"
+    OPENAI_API_KEY: "" # Required if you are using the OpenAI models and `use_openai` flag is enabled (llm/embedding)
+    DOCKER_ENV: true
+    #API Settings
+    API_V1_STR: "/api/v1"
+    SERVER_NAME: "EnterpriseSearch"
+    SERVER_HOST: "http://localhost:8010"
+    PROJECT_NAME: "EnterpriseSearch"
+    ENABLE_RATE_LIMIT: false
+    BACKEND_CORS_ORIGINS: "http://localhost:3000,http://localhost:3001,http://localhost:3002"
+    DATABASE_URL: "sqlite+aiosqlite:///./test.db"
+    REDIS_URL: "redis://redis-service:6379/0"
+    ENABLE_AUTH: true
+    COOKIE_SECURE: false
+    LOGLEVEL: "DEBUG"
+    FIREBASE_CREDENTIALS_PATH: "/app/keys/firebase.json"
+
   volumes:
     config:
       configMapName: "es-cmap"
     data:
       pvcName: "es-pvc"
+    firebase:
+      secretName: "firebase-credentials"
   gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
   # gpuProduct: "NVIDIA-L40S"
 
@@ -31,7 +54,7 @@ ollama:
   namespace: aiml-engineering
   image:
     repository: ollama/ollama
-    tag: latest
+    tag: 0.3.6
     pullPolicy: Always
   service:
     type: ClusterIP
@@ -43,9 +66,7 @@ ollama:
       nvidia.com/gpu: "1"
       cpu: "10000m"
       memory: "40Gi"
-  gpuProduct: "NVIDIA-L40S"
-  #gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
-  #gpuProduct: "NVIDIA-A100-SXM4-40GB"
+  # gpuProduct: "NVIDIA-L40S"
   env:
     OLLAMA_HOST: "0.0.0.0"
   volumes:
@@ -64,12 +85,9 @@ ollama:
   # -- List of models to pull at container startup
   # The more you add, the longer the container will take to start if models are not present
   models:
-   - mistral:7b-instruct
-   - llama3:8b
-   - llama3:instruct
-   - llama3:70b
-   - llama3-chatqa:70b
-  #  - mixtral
+    - ajindal/llama3.1-storm:8b
+  #  - llama3:instruct
+  #  - llama3:70b
   insecure: true
   livenessProbe:
     enabled: true
@@ -91,6 +109,7 @@ ollama:
     successThreshold: 1
 
 qdrant:
+  namespace: aiml-engineering
   enabled: true
   resources:
     limits:
@@ -108,13 +127,12 @@ qdrant:
   volumes:
     config:
       configMapName: "es-cmap"
-    script:
-      configMapName: "create-collection-script"
   gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
   env:
     CONFIG_PATH: "/app/config.yaml"
 
 redis:
+  namespace: aiml-engineering
   enabled: true
   resources:
     limits:
@@ -127,28 +145,29 @@ redis:
     port: 6379
   gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
 
-prometheus:
-  enabled: true
-  image:
-    repository: prom/prometheus
-    tag: v2.26.0
-    pullPolicy: IfNotPresent
-  service:
-    type: NodePort
-    port: 9090
-    nodePort: 30090
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "500m"
-    limits:
-      memory: "2Gi"
-      cpu: "1"
-  storage:
-    useEmptyDir: true
-  volumes:
-    config:
-      configMapName: "es-cmap"
-    data:
-      pvcName: "es-pvc"
-  gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
+# prometheus:
+#   namespace: aiml-engineering
+#   enabled: true
+#   image:
+#     repository: prom/prometheus
+#     tag: v2.26.0
+#     pullPolicy: IfNotPresent
+#   service:
+#     type: NodePort
+#     port: 9090
+#     nodePort: 30090
+#   resources:
+#     requests:
+#       memory: "512Mi"
+#       cpu: "500m"
+#     limits:
+#       memory: "2Gi"
+#       cpu: "1"
+#   storage:
+#     useEmptyDir: true
+#   volumes:
+#     config:
+#       configMapName: "es-cmap"
+#     data:
+#       pvcName: "es-pvc"
+#   gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"

@@ -16,12 +16,25 @@ data:
       prefer_grpc: False
     vector_store_config:
       collection_name: "test"
-      vector_size: 384
+      vector_size: 1536
       distance: Cosine
+      batch_size: 30
+      alpha: 0.4
+      top_k: 4
+      use_async: false
+      multi_tenancy: true
+      enable_hybrid: true
     redis_config:
       host: "redis-service.aiml-engineering.svc.cluster.local"
       port: 6379
     embedding:
-      embed_model: "local:BAAI/bge-small-en-v1.5"
+      model: "Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+      use_openai: false
+      local_model_path: "/data/models/embedding/"
     llm:
-      llm_model: "mistral:7b-instruct"
+      llm_model: "ajindal/llama3.1-storm:8b"
+      modelfile: "config/modelfile.yaml"
+      use_openai: false
+    reranker:
+      model: "BAAI/bge-reranker-large"
+      top_n: 3

@@ -12,7 +12,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = Field(default="EnterpriseSearch", env="PROJECT_NAME")
 
     # Toggle Settings
-    ENABLE_RATE_LIMIT: int = Field(default=False, env="RATE_LIMIT_ENABLED")
+    ENABLE_RATE_LIMIT: bool = Field(default=False, env="RATE_LIMIT_ENABLED")
+
 
     # CORS Settings
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001,http://localhost:3002", env="BACKEND_CORS_ORIGINS")

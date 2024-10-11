@@ -174,7 +174,7 @@ For detailed deployment instructions, please refer to our [Deployment Guide](k8s
 
 ## License
 
-This project is licensed under the {{LICENSE_TYPE}} - see the [LICENSE]({{LICENSE_FILE_URL}}) file for details.
+This project is licensed under the {{LICENSE_TYPE}} - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 

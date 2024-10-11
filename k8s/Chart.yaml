@@ -1,4 +1,4 @@
 apiVersion: v2
 name: enterprise-search
-description: A Helm chart for deploying Enterprise Search with Ollama, Qdrant and Redis on Kubernetes
-version: 1.0.2
+description: A Helm chart to deploy Enterprise Search solution on Kubernetes cluster
+version: 1.0.0

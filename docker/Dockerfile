@@ -18,6 +18,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+RUN mkdir -p /app/keys
 
 COPY requirements.txt /app/
 COPY docker/install.sh /app/

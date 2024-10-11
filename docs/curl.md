@@ -16,7 +16,7 @@ Update these values in `.env` file in the root directory.
 
 ```bash
 python tests/api/generate_token.py
-export FIREBASE_TOKEN=eyJhbGciOiJSUz... # Export the generated Firebase ID token to this variable for convenience to use in curl commands
+export FIREBASE_ID_TOKEN=eyJhbGciOiJSUz... # Export the generated Firebase ID token to this variable for convenience to use in curl commands
 ```
 This will output a Firebase ID token. Copy this token for use in the login request.
 
@@ -100,7 +100,7 @@ curl -X POST http://localhost:8010/api/v1/query/ \
 
 ## File Operations Endpoints
 
-4. Upload file(s) (Same as insert endpoint, will deprecate in future)
+4. Upload file(s) (Same as insert endpoint, will be deprecated in future)
 ```bash
 curl -X POST http://localhost:8010/api/v1/uploadfile \
   -H "Content-Type: multipart/form-data" \

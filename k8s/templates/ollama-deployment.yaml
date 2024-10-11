@@ -13,9 +13,9 @@ spec:
       labels:
         app: {{ .Values.ollama.name }}
     spec:
-      nodeSelector:
-        #kubernetes.io/hostname: {{ .Values.ollama.nodeName }}
-        nvidia.com/gpu.product: {{ .Values.ollama.gpuProduct }}
+     #nodeSelector:
+          #kubernetes.io/hostname: {{ .Values.ollama.nodeName }}
+          #nvidia.com/gpu.product: {{ .Values.ollama.gpuProduct }}
       containers:
       - name: {{ .Values.ollama.name }}
         image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"

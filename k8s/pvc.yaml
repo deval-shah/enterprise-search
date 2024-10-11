@@ -7,5 +7,5 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 500Gi # For aiml-engineering, total storage quota right now is 30T
+      storage: 500Gi # Check the storage quota and adjust accordingly
   storageClassName: longhorn
