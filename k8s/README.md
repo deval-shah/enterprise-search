@@ -1,11 +1,9 @@
 # Deployment Guide
 
-## Introduction
-
 This guide will lead you through the process of deploying our the Enterprise Search solution, powered by Ollama, Qdrant, and Redis services on a Kubernetes cluster.
 
-<div align="center" style="background-color: white; padding: 20px; border-radius: 8px;">
-  <img src="../assets/k8s-deployment.svg" alt="Kubernetes Deployment Flow" width="50%" style="max-width: 500px;">
+<div align="center" style="background-color: white; padding: 20px; border-radius: 8px; display: inline-block;">
+  <img src="../assets/k8s-deployment.svg" alt="Kubernetes Deployment Flow" width="40%" height="70%" style="max-width: 800px;">
 </div>
 <p align="center" style="color: white;"><em>Figure 1: Enterprise Search Kubernetes Deployment Flow</em></p>
 
@@ -263,11 +261,11 @@ Logs provide insights into how the application behaves under load. Access the en
 kubectl logs <pod-name> -n YOUR_K8S_NAMESPACE
 ```
 
-### 🔧 Troubleshooting
+## 🔧 Troubleshooting
 
-**Port Forwarding Issues**: Ensure all pods are in `Running` state before port forwarding.
-**Script Execution**: Verify script paths and permissions.
-**Performance**: Initial requests may be slower due to model loading.
+- **Port Forwarding Issues**: Ensure all pods are in `Running` state before port forwarding.
+- **Script Execution**: Verify script paths and permissions.
+- **Performance**: Initial requests may be slower due to model loading.
 
 For more issues, check pod logs: `kubectl logs <pod-name>  -n YOUR_K8S_NAMESPACE`
 

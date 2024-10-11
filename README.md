@@ -1,51 +1,44 @@
 
 # Enterprise Search
 
-Enterprise Search is a scalable Retrieval-Augmented Generation (RAG) pipeline designed to provide accurate answers based on your documents. It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions.
+Enterprise Search offers foundation for building Retrieval-Augmented Generation (RAG) pipelines designed to provide accurate answers based on your documents. It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions and deploying on their own infrastructure.
 
-## Core Features
+## 📚 Table of Contents
 
-- **Document Processing**: Efficiently handle various document formats including PDF, DOCX, and TXT files.
-- **Semantic Embedding**: Utilize open source state-of-the-art embedding models to capture the meaning of your documents.
-- **Vector Indexing**: Fast and scalable indexing of document vectors using Qdrant.
-- **Hybrid Search**: Combine dense and sparse vector search using Reciprocal Rank Fusion (RRF) for improved retrieval accuracy.
-- **LLM-powered Generation**: Generate contextually relevant answers using advanced language models.
-- **Customizable Pipeline**: Easily configure and extend the pipeline to suit your specific needs.
-- **RESTful API**: Simple API endpoints for document indexing, querying, and management.
-- **Multi-tenancy Support**: Handle multiple users with data isolation at the database level.
-- **Containerized Deployment**: Docker and Kubernetes support for easy scaling and deployment.
+- [Core Features](#-core-features)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [Usage](#-usage)
+- [API](#-api)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Tech Stack](#-tech-stack)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Acknowledgements](#-acknowledgements)
 
-## Prerequisites
+## 🚀 Core Features
 
-Before setting up Enterprise Search, ensure you have the following:
+- 📄 **Document Processing**: Handle various document formats (PDF, DOCX, TXT)
+- 🧠 **Semantic Embedding**: Utilize state-of-the-art embedding models
+- 🔍 **Vector Indexing**: Fast and scalable indexing using Qdrant
+- 🔀 **Hybrid Search**: Combine dense and sparse vector search with RRF
+- 💡 **LLM-powered Generation**: Generate contextual answers using advanced LMs
+- 🛠️ **Customizable Pipeline**: Easily configure and extend to suit your needs
+- 🌐 **RESTful API**: HTTP/Webscoket endpoints for indexing, querying, and file management
+- 👥 **Multi-tenancy Support**: Handle data isolation at vector store level
+- 🐳 **Containerized Deployment**: Docker and Kubernetes support for easy deployment
+
+## 🛠️ Prerequisites
+
+Before setting up Enterprise Search, ensure you have:
 
 - Python 3.9 or higher
 - Docker and Docker Compose
 - CUDA 11 or higher (for GPU acceleration)
 
-## Tech Stack
-
-- LlamaIndex (Document processing and indexing)
-- Qdrant (Vector database)
-- Redis (Caching and document storage)
-- Ollama or OpenAI (Language models)
-- FastAPI (API framework)
-- Docker and Docker Compose
-- Kubernetes (for deployment)
-- Firebase (for authentication)
-- pytest (for testing)
-- DVC (for data version control)
-
-## Local Setup
-
-Set up a Conda environment locally:
-```bash
-conda create --name es_env python=3.9
-conda activate es_env
-pip install -r requirements.txt
-```
-
-## Configuration
+## ⚙️ Configuration
 
 1. Rename `.env.example` to `.env` and update the values to match your setup.
 
@@ -78,25 +71,40 @@ export OPENAI_API_KEY=your_api_key_here
 ```
 2. **Configure for OpenAI:**: Update the `config/config.dev.yaml` file to use an OpenAI model, set `use_openai` flag to `True`. Check the [openai models list](https://platform.openai.com/docs/models).
 
-## Usage
+## 🚀 Quick Start
 
-### Running the Pipeline locally
+1. Clone the repository:
+```bash
+git clone https://github.com/aiml-au/enterprise-search.git
+cd enterprise-search
+```
 
-1. Start the redis and qdrant services:
+2. Set up the environment:
+```bash
+conda create --name es_env python=3.9
+conda activate es_env
+pip install -r requirements.txt
+```
+
+3. Configure the application
+```bash
+cp .env.example .env
+```
+Edit .env with your settings
+
+4. Start the redis and qdrant services:
 ```bash
 docker-compose -f docker/docker-compose.yml up -d redis qdrant
 ```
 
-2. **Run the ES pipeline:**:
+5. **Run the pipeline:**:
 ```bash
 python -m llamasearch.pipeline
 ```
 
-The pipeline loads documents from `application->data_path` defined in config file, processes and indexes them on startup.
+The pipeline loads documents from `application->data_path` defined in config file, processes and indexes them on startup. Enter your query when prompted. Results will be displayed in the terminal.
 
-3. Enter your query when prompted. Results will be displayed in the terminal.
-
-## API
+## 🌐 API
 
 We provide a RESTful API for document indexing, querying, and management. Follow steps to test the pipeline and backend server (API) using curl locally.
 
@@ -124,7 +132,7 @@ docker-compose -f docker/docker-compose.yml up -d
 
 For detailed API usage examples, including request and response formats, curl request examples and more, please refer to our [API Documentation](docs/curl.md).
 
-## Testing
+## 🧪 Testing
 
 We use pytest for testing. To run the test suite:
 
@@ -143,7 +151,7 @@ dvc repro -f tests/dvc.yaml
 ```
 For more detailed testing instructions, including how to run specific tests, please refer to our [Testing Guide](docs/testing.md).
 
-## Deployment
+## 🚀 Deployment
 
 Enterprise Search can be deployed using Kubernetes and Helm. Here's a high-level overview of the deployment process:
 
@@ -170,15 +178,30 @@ kubectl get pods,svc -n {{YOUR_NAMESPACE}}
 
 For detailed deployment instructions, please refer to our [Deployment Guide](k8s/README.md).
 
-## Contributing
+## 💻 Tech Stack
 
-## License
+- LlamaIndex (Document processing and indexing)
+- Qdrant (Vector database)
+- Redis (Caching and document storage)
+- Ollama/OpenAI (Language models)
+- FastAPI (API framework)
+- Docker and Docker Compose
+- Kubernetes (for deployment)
+- Firebase (for authentication)
+- pytest (for testing)
+- DVC (for data version control)
 
-This project is licensed under the {{LICENSE_TYPE}} - see the [LICENSE](LICENSE) file for details.
+## 🤝 Contributing
 
-## Acknowledgements
+We welcome contributions! Please see our Contributing Guide for more details on how to get started.
 
-Enterprise Search project is built upon valuable open source projects. We'd like to acknowledge the following projects and their contributors:
+## 📄 License
+
+This project is licensed under the *SOFTWARE LICENCE AGREEMENT* - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgements
+
+Enterprise Search project is built on top of valuable open source projects. We'd like to acknowledge the following projects and their contributors:
 
 - [LlamaIndex](https://github.com/jerryjliu/llama_index) for a stable foundation for indexing and querying capabilities with wide array of integrations
 - [Qdrant](https://github.com/qdrant/qdrant) for the vector database functionality
