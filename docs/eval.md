@@ -86,13 +86,13 @@ export OPENAI_API_KEY='your_openai_api_key_here'
 
 Ensure this variable is set in your environment to avoid authentication issues during the evaluation process.
 
-### Running the Evaluation
 
 To run the evaluation:
 
 ```bash
 python -m llamasearch.eval --data_path ./data/eval/document/ --qa_json_path data/eval/qa_pairs/qna_dataset_xxxx_yyyy.json --output_file_name --limit 1 --save
 ```
+This should execute the pipeline in three stages, as follows:
 
 Arguments:
 - --data_path: Directory path containing documents for evaluation. Note the documents should be the same as the one used for synthetic data generation.
