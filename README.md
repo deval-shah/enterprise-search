@@ -5,14 +5,13 @@ Enterprise Search offers foundation for building Retrieval-Augmented Generation 
 
 ## 📚 Table of Contents
 
-- [Prerequisites](#-prerequisites)
+- [Prerequisites](#%EF%B8%8F-prerequisites)
 - [Quick Start](#-quick-start)
-- [Configuration](#-configuration)
+- [Configuration](#%EF%B8%8F-configuration)
 - [API](#-api)
 - [Testing](#-testing)
 - [Deployment](#-deployment)
 - [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
 - [License](#-license)
 - [Acknowledgements](#-acknowledgements)
 
@@ -59,23 +58,16 @@ export OPENAI_API_KEY=your_api_key_here
 
 ## 🚀 Quick Start
 
-Use our Jupyter notebook to test the pipeline:
+Refer the quick start notebook to test the pipeline:
   1. Open the `quick_start.ipynb` file in Jupyter Notebook or JupyterLab.
 ```bash
 jupyter notebook quick_start.ipynb
 ```
   2. Follow the step-by-step instructions in the notebook to set up and test the pipeline.
-  3. This interactive approach allows you to run code cells, see immediate results, and experiment with different queries and configurations.
 
 Alternatively, you can use the command-line interface:
 
-1. Clone the repository:
-```bash
-git clone https://github.com/aiml-au/enterprise-search.git
-cd enterprise-search
-```
-
-2. Set up the environment:
+1. Set up the environment:
 ```bash
 conda create --name es_env python=3.9
 conda activate es_env
@@ -172,7 +164,7 @@ kubectl get pods,svc -n {{YOUR_NAMESPACE}}
 
 For detailed deployment instructions, please refer to our [Deployment Guide](k8s/README.md).
 
-## 🚀 Core Features
+## 🚀 Key Features
 
 <table width=100%>
   <tr>
@@ -295,19 +287,6 @@ For detailed deployment instructions, please refer to our [Deployment Guide](k8s
     </td>
   </tr>
 </table>
-
-## 💻 Tech Stack
-
-- LlamaIndex (Document processing and indexing)
-- Qdrant (Vector database)
-- Redis (Caching and document storage)
-- Ollama/OpenAI (Language models)
-- FastAPI (API framework)
-- Docker and Docker Compose
-- Kubernetes (for deployment)
-- Firebase (for authentication)
-- pytest (for testing)
-- DVC (for data version control)
 
 ## 📄 License
 
