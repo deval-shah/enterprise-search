@@ -1,7 +1,9 @@
 
 # Enterprise Search
 
-Enterprise Search offers foundation for building Retrieval-Augmented Generation (RAG) pipelines designed to provide accurate answers based on your documents. It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions and deploying on their own infrastructure.
+Enterprise Search is  Retrieval-Augmented Generation (RAG) pipeline designed for efficient, scalable, and accurate information retrieval from large document collections. It combines vector search techniques with language models to provide context-aware answers to complex queries.
+
+It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions and deploying on their own infrastructure.
 
 ## 📚 Table of Contents
 
