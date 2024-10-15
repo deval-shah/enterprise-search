@@ -11,9 +11,11 @@ __pycache__
 .env
 *pdf
 !assets/*.png
-!data/test/*.pdf
 !data/*.dvc
 !tests/
-!frontend/assets/
 /qn_pairs
 /report.html
+
+# Explicitly include these folders
+!data/test_docs/
+!frontend/assets/

@@ -149,3 +149,4 @@ Remember to never commit your `.env.local` file to version control as it contain
 ## 📄 License
 
 This project is licensed under the *SOFTWARE LICENCE AGREEMENT* - see the [LICENSE](../LICENSE) file for details.
+
