@@ -1,37 +1,23 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+*txt
+*png
+*jpg
+*tgz
+*backup*
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd_
+.env
+*pdf
+!assets/*.png
+!data/test/*.pdf
+!data/*.dvc
+!tests/
+!frontend/assets/*png
+/qn_pairs
+/report.html
 
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# Next.js build output
-/.next/
-/out/
-
-# Production build
-/build
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Explicitly include these folders
+!data/test_docs/
+!frontend/assets/
