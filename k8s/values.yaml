@@ -1,6 +1,6 @@
 app:
   name: "enterprise-search"
-  namespace: aiml-engineering
+  namespace: es
   enabled: true
   image:
     repository: docker.aiml.team/products/aiml/enterprise-search/llamasearch
@@ -21,7 +21,7 @@ app:
     CONFIG_PATH: "/app/config.yaml"
     DATA_PATH: "/data/files"
     LOG_DIR: "/data/app/logs"
-    OLLAMA_SERVER_URL: "http://ollama-es-service.aiml-engineering.svc.cluster.local:80"
+    OLLAMA_SERVER_URL: "http://ollama-es-service.es.svc.cluster.local:80"
     OPENAI_API_KEY: "" # Required if you are using the OpenAI models and `use_openai` flag is enabled (llm/embedding)
     DOCKER_ENV: true
     #API Settings
@@ -51,7 +51,7 @@ app:
 ollama:
   name: ollama-es
   enabled: true
-  namespace: aiml-engineering
+  namespace: es
   image:
     repository: ollama/ollama
     tag: 0.3.6
@@ -109,7 +109,7 @@ ollama:
     successThreshold: 1
 
 qdrant:
-  namespace: aiml-engineering
+  namespace: es
   enabled: true
   resources:
     limits:
@@ -132,7 +132,7 @@ qdrant:
     CONFIG_PATH: "/app/config.yaml"
 
 redis:
-  namespace: aiml-engineering
+  namespace: es
   enabled: true
   resources:
     limits:
@@ -146,7 +146,7 @@ redis:
   gpuProduct: "NVIDIA-RTX-6000-Ada-Generation"
 
 # prometheus:
-#   namespace: aiml-engineering
+#   namespace: es
 #   enabled: true
 #   image:
 #     repository: prom/prometheus
