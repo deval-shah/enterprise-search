@@ -7,15 +7,66 @@ It offers a simple, accessible API for indexing and querying over document colle
 
 ## 📚 Table of Contents
 
+- [Key Features](#-key-features)
 - [Prerequisites](#%EF%B8%8F-prerequisites)
 - [Quick Start](#-quick-start)
 - [Configuration](#%EF%B8%8F-configuration)
 - [API](#-api)
 - [Testing](#-testing)
 - [Deployment](#-deployment)
-- [Key Features](#-key-features)
 - [License](#-license)
 - [Acknowledgements](#-acknowledgements)
+
+## 🚀 Key Features
+
+<table width=100%>
+  <tr>
+    <td width="50%">
+      <strong><a href="#multi-document-query">Multi-Document Query Processing</a></strong><br/>
+      Upload multiple documents (PDFs, DOCXs, CSVs) and ask questions spanning across them, leveraging comprehensive knowledge extraction.
+      <br><br>
+      <img src="assets/multi-document-query-icon.svg" alt="Multi-Document Query Processing" width="100" height="100">
+    </td>
+    <td width="50%">
+      <strong><a href="#real-time-ingestion">Real-time Document Ingestion</a></strong><br/>
+      Upload new documents during a query session, instantly incorporating fresh information into the knowledge base for immediate use.
+      <br><br>
+      <img src="assets/real-time-ingestion-icon.svg" alt="Real-time Document Ingestion" width="100" height="100">
+    </td>
+  </tr>
+</table>
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <strong><a href="#source-traceability">Source Traceability</a></strong><br/>
+      For each response, get detailed information about which documents were used to generate the answer, ensuring transparency and verifiability.
+      <br><br>
+      <img src="assets/source-traceability-icon.svg" alt="Source Traceability" width="100" height="100">
+    </td>
+    <td width="50%">
+      <strong><a href="#multi-tenant-support">Multi-Tenant Support</a></strong><br/>
+      Handle multiple users with separate document collections, ensuring data isolation in the vector database for enhanced security.
+      <br><br>
+      <img src="assets/multi-tenant-support-icon.svg" alt="Multi-Tenant Support" width="100" height="100">
+    </td>
+  </tr>
+</table>
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <strong><a href="#evaluation-framework">Built-in Evaluation</a></strong><br/>
+      Assess and improve your RAG pipeline quality with synthetic data generation and comprehensive evaluation metrics.
+      <br><br>
+      <img src="assets/evaluation-framework-icon.svg" alt="Built-in Evaluation Framework" width="100" height="100">
+    </td>
+    <td width="50%">
+      <strong><a href="#api-and-deployment">RESTful API and Deployment Support</a></strong><br/>
+      Integrate easily with RESTful API endpoints and deploy effortlessly using included Kubernetes configurations for scalability.
+      <br><br>
+      <img src="assets/api-and-deployment-icon.svg" alt="RESTful API and Deployment Support" width="100" height="100">
+    </td>
+  </tr>
+</table>
 
 ## 🛠️ Prerequisites
 
@@ -170,57 +221,6 @@ kubectl get pods,svc -n {{YOUR_NAMESPACE}}
 ```
 
 For detailed deployment instructions, please refer to our [Deployment Guide](k8s/README.md).
-
-## 🚀 Key Features
-
-<table width=100%>
-  <tr>
-    <td width="50%">
-      <strong><a href="#multi-document-query">Multi-Document Query Processing</a></strong><br/>
-      Upload multiple documents (PDFs, DOCXs, CSVs) and ask questions spanning across them, leveraging comprehensive knowledge extraction.
-      <br><br>
-      <img src="assets/multi-document-query-icon.svg" alt="Multi-Document Query Processing" width="100" height="100">
-    </td>
-    <td width="50%">
-      <strong><a href="#real-time-ingestion">Real-time Document Ingestion</a></strong><br/>
-      Upload new documents during a query session, instantly incorporating fresh information into the knowledge base for immediate use.
-      <br><br>
-      <img src="assets/real-time-ingestion-icon.svg" alt="Real-time Document Ingestion" width="100" height="100">
-    </td>
-  </tr>
-</table>
-<table width="100%">
-  <tr>
-    <td width="50%"> 
-      <strong><a href="#source-traceability">Source Traceability</a></strong><br/>
-      For each response, get detailed information about which documents were used to generate the answer, ensuring transparency and verifiability.
-      <br><br>
-      <img src="assets/source-traceability-icon.svg" alt="Source Traceability" width="100" height="100">
-    </td>
-    <td width="50%">
-      <strong><a href="#multi-tenant-support">Multi-Tenant Support</a></strong><br/>
-      Handle multiple users with separate document collections, ensuring data isolation in the vector database for enhanced security.
-      <br><br>
-      <img src="assets/multi-tenant-support-icon.svg" alt="Multi-Tenant Support" width="100" height="100">
-    </td>
-  </tr>
-</table>
-<table width="100%">
-  <tr>
-    <td width="50%"> 
-      <strong><a href="#evaluation-framework">Built-in Evaluation</a></strong><br/>
-      Assess and improve your RAG pipeline quality with synthetic data generation and comprehensive evaluation metrics.
-      <br><br>
-      <img src="assets/evaluation-framework-icon.svg" alt="Built-in Evaluation Framework" width="100" height="100">
-    </td>
-    <td width="50%">
-      <strong><a href="#api-and-deployment">RESTful API and Deployment Support</a></strong><br/>
-      Integrate easily with RESTful API endpoints and deploy effortlessly using included Kubernetes configurations for scalability.
-      <br><br>
-      <img src="assets/api-and-deployment-icon.svg" alt="RESTful API and Deployment Support" width="100" height="100">
-    </td>
-  </tr>
-</table>
 
 ## 📄 License
 
