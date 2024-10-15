@@ -22,7 +22,8 @@ It offers a simple, accessible API for indexing and querying over document colle
 Before setting up Enterprise Search, ensure you have:
 
 - Python 3.9 or higher
-- Docker and Docker Compose
+- Docker and Docker Compose 
+*Note: Depending on your Docker Compose version, you may need to use docker compose (with a hyphen) instead of docker-compose.*
 - CUDA 11 or higher (for GPU acceleration)
 
 ## ⚙️ Configuration
@@ -60,25 +61,29 @@ export OPENAI_API_KEY=your_api_key_here
 
 ## 🚀 Quick Start
 
-Refer the quick start notebook to test the pipeline:
-  1. Open the `quick_start.ipynb` file in Jupyter Notebook or JupyterLab.
-```bash
-jupyter notebook quick_start.ipynb
-```
-  2. Follow the step-by-step instructions in the notebook to set up and test the pipeline.
+### Option 1: Jupyter Notebook
 
-Alternatively, you can use the command-line interface:
-
-1. Set up the environment:
+1. Clone the repository and set up the environment:
 ```bash
-conda create --name es_env python=3.9
-conda activate es_env
-pip install -r requirements.txt
+   conda create --name es_env python=3.9
+   conda activate es_env
+   pip install -r requirements.txt
 ```
 
-3. Configure the application
-- Copy `.env.example` to `.env` and update the values as needed.
-- Modify `config/config.dev.yaml` to suit your requirements.
+2. Start Jupyter Notebook:
+```bash
+pip install jupyter
+jupyter notebook
+```
+
+3. Open the `quick_start.ipynb` file in your browser and follow the step-by-step instructions to set up and test the pipeline.
+
+### Option 2: Command Line Interface
+
+1. Clone and set up the environment (same as above)
+
+2. Configure the application:
+- Modify `config/config.dev.yaml` to match your setup.
 
 4. Start the redis and qdrant services:
 ```bash

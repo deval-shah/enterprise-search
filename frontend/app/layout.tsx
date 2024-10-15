@@ -8,8 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "LlamaSearch UI",
-  description: "A UI to explore LlamaSearch capabilities",
+  title: "Enterprise Search UI",
+  description: "A UI to explore Enterprise Search capabilities",
 };
 
 export default function RootLayout({

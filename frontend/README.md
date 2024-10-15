@@ -16,6 +16,13 @@
 
 The UI is an expiremental frontend application built with Next.js 14 for the Enterprise Search project. It provides an interactive interface for users to query over uploaded documents.
 
+<div align="center">
+  <img src="assets/demo.png" alt="LlamaSearch UI Demo" width="800" />
+  <p>
+    <em>Figure 1: LlamaSearch UI Interface (experimental)</em>
+  </p>
+</div>
+
 ## Features
 
 - 🚀 Built using Next.js 14 app router
