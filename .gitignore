@@ -14,5 +14,6 @@ __pycache__
 !data/test/*.pdf
 !data/*.dvc
 !tests/
+!frontend/assets/
 /qn_pairs
 /report.html
