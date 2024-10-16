@@ -1,20 +1,6 @@
 # UI
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [Running with Docker](#running-with-docker)
-  - [Running Locally](#running-locally)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [License](#license)
-
-## Overview
-
-The UI is an expiremental frontend application built with Next.js 14 for the Enterprise Search project. It provides an interactive interface for users to query over uploaded documents.
+The UI is an experimental frontend application (boilerplate) built using Next.js 14 (app router) to interact with the Enterprise Search API. It is a chat interface for users to query over uploaded documents.
 
 <div align="center">
   <img src="assets/demo.png" alt="LlamaSearch UI Demo" width="800" />
@@ -22,6 +8,17 @@ The UI is an expiremental frontend application built with Next.js 14 for the Ent
     <em>Figure 1: LlamaSearch UI Interface (experimental)</em>
   </p>
 </div>
+
+## Table of Contents
+- [Features](#-features)
+- [Prerequisites](#-prerequisites)
+- [Getting Started](#-getting-started)
+  - [Installation](#-installation)
+  - [Running with Docker](#-running-with-docker)
+  - [Running Locally](#-running-locally)
+- [Configuration](#-configuration)
+- [Usage](#-usage)
+- [License](#-license)
 
 ## Features
 

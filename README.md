@@ -74,7 +74,7 @@ Before setting up Enterprise Search, ensure you have:
 
 - Python 3.9 or higher
 - Docker and Docker Compose 
-*Note: Depending on your Docker Compose version, you may need to use docker compose (with a hyphen) instead of docker-compose.*
+*Note: Depending on your Docker Compose version, you may need to use docker-compose (with a hyphen) instead of docker compose.*
 - CUDA 11 or higher (for GPU acceleration)
 
 ## ⚙️ Configuration
@@ -90,7 +90,7 @@ Before setting up Enterprise Search, ensure you have:
 - `llm`: Language model configuration (uses model from ollama/openai)
 - `reranker`: Reranker model settings (uses model from HuggingFace)
 
-3. Setup up LLM of your choice.
+3. Setup LLM of your choice.
 
 ### Open-Source Option: Ollama
 
