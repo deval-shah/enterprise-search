@@ -10,15 +10,15 @@ The UI is an expiremental frontend application (boilerplate) built using Next.js
 </div>
 
 ## Table of Contents
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [Running with Docker](#running-with-docker)
-  - [Running Locally](#running-locally)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [License](#license)
+- [Features](#-features)
+- [Prerequisites](#-prerequisites)
+- [Getting Started](#-getting-started)
+  - [Installation](#-installation)
+  - [Running with Docker](#-running-with-docker)
+  - [Running Locally](#-running-locally)
+- [Configuration](#-configuration)
+- [Usage](#-usage)
+- [License](#-license)
 
 ## Features
 
