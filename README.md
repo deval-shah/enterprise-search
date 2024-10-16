@@ -74,7 +74,7 @@ Before setting up Enterprise Search, ensure you have:
 
 - Python 3.9 or higher
 - Docker and Docker Compose 
-*Note: Depending on your Docker Compose version, you may need to use docker compose (with a hyphen) instead of docker-compose.*
+*Note: Depending on your Docker Compose version, you may need to use docker-compose (with a hyphen) instead of docker compose.*
 - CUDA 11 or higher (for GPU acceleration)
 
 ## ⚙️ Configuration
