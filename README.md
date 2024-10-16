@@ -90,7 +90,7 @@ Before setting up Enterprise Search, ensure you have:
 - `llm`: Language model configuration (uses model from ollama/openai)
 - `reranker`: Reranker model settings (uses model from HuggingFace)
 
-3. Setup up LLM of your choice.
+3. Setup LLM of your choice.
 
 ### Open-Source Option: Ollama
 
