@@ -1,7 +1,7 @@
 
 # Enterprise Search
 
-Enterprise Search is  Retrieval-Augmented Generation (RAG) pipeline designed for efficient, scalable, and accurate information retrieval from large document collections. It combines vector search techniques with language models to provide context-aware answers to complex queries.
+Enterprise Search is  Retrieval-Augmented Generation (RAG) pipeline designed for efficient, scalable, and local information retrieval from large document collections. It combines vector search techniques with language models to provide context-aware answers to your queries.
 
 It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions and deploying on their own infrastructure.
 
@@ -116,9 +116,9 @@ export OPENAI_API_KEY=your_api_key_here
 
 1. Clone the repository and set up the environment:
 ```bash
-   conda create --name es_env python=3.9
-   conda activate es_env
-   pip install -r requirements.txt
+conda create --name es_env python=3.9
+conda activate es_env
+pip install -r requirements.txt
 ```
 
 2. Start Jupyter Notebook:
@@ -131,7 +131,7 @@ jupyter notebook
 
 ### Option 2: Command Line Interface
 
-1. Clone and set up the environment (same as above)
+1. Set up the environment (same as above)
 
 2. Configure the application:
 - Modify `config/config.dev.yaml` to match your setup.
@@ -141,7 +141,7 @@ jupyter notebook
 docker-compose -f docker/docker-compose.yml up -d redis qdrant
 ```
 
-5. **Run the pipeline:**:
+5. Run the pipeline::
 ```bash
 python -m llamasearch.pipeline
 ```
