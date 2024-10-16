@@ -66,7 +66,7 @@ docker build -t es:latest -f docker/Dockerfile .
 Test the Docker image. Typically you might want to check to ensure there are no startup errors.
 
 ```bash
-docker-compose up -f docker/docker-compose.yml up
+docker-compose -f docker/docker-compose.yml up
 ```
 
 Check root [README.md](../README.md) for more information on how to build and test the docker.
