@@ -2,6 +2,13 @@
 
 The UI is an expiremental frontend application (boilerplate) built using Next.js 14 (app router) to interact with the Enterprise Search API. It is a chat interface for users to query over uploaded documents.
 
+<div align="center">
+  <img src="assets/demo.png" alt="LlamaSearch UI Demo" width="800" />
+  <p>
+    <em>Figure 1: LlamaSearch UI Interface (experimental)</em>
+  </p>
+</div>
+
 ## Table of Contents
 - [Features](#features)
 - [Prerequisites](#prerequisites)
@@ -12,13 +19,6 @@ The UI is an expiremental frontend application (boilerplate) built using Next.js
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [License](#license)
-
-<div align="center">
-  <img src="assets/demo.png" alt="LlamaSearch UI Demo" width="800" />
-  <p>
-    <em>Figure 1: LlamaSearch UI Interface (experimental)</em>
-  </p>
-</div>
 
 ## Features
 
