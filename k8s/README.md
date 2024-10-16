@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide will lead you through the process of deploying our the Enterprise Search solution, powered by Ollama, Qdrant, and Redis services on a Kubernetes cluster.
+This guide will lead you through the process of deploying the Enterprise Search solution, powered by Ollama, Qdrant, and Redis services on a Kubernetes cluster.
 
 <div align="center" style="background-color: white; padding: 20px; border-radius: 8px; display: inline-block;">
   <img src="../assets/k8s-deployment.svg" alt="Kubernetes Deployment Flow" width="40%" height="70%" style="max-width: 800px;">
