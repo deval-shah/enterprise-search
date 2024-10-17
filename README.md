@@ -1,7 +1,7 @@
 
 # Enterprise Search
 
-Enterprise Search is  Retrieval-Augmented Generation (RAG) pipeline designed for efficient, scalable, and local information retrieval from large document collections. It combines vector search techniques with language models to provide context-aware answers to your queries.
+Enterprise Search is  Retrieval-Augmented Generation (RAG) system designed for efficient, scalable, and local information retrieval from large document collections. It combines vector search techniques with language models to provide context-aware answers to your queries.
 
 It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions and deploying on their own infrastructure.
 
@@ -191,8 +191,9 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 4. Run the tests:
 ```bash
-dvc repro -f tests/dvc.yaml
+pytest
 ```
+
 For more detailed testing instructions, including how to run specific tests, please refer to our [Testing Guide](docs/testing.md).
 
 ## 🚀 Deployment
@@ -207,7 +208,7 @@ docker push es:latest
 
 2. Configure your Kubernetes cluster and ensure `kubectl` is set up correctly.
 
-3. Update the `k8s/values.yaml` file with your specific configuration.
+3. Update the `k8s/values.yaml` file with your configuration settings (namespace, service names, etc.).
 
 4. Deploy using Helm:
 ```bash

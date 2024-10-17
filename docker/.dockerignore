@@ -2,14 +2,14 @@
 .git
 .gitignore
 
-# Python cache files
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
+# Cache files
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.git
+**/.vscode
+**/.idea
 
 # Virtual environment
 venv
@@ -59,3 +59,5 @@ docker-compose.yml
 README.md
 LICENSE
 *.md
+
+ollama

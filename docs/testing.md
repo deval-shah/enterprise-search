@@ -30,18 +30,12 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 3. Start the local conda environment and install requirements as mentioned in the [README.md](../README.md) file.
 
-4. Execute the DVC pipeline:
+4. Run the tests using the following command:
 ```bash
-dvc repro -f tests/dvc.yaml
+pytest
 ```
 
-This command will run the following stages:
-- **pull_test_data**: You can uncomment this stage to pull the latest test data from DVC storage. You need to configure  the DVC remote storage in the `.dvc/config` file.
-- **run_tests**: Set up the test environment.
-
 After execution, you can find the test results in the `report.html` file in the project root directory.
-
-To run specific tests, you can modify the pytest command in the run_tests stage of the `tests/dvc.yaml` file or run pytest directly with custom options.
 
 To run specific tests, you can use pytest's built-in options. For example:
 

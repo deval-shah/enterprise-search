@@ -226,7 +226,6 @@ async def main(data_path: str, qa_json_path: str,output_filename:str, limit:str,
                 print("-"*120)
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
-        logger.error(traceback.format_exc())
     finally:
             logger.info("Evaluation completed.")
 
