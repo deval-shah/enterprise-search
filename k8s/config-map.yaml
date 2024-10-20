@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: es-cmap
-  namespace: aiml-engineering
+  namespace: es
 data:
   config.yaml: |
     data_path: "/data/files"
@@ -12,7 +12,7 @@ data:
       log_dir: "/data/app/logs"
       upload_subdir: "uploads"
     qdrant_client_config:
-      url: "http://qdrant-service.aiml-engineering.svc.cluster.local:6333"
+      url: "http://qdrant-service.es.svc.cluster.local:6333"
       prefer_grpc: False
     vector_store_config:
       collection_name: "test"
@@ -25,7 +25,7 @@ data:
       multi_tenancy: true
       enable_hybrid: true
     redis_config:
-      host: "redis-service.aiml-engineering.svc.cluster.local"
+      host: "redis-service.es.svc.cluster.local"
       port: 6379
     embedding:
       model: "Alibaba-NLP/gte-Qwen2-1.5B-instruct"

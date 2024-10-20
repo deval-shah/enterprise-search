@@ -1,9 +1,9 @@
 
 # Enterprise Search
 
-Enterprise Search is  Retrieval-Augmented Generation (RAG) system designed for efficient, scalable, and local information retrieval from large document collections. It combines vector search techniques with language models to provide context-aware answers to your queries.
+Enterprise Search is a  Retrieval-Augmented Generation (RAG) system designed for efficient local information retrieval on document collections. It uses vector search techniques with language models to provide context-aware answers to your queries.
 
-It offers a simple, accessible API for indexing and querying over document collections, making it ideal for businesses and developers seeking efficient and local question-answering solutions and deploying on their own infrastructure.
+It offers a RestFul API for indexing and querying over document collections, making it ideal for businesses and developers seeking to deploy the question-answering solutions in their infrastructure.
 
 ## 📚 Table of Contents
 
@@ -28,7 +28,7 @@ It offers a simple, accessible API for indexing and querying over document colle
       <img src="assets/multi-document-query-icon.svg" alt="Multi-Document Query Processing" width="100" height="100">
     </td>
     <td width="50%">
-      <strong><a href="#real-time-ingestion">Real-time Document Ingestion</a></strong><br/>
+      <strong><a href="#real-time-ingestion">On the Fly Document Ingestion</a></strong><br/>
       Upload new documents during a query session, instantly incorporating fresh information into the knowledge base for immediate use.
       <br><br>
       <img src="assets/real-time-ingestion-icon.svg" alt="Real-time Document Ingestion" width="100" height="100">
@@ -39,13 +39,13 @@ It offers a simple, accessible API for indexing and querying over document colle
   <tr>
     <td width="50%">
       <strong><a href="#source-traceability">Source Traceability</a></strong><br/>
-      For each response, get detailed information about which documents were used to generate the answer, ensuring transparency and verifiability.
+      For each response, get information about the source documents that were used to generate the answer.
       <br><br>
       <img src="assets/source-traceability-icon.svg" alt="Source Traceability" width="100" height="100">
     </td>
     <td width="50%">
       <strong><a href="#multi-tenant-support">Multi-Tenant Support</a></strong><br/>
-      Handle multiple users with separate document collections, ensuring data isolation in the vector database for enhanced security.
+      Handle multiple users with separate document collections, ensuring data isolation in the vector database.
       <br><br>
       <img src="assets/multi-tenant-support-icon.svg" alt="Multi-Tenant Support" width="100" height="100">
     </td>
@@ -55,13 +55,13 @@ It offers a simple, accessible API for indexing and querying over document colle
   <tr>
     <td width="50%">
       <strong><a href="#evaluation-framework">Built-in Evaluation</a></strong><br/>
-      Assess and improve your RAG pipeline quality with synthetic data generation and comprehensive evaluation metrics.
+      Assess and improve your RAG pipeline quality with built in synthetic data generation and evaluation.
       <br><br>
       <img src="assets/evaluation-framework-icon.svg" alt="Built-in Evaluation Framework" width="100" height="100">
     </td>
     <td width="50%">
       <strong><a href="#api-and-deployment">RESTful API and Deployment Support</a></strong><br/>
-      Integrate easily with RESTful API endpoints and deploy effortlessly using included Kubernetes configurations for scalability.
+      Integrate easily with RESTful API endpoints and deploy using provided Kubernetes configurations in your infrastructure.
       <br><br>
       <img src="assets/api-and-deployment-icon.svg" alt="RESTful API and Deployment Support" width="100" height="100">
     </td>
@@ -82,7 +82,7 @@ Before setting up Enterprise Search, ensure you have:
 1. Rename `.env.example` to `.env` and update the values to match your setup.
 
 2. Update the configuration in `config/config.dev.yaml`. Default settings are defined in `llamasearch/settings.py`:
-- `application`: General application settings
+- `application`: Application settings
 - `vector_store_config`: Qdrant settings for vector storage
 - `qdrant_client_config`: Qdrant client connection settings
 - `redis_config`: Redis settings for document store and cache
@@ -174,7 +174,7 @@ Adjust docker mount points in the `docker/docker-compose.yml` file to point to m
 docker-compose -f docker/docker-compose.yml up -d
 ```
 
-For detailed API usage examples, including request and response formats, curl request examples and more, please refer to our [API Documentation](docs/curl.md).
+For detailed API usage examples, including request and response formats, curl request examples and more, please refer to our [API Documentation](docs/api.md).
 
 ## 🧪 Testing
 

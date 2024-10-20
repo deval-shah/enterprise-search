@@ -1,4 +1,4 @@
-# LlamaSearch API Curl Commands
+# Enterprise Search API
 
 ## Authentication
 
@@ -22,11 +22,22 @@ This will output a Firebase ID token. Copy this token for use in the login reque
 
 ## API Testing Options
 
-You have two options for testing the LlamaSearch APIs:
+You have two options for testing the ES APIs:
 
 1. **Postman**: A collection is available for API testing. To gain access to the Postman collection, please contact the project owner.
 
 2. **cURL Commands**: Alternatively, you can use the cURL commands provided below for command-line testing.
+
+To explore and interact with the ES API using Swagger UI:
+
+1. Start the ES server
+2. Open your web browser and navigate to:
+   `http://localhost:8010/api/v1/docs`
+
+This will provide you with a comprehensive, interactive documentation of all available endpoints, request/response models, and the ability to test the API directly from your browser.
+
+For a more detailed, non-interactive view of the API specification, you can also access the ReDoc version at:
+`http://localhost:8010/api/v1/redoc`
 
 Currently, we do not support `chat` endpoints.
 
