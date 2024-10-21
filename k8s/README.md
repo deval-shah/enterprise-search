@@ -106,7 +106,7 @@ Refer table for detailed description of configuration settings used for each ser
 | --- | ---- | ------- | ----------- |
 | **App Settings** | | | |
 | app.name | String | "enterprise-search" | The name of the application. |
-| app.namespace | String | aiml-engineering | The Kubernetes namespace for the application. |
+| app.namespace | String | es | The Kubernetes namespace for the application. |
 | app.enabled | Boolean | true | Whether the application is enabled. |
 | app.image.repository | String | docker.aiml.team/products/aiml/enterprise-search/llamasearch | The Docker image repository. |
 | app.image.tag | String | latest | The Docker image tag. |
@@ -122,7 +122,7 @@ Refer table for detailed description of configuration settings used for each ser
 | app.env.CONFIG_PATH | String | "/app/config.yaml" | The path to the configuration file. |
 | app.env.DATA_PATH | String | "/data/files" | The path to the data files. |
 | app.env.LOG_DIR | String | "/data/app/logs" | The directory for log files. |
-| app.env.OLLAMA_SERVER_URL | String | "http://ollama-es-service.aiml-engineering.svc.cluster.local:80" | The URL for the Ollama server. |
+| app.env.OLLAMA_SERVER_URL | String | "http://ollama-es-service.es.svc.cluster.local:80" | The URL for the Ollama server. |
 | app.env.OPENAI_API_KEY | String | "" | The OpenAI API key (if using OpenAI models). |
 | app.env.DOCKER_ENV | Boolean | true | Whether the app is running in a Docker environment. |
 | app.env.API_V1_STR | String | "/api/v1" | The API version string. |
@@ -145,7 +145,7 @@ Refer table for detailed description of configuration settings used for each ser
 | **Ollama Settings** | | | |
 | ollama.name | String | ollama-es | The name of the Ollama service. |
 | ollama.enabled | Boolean | true | Whether Ollama is enabled. |
-| ollama.namespace | String | aiml-engineering | The namespace for Ollama. |
+| ollama.namespace | String | es | The namespace for Ollama. |
 | ollama.image.repository | String | ollama/ollama | The Ollama image repository. |
 | ollama.image.tag | String | 0.3.6 | The Ollama image tag. |
 | ollama.image.pullPolicy | String | Always | The Ollama image pull policy. |
@@ -164,7 +164,7 @@ Refer table for detailed description of configuration settings used for each ser
 | ollama.models | List | [ajindal/llama3.1-storm:8b] | The list of models to pull at startup. |
 | ollama.insecure | Boolean | true | Whether insecure mode is enabled for Ollama. |
 | **Qdrant Settings** | | | |
-| qdrant.namespace | String | aiml-engineering | The namespace for Qdrant. |
+| qdrant.namespace | String | es | The namespace for Qdrant. |
 | qdrant.enabled | Boolean | true | Whether Qdrant is enabled. |
 | qdrant.resources.limits.cpu | String | "5000m" | The CPU limit for Qdrant. |
 | qdrant.resources.limits.memory | String | "15Gi" | The memory limit for Qdrant. |
@@ -178,7 +178,7 @@ Refer table for detailed description of configuration settings used for each ser
 | qdrant.gpuProduct | String | "NVIDIA-RTX-6000-Ada-Generation" | The GPU product for Qdrant. |
 | qdrant.env.CONFIG_PATH | String | "/app/config.yaml" | The configuration path for Qdrant. |
 | **Redis Settings** | | | |
-| redis.namespace | String | aiml-engineering | The namespace for Redis. |
+| redis.namespace | String | es | The namespace for Redis. |
 | redis.enabled | Boolean | true | Whether Redis is enabled. |
 | redis.resources.limits.cpu | String | "5000m" | The CPU limit for Redis. |
 | redis.resources.limits.memory | String | "15Gi" | The memory limit for Redis. |
