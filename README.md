@@ -12,7 +12,7 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
     <img 
       alt="Enterprise Search Architecture" 
       src="assets/cover_image.svg" 
-      width="800px"
+      width="1200px"
       style="max-width: 100%;"
     >
   </picture>
