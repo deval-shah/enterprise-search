@@ -25,7 +25,8 @@ redis_config:
   port: 6379
 
 embedding:
-  model: "Alibaba-NLP/gte-Qwen2-1.5B-instruct"
+  model: "Alibaba-NLP/gte-Qwen2-1.5B-instruct" # 1.5B embedding model for better accuracy
+  #model: "bge-small-en-v1.5" # 33.4 param model for better speed, Update vector_size to `384`
   use_openai: False
   local_model_path: "data/models/embedding/"
 
