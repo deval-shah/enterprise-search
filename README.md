@@ -3,7 +3,24 @@
 
 Enterprise Search is a  Retrieval-Augmented Generation (RAG) system designed for efficient local information retrieval on document collections. It uses vector search techniques with language models to provide context-aware answers to your queries.
 
-It offers a RestFul API for indexing and querying over document collections, making it ideal for businesses and developers seeking to deploy the question-answering solutions in their infrastructure.
+Enterprise Search is designed to be dynamic and adaptable to fit in both development and production workflows. It offers a RestFul API for indexing and querying over document collections, making it ideal for businesses and developers seeking to deploy the question-answering solutions in their infrastructure.
+
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/cover_image.svg#gh-dark-mode-only"/>
+    <source media="(prefers-color-scheme: light)" srcset="assets/cover_image.svg#gh-light-mode-only"/>
+    <img 
+      alt="Enterprise Search Architecture" 
+      src="assets/cover_image.svg" 
+      width="800px"
+      style="max-width: 100%;"
+    >
+  </picture>
+
+  <p align="center">
+    <em> High level overview of user interaction with Enterprise Search system </em>
+  </p>
+</div>
 
 ## 📚 Table of Contents
 
@@ -14,6 +31,7 @@ It offers a RestFul API for indexing and querying over document collections, mak
 - [API](#-api)
 - [Testing](#-testing)
 - [Deployment](#-deployment)
+- [UI](#-frontend)
 - [License](#-license)
 - [Acknowledgements](#-acknowledgements)
 
@@ -55,7 +73,7 @@ It offers a RestFul API for indexing and querying over document collections, mak
   <tr>
     <td width="50%">
       <strong><a href="#evaluation-framework">Built-in Evaluation</a></strong><br/>
-      Assess and improve your RAG pipeline quality with built in synthetic data generation and evaluation.
+      Assess and improve your RAG pipeline quality with built in synthetic data generation and evaluation capabilities.
       <br><br>
       <img src="assets/evaluation-framework-icon.svg" alt="Built-in Evaluation Framework" width="100" height="100">
     </td>
@@ -94,7 +112,7 @@ Before setting up Enterprise Search, ensure you have:
 
 ### Open-Source Option: Ollama
 
-1. **Start Ollama docker:**: Use the `docker/docker-compose-ollama.yml` file to run Ollama:
+1. **Run Ollama docker:**: Use the `docker/docker-compose-ollama.yml` file to run Ollama:
 ```bash
 docker-compose -f docker/docker-compose-ollama.yml up -d
 ```
@@ -166,7 +184,7 @@ docker build -t es:latest -f docker/Dockerfile .
 
 *Note: Currently, we only support testing API endpoints with authentication enabled. A firebase account is required to test the API endpoints.*
 
-3. **Setup LLM**: Setup the LLM of your choice (if you haven't already) as mentioned in the [configuration](#configuration) section.
+3. **Setup LLM**: Setup the LLM of your choice (if you haven't already) as mentioned in the [configuration](#configuration) section. Ensure the LLM service is running.
 
 4. **Run the docker image:**
 Adjust docker mount points in the `docker/docker-compose.yml` file to point to match your local setup. It will run the API server on port 8010 by default.
@@ -222,6 +240,12 @@ kubectl get pods,svc -n {{YOUR_NAMESPACE}}
 ```
 
 For detailed deployment instructions, please refer to our [Deployment Guide](k8s/README.md).
+
+## 🖥️ UI
+
+We provide an experimental frontend application built with Next.js 14 (app router) to interact with the Enterprise Search API.
+
+For detailed setup instructions and usage guidelines, refer to the [README](frontend/README.md).
 
 ## 📄 License
 

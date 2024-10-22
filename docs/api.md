@@ -18,19 +18,12 @@ Update these values in `.env` file in the root directory.
 python tests/api/generate_token.py
 export FIREBASE_ID_TOKEN=eyJhbGciOiJSUz... # Export the generated Firebase ID token to this variable for convenience to use in curl commands
 ```
-This will output a Firebase ID token. Copy this token for use in the login request.
 
-## API Testing Options
-
-You have two options for testing the ES APIs:
-
-1. **Postman**: A collection is available for API testing. To gain access to the Postman collection, please contact the project owner.
-
-2. **cURL Commands**: Alternatively, you can use the cURL commands provided below for command-line testing.
+## API Documentation
 
 To explore and interact with the ES API using Swagger UI:
 
-1. Start the ES server
+1. Start the ES API server
 2. Open your web browser and navigate to:
    `http://localhost:8010/api/v1/docs`
 
@@ -39,28 +32,11 @@ This will provide you with a comprehensive, interactive documentation of all ava
 For a more detailed, non-interactive view of the API specification, you can also access the ReDoc version at:
 `http://localhost:8010/api/v1/redoc`
 
-Currently, we do not support `chat` endpoints.
+## API Testing
 
-### Option 1: Postman
+Use the cURL commands shared below to test the API endpoints.
 
-Download and setup Postman application from [here](https://www.postman.com/downloads/).
-
-[<img src="https://run.pstmn.io/button.svg" alt="Run in Postman" style="width: 128px; height: 32px;">](https://null.postman.co/collection/33701240-3cfdeb70-981a-446d-b4e0-0da98b71e936?source=rip_markdown)
-
-### 1. Setup: Set environment variables in Postman:
-   - `base_url`: Your server URL (e.g., "http://localhost:8010")
-   - `firebase_id_token`: A valid Firebase ID token
-   - `auth_cookie`, `uid`, `chat_id`: Initialize as empty strings (not required for login) 
-
-### 2. Authentication
-- First, send the "Login" POST request to `/api/v1/login`
-- It will create cookies.txt and store it for endpoint calls.
-
-Once login is successful, start testing the endpoints.
-
-### Option 2: cURL Commands
-
-### 1. Login and Generate Cookies
+### 1. Login and Generate Cookies (Authentication)
 Use the following curl command to log in and generate the cookies.txt file:
 
 ```bash
@@ -73,14 +49,14 @@ Replace `YOUR_FIREBASE_ID_TOKEN` with the token you got from step 1.
 
 This command will create a `cookies.txt` file in your current directory.
 
-### Before testing API using curl commands
+### 2. Before testing API using curl commands
 1. Default values are provided for testing. Replace `query`, `files`" with your data in the curl commands.
 2. Ensure `cookies.txt` is in your working directory or specify its full path.
 3. Adjust server URL if not using `localhost:8010`.
 
-Note: These steps are important for successful API testing with cURL.
+*Note: These steps are important for successful API testing with cURL.*
 
-## Query Endpoints
+### 3. Query Endpoints
 
 1. Query (without file upload)
 ```bash
@@ -103,13 +79,13 @@ curl -X POST http://localhost:8010/api/v1/query/ \
 ```bash
 curl -X POST http://localhost:8010/api/v1/query/ \
   -H "Content-Type: multipart/form-data" \
-  -F "query=Your query text here" \
+  -F "query=What BLEU score did the big Transformer model achieve on the WMT 2014 English-to-German translation task?" \
   -F "files=@data/test_docs/attention_is_all_you_need.pdf" \
   -F "files=@data/test_docs/meta_10k.pdf" \
   -b cookies.txt
 ```
 
-## File Operations Endpoints
+### 4. File Operations Endpoints
 
 4. Upload file(s) (Same as insert endpoint, will be deprecated in future)
 ```bash
@@ -145,7 +121,7 @@ curl -X DELETE http://localhost:8010/api/v1/documents/delete \
   -b cookies.txt
 ```
 
-## User Endpoints
+### 5. User Endpoints
 
 Replace {uid} with an actual user ID.
 
@@ -160,7 +136,8 @@ curl -X GET http://localhost:8010/api/v1/me \
 curl -X GET http://localhost:8010/api/v1/user/{uid} \
   -b cookies.txt
 ```
-## WebSocket Endpoints
+
+## 6. WebSocket Endpoints
 
 Test the WebSocket API using the client script. Run from the project root directory:
 
