@@ -30,8 +30,9 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
 - [Configuration](#%EF%B8%8F-configuration)
 - [API](#-api)
 - [Testing](#-testing)
+- [Evaluation](#-evaluation)
 - [Deployment](#-deployment)
-- [UI](#-frontend)
+- [UI](#%EF%B8%8F-ui)
 - [License](#-license)
 - [Acknowledgements](#-acknowledgements)
 
@@ -213,6 +214,15 @@ pytest
 ```
 
 For more detailed testing instructions, including how to run specific tests, please refer to our [Testing Guide](docs/testing.md).
+
+## 📊 Evaluation
+
+Enterprise Search includes a robust evaluation module based on DeepEval to assess the RAG pipeline's performance:
+
+- 🧪 Synthetic dataset generation for simulating  your documents
+- 📈 Industry standard metrics including faithfulness, relevancy, and coherence
+
+For step-by-step instructions on running evaluations, see our [Evaluation Guide](docs/eval.md).
 
 ## 🚀 Deployment
 

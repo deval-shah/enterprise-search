@@ -1,6 +1,6 @@
 ## Evaluation
 
-The Evaluation module assesses the performance of the RAG Pipeline using the [DeepEval framework](https://github.com/confident-ai/deepeval).
+The Evaluation module assesses the performance of the ES RAG Pipeline using the [DeepEval framework](https://github.com/confident-ai/deepeval).
 
 It leverages a set of metrics to provide a comprehensive evaluation of the system's output compared to ground truth data.
 
