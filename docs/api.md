@@ -75,6 +75,13 @@ curl -X POST http://localhost:8010/api/v1/query/ \
   -b cookies.txt
 ```
 
+<div align="center">
+  <img src="../assets/life-of-a-request.png" alt="Life of a Query Request (with file upload)" width="800" />
+  <p>
+    <em>Life of a request - query with file upload</em>
+  </p>
+</div>
+
 3. Query (with multiple file uploads)
 ```bash
 curl -X POST http://localhost:8010/api/v1/query/ \

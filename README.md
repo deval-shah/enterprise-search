@@ -18,7 +18,7 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
   </picture>
 
   <p align="center">
-    <em> High level overview of user interaction with Enterprise Search system </em>
+    <em> High level overview of user interaction with the Enterprise Search system </em>
   </p>
 </div>
 
@@ -192,7 +192,7 @@ Adjust docker mount points in the `docker/docker-compose.yml` file to point to m
 docker-compose -f docker/docker-compose.yml up -d
 ```
 
-For detailed API usage examples, including request and response formats, curl request examples and more, please refer to our [API Documentation](docs/api.md).
+5. **Test API**: For API usage examples, including request and response formats, curl request examples and more, please refer to our [API Documentation](docs/api.md).
 
 ## 🧪 Testing
 
