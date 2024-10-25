@@ -12,8 +12,8 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
     <img 
       alt="Enterprise Search Architecture" 
       src="assets/cover_image.svg" 
-      width="1200px"
-      style="max-width: 100%;"
+      width="900px"
+      height="auto"
     >
   </picture>
 
@@ -38,63 +38,19 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
 
 ## 🚀 Key Features
 
-<table width=100%>
-  <tr>
-    <td width="50%">
-      <strong><a href="#multi-document-query">Multi-Document Query Processing</a></strong><br/>
-      Upload multiple documents (PDFs, DOCXs, CSVs) and ask questions spanning across them, leveraging comprehensive knowledge extraction.
-      <br><br>
-      <img src="assets/multi-document-query-icon.svg" alt="Multi-Document Query Processing" width="100" height="100">
-    </td>
-    <td width="50%">
-      <strong><a href="#real-time-ingestion">On the Fly Document Ingestion</a></strong><br/>
-      Upload new documents during a query session, instantly incorporating fresh information into the knowledge base for immediate use.
-      <br><br>
-      <img src="assets/real-time-ingestion-icon.svg" alt="Real-time Document Ingestion" width="100" height="100">
-    </td>
-  </tr>
-</table>
-<table width="100%">
-  <tr>
-    <td width="50%">
-      <strong><a href="#source-traceability">Source Traceability</a></strong><br/>
-      For each response, get information about the source documents that were used to generate the answer.
-      <br><br>
-      <img src="assets/source-traceability-icon.svg" alt="Source Traceability" width="100" height="100">
-    </td>
-    <td width="50%">
-      <strong><a href="#multi-tenant-support">Multi-Tenant Support</a></strong><br/>
-      Handle multiple users with separate document collections, ensuring data isolation in the vector database.
-      <br><br>
-      <img src="assets/multi-tenant-support-icon.svg" alt="Multi-Tenant Support" width="100" height="100">
-    </td>
-  </tr>
-</table>
-<table width="100%">
-  <tr>
-    <td width="50%">
-      <strong><a href="#evaluation-framework">Built-in Evaluation</a></strong><br/>
-      Assess and improve your RAG pipeline quality with built in synthetic data generation and evaluation capabilities.
-      <br><br>
-      <img src="assets/evaluation-framework-icon.svg" alt="Built-in Evaluation Framework" width="100" height="100">
-    </td>
-    <td width="50%">
-      <strong><a href="#api-and-deployment">RESTful API and Deployment Support</a></strong><br/>
-      Integrate easily with RESTful API endpoints and deploy using provided Kubernetes configurations in your infrastructure.
-      <br><br>
-      <img src="assets/api-and-deployment-icon.svg" alt="RESTful API and Deployment Support" width="100" height="100">
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="./assets/key-features-0.1.svg" alt="Enterprise Search - Key Features" width="80%" height="auto" />
+</p>
 
 ## 🛠️ Prerequisites
 
 Before setting up Enterprise Search, ensure you have:
 
 - Python 3.9 or higher
-- Docker and Docker Compose 
-*Note: Depending on your Docker Compose version, you may need to use docker-compose (with a hyphen) instead of docker compose.*
+- Docker and Docker Compose
 - CUDA 11 or higher (for GPU acceleration)
+
+*Note: Depending on your Docker Compose version, you may need to use docker-compose (with a hyphen) instead of docker compose.*
 
 ## ⚙️ Configuration
 
