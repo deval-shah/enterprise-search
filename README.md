@@ -38,9 +38,22 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
 
 ## 🚀 Key Features
 
-<p align="center">
-  <img src="./assets/key-features-0.1.svg" alt="Enterprise Search - Key Features" width="80%" height="auto" />
-</p>
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/key-features-0.1.svg#gh-dark-mode-only"/>
+    <source media="(prefers-color-scheme: light)" srcset="./assets/key-features-0.1.svg#gh-light-mode-only"/>
+    <img 
+      alt="Enterprise Search - Key Features" 
+      src="./assets/key-features-0.1.svg" 
+      width="800px"
+      height="auto"
+    >
+  </picture>
+
+  <p align="center">
+    <em>Enterprise Search - Key Features</em>
+  </p>
+</div>
 
 ## 🛠️ Prerequisites
 
