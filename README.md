@@ -3,24 +3,23 @@
 
 Enterprise Search is a  Retrieval-Augmented Generation (RAG) system designed for efficient local information retrieval on document collections. It uses vector search techniques with language models to provide context-aware answers to your queries.
 
-Enterprise Search is designed to be dynamic and adaptable to fit in both development and production workflows. It offers a RestFul API for indexing and querying over document collections, making it ideal for businesses and developers seeking to deploy the question-answering solutions in their infrastructure.
+Enterprise Search is designed to be dynamic and adaptable to configure and deploy custom RAG workflows in production. It offers a RestFul API for indexing and querying over document collections, making it ideal for businesses and developers seeking to deploy the question-answering solutions in their infrastructure.
 
-<div align="center">
+<div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/cover_image.svg#gh-dark-mode-only"/>
     <source media="(prefers-color-scheme: light)" srcset="assets/cover_image.svg#gh-light-mode-only"/>
     <img 
       alt="Enterprise Search Architecture" 
       src="assets/cover_image.svg" 
-      width="900px"
-      height="auto"
+      style="max-width: 70%; height: auto; display: block; margin: 0 auto;"
     >
   </picture>
-
-  <p align="center">
-    <em> High level overview of user interaction with the Enterprise Search system </em>
-  </p>
 </div>
+
+<p align="center">
+  <em> High level overview of user interaction with the Enterprise Search system </em>
+</p>
 
 ## 📚 Table of Contents
 
@@ -38,22 +37,20 @@ Enterprise Search is designed to be dynamic and adaptable to fit in both develop
 
 ## 🚀 Key Features
 
-<div align="center">
+<div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./assets/key-features-0.1.svg#gh-dark-mode-only"/>
     <source media="(prefers-color-scheme: light)" srcset="./assets/key-features-0.1.svg#gh-light-mode-only"/>
     <img 
       alt="Enterprise Search - Key Features" 
       src="./assets/key-features-0.1.svg" 
-      width="800px"
-      height="auto"
+      style="max-width: 70%; height: auto; display: block; margin: 0 auto;"
     >
   </picture>
-
-  <p align="center">
-    <em>Enterprise Search - Key Features</em>
-  </p>
 </div>
+<p align="center">
+  <em>Enterprise Search - Key Features</em>
+</p>
 
 ## 🛠️ Prerequisites
 
